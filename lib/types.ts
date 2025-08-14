@@ -7,6 +7,7 @@ export interface HeroSlide {
 }
 
 export interface University {
+  id: number;
   name: string;
   country: string;
   logo: string;
@@ -17,6 +18,16 @@ export interface University {
   color: string;
   flag: string;
   departments?: Department[];
+  location?: string;
+  nameEn?: string;
+  freeOfferLetter?: boolean;
+  tuitionFee?: string;
+  currency?: string;
+  courses?: number;
+  rating?: number;
+  popular?: boolean;
+  featured?: boolean;
+  specializations?: string[];
 }
 
 export interface Department {

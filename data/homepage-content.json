@@ -24,6 +24,7 @@
   ],
   "universities": [
     {
+      "id": 1,
       "name": "جامعة آم القرى",
       "country": "الولايات المتحدة",
       "logo": "/placeholder.svg?height=80&width=80",
@@ -35,6 +36,7 @@
       "flag": "🇺🇸"
     },
     {
+      "id": 2,
       "name": "جامعة أكسفورد",
       "country": "المملكة المتحدة",
       "logo": "/placeholder.svg?height=80&width=80",
@@ -46,6 +48,7 @@
       "flag": "🇬🇧"
     },
     {
+      "id": 3,
       "name": "جامعة تورنتو",
       "country": "كندا",
       "logo": "/placeholder.svg?height=80&width=80",
@@ -57,6 +60,7 @@
       "flag": "🇨🇦"
     },
     {
+      "id": 4,
       "name": "جامعة سيدني",
       "country": "أستراليا",
       "logo": "/placeholder.svg?height=80&width=80",
@@ -68,6 +72,7 @@
       "flag": "🇦🇺"
     },
     {
+      "id": 5,
       "name": "جامعة طوكيو",
       "country": "اليابان",
       "logo": "/placeholder.svg?height=80&width=80",
@@ -79,6 +84,7 @@
       "flag": "🇯🇵"
     },
     {
+      "id": 6,
       "name": "جامعة برلين",
       "country": "ألمانيا",
       "logo": "/placeholder.svg?height=80&width=80",

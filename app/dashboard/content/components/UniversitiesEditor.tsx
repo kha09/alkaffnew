@@ -13,6 +13,7 @@ interface UniversitiesEditorProps {
 export default function UniversitiesEditor({ universities, onChange }: UniversitiesEditorProps) {
   const addUniversity = () => {
     const newUniversity: University = {
+      id: 0, // This will be set by the database
       name: '',
       country: '',
       logo: '',

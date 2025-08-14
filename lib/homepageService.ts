@@ -30,6 +30,7 @@ export async function getHomepageContent(): Promise<HomePageContent> {
         gradient: slide.gradient,
       })),
       universities: universities.map(university => ({
+        id: university.id,
         name: university.name,
         country: university.country,
         logo: university.logo,
@@ -94,6 +95,7 @@ export async function updateHomepageContent(content: HomePageContent): Promise<v
       // Create new universities
       await prisma.university.createMany({
         data: content.universities.map((university, index) => ({
+          id: university.id,
           name: university.name,
           country: university.country,
           logo: university.logo,

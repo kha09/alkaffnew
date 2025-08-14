@@ -1,5 +1,6 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { University } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -25,152 +26,6 @@ import {
 import Link from "next/link"
 import Image from "next/image"
 
-const universities = [
-  {
-    id: 1,
-    name: "جامعة الوسائط المتعددة ماليزيا",
-    nameEn: "Multimedia University Malaysia (MMU)",
-    logo: "/placeholder.svg?height=80&width=80",
-    location: "سيلانجور، ماليزيا",
-    locationEn: "Selangor, Malaysia",
-    country: "ماليزيا",
-    flag: "🇲🇾",
-    courses: 76,
-    ranking: "#15",
-    tuitionFee: "15,000",
-    currency: "RM",
-    freeOfferLetter: true,
-    rating: 4.5,
-    students: "25,000+",
-    established: 1996,
-    type: "خاصة",
-    specializations: ["تقنية المعلومات", "الهندسة", "إدارة الأعمال", "الفنون الإبداعية"],
-    features: ["منح دراسية", "سكن جامعي", "تدريب عملي", "شراكات دولية"],
-    color: "from-blue-500 to-cyan-500",
-    popular: true,
-    featured: true,
-  },
-  {
-    id: 2,
-    name: "جامعة UCSI ماليزيا",
-    nameEn: "UCSI University Malaysia",
-    logo: "/placeholder.svg?height=80&width=80",
-    location: "كوالالمبور، ماليزيا",
-    locationEn: "Kuala Lumpur, Malaysia",
-    country: "ماليزيا",
-    flag: "🇲🇾",
-    courses: 153,
-    ranking: "#12",
-    tuitionFee: "18,000",
-    currency: "RM",
-    freeOfferLetter: true,
-    rating: 4.7,
-    students: "15,000+",
-    established: 1986,
-    type: "خاصة",
-    specializations: ["الطب", "الهندسة", "الأعمال", "الفنون التطبيقية"],
-    features: ["اعتماد دولي", "مختبرات متطورة", "برامج تبادل", "دعم مهني"],
-    color: "from-red-500 to-pink-500",
-    popular: true,
-    featured: false,
-  },
-  {
-    id: 3,
-    name: "جامعة تايلور ماليزيا",
-    nameEn: "Taylor's University Malaysia",
-    logo: "/placeholder.svg?height=80&width=80",
-    location: "سيلانجور، ماليزيا",
-    locationEn: "Selangor, Malaysia",
-    country: "ماليزيا",
-    flag: "🇲🇾",
-    courses: 89,
-    ranking: "#18",
-    tuitionFee: "20,000",
-    currency: "RM",
-    freeOfferLetter: true,
-    rating: 4.6,
-    students: "12,000+",
-    established: 1969,
-    type: "خاصة",
-    specializations: ["الضيافة", "إدارة الأعمال", "الهندسة", "التصميم"],
-    features: ["حرم جامعي حديث", "شراكات صناعية", "برامج مزدوجة", "تطوير مهارات"],
-    color: "from-purple-500 to-indigo-500",
-    popular: false,
-    featured: true,
-  },
-  {
-    id: 4,
-    name: "جامعة مالايا",
-    nameEn: "University of Malaya (UM)",
-    logo: "/placeholder.svg?height=80&width=80",
-    location: "كوالالمبور، ماليزيا",
-    locationEn: "Kuala Lumpur, Malaysia",
-    country: "ماليزيا",
-    flag: "🇲🇾",
-    courses: 200,
-    ranking: "#8",
-    tuitionFee: "12,000",
-    currency: "RM",
-    freeOfferLetter: true,
-    rating: 4.8,
-    students: "28,000+",
-    established: 1905,
-    type: "حكومية",
-    specializations: ["الطب", "القانون", "الهندسة", "العلوم"],
-    features: ["أقدم جامعة", "بحوث متقدمة", "مكتبة ضخمة", "تنوع ثقافي"],
-    color: "from-green-500 to-emerald-500",
-    popular: true,
-    featured: true,
-  },
-  {
-    id: 5,
-    name: "جامعة نوتنغهام ماليزيا",
-    nameEn: "University of Nottingham Malaysia",
-    logo: "/placeholder.svg?height=80&width=80",
-    location: "سيلانجور، ماليزيا",
-    locationEn: "Selangor, Malaysia",
-    country: "ماليزيا",
-    flag: "🇲🇾",
-    courses: 95,
-    ranking: "#10",
-    tuitionFee: "25,000",
-    currency: "RM",
-    freeOfferLetter: true,
-    rating: 4.9,
-    students: "5,000+",
-    established: 2000,
-    type: "فرع دولي",
-    specializations: ["الهندسة", "الأعمال", "علوم الحاسوب", "الطب"],
-    features: ["شهادة بريطانية", "أساتذة دوليون", "بحوث عالمية", "تقنيات حديثة"],
-    color: "from-orange-500 to-yellow-500",
-    popular: false,
-    featured: false,
-  },
-  {
-    id: 6,
-    name: "جامعة مونتاش ماليزيا",
-    nameEn: "Monash University Malaysia",
-    logo: "/placeholder.svg?height=80&width=80",
-    location: "سيلانجور، ماليزيا",
-    locationEn: "Selangor, Malaysia",
-    country: "ماليزيا",
-    flag: "🇲🇾",
-    courses: 110,
-    ranking: "#6",
-    tuitionFee: "28,000",
-    currency: "RM",
-    freeOfferLetter: true,
-    rating: 4.8,
-    students: "8,000+",
-    established: 1998,
-    type: "فرع دولي",
-    specializations: ["الطب", "الهندسة", "تقنية المعلومات", "الأعمال"],
-    features: ["شهادة أسترالية", "بحوث متميزة", "تبادل طلابي", "مرافق عالمية"],
-    color: "from-teal-500 to-blue-500",
-    popular: true,
-    featured: true,
-  },
-]
 
 const levels = [
   { id: "all", name: "جميع المستويات" },
@@ -206,6 +61,9 @@ const sortOptions = [
 ]
 
 export default function UniversitiesPage() {
+  const [universities, setUniversities] = useState<University[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedLevel, setSelectedLevel] = useState("all")
   const [selectedLocation, setSelectedLocation] = useState("all")
@@ -215,16 +73,36 @@ export default function UniversitiesPage() {
   const [favorites, setFavorites] = useState<number[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
 
+  useEffect(() => {
+    const fetchUniversities = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/universities')
+        if (!response.ok) {
+          throw new Error('Failed to fetch universities')
+        }
+        const data = await response.json()
+        setUniversities(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unknown error occurred')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUniversities()
+  }, [])
+
   // Filter and sort universities
   const filteredUniversities = universities
     .filter((uni) => {
       const matchesSearch =
         uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        uni.nameEn.toLowerCase().includes(searchQuery.toLowerCase())
+        (uni.nameEn && uni.nameEn.toLowerCase().includes(searchQuery.toLowerCase()))
       const matchesLevel = selectedLevel === "all" // In real app, would filter by available levels
       const matchesLocation =
         selectedLocation === "all" ||
-        uni.location.includes(locations.find((l) => l.id === selectedLocation)?.name || "")
+        (uni.location && uni.location.includes(locations.find((l) => l.id === selectedLocation)?.name || ""))
       const matchesOfferFee =
         selectedOfferFee === "all" ||
         (selectedOfferFee === "free" && uni.freeOfferLetter) ||
@@ -237,13 +115,13 @@ export default function UniversitiesPage() {
         case "ranking":
           return Number.parseInt(a.ranking.replace("#", "")) - Number.parseInt(b.ranking.replace("#", ""))
         case "tuition-low":
-          return Number.parseInt(a.tuitionFee.replace(",", "")) - Number.parseInt(b.tuitionFee.replace(",", ""))
+          return Number.parseInt((a.tuitionFee || "0").replace(",", "")) - Number.parseInt((b.tuitionFee || "0").replace(",", ""))
         case "tuition-high":
-          return Number.parseInt(b.tuitionFee.replace(",", "")) - Number.parseInt(a.tuitionFee.replace(",", ""))
+          return Number.parseInt((b.tuitionFee || "0").replace(",", "")) - Number.parseInt((a.tuitionFee || "0").replace(",", ""))
         case "courses":
-          return b.courses - a.courses
+          return (b.courses || 0) - (a.courses || 0)
         case "rating":
-          return b.rating - a.rating
+          return (b.rating || 0) - (a.rating || 0)
         case "popular":
         default:
           return (b.popular ? 1 : 0) - (a.popular ? 1 : 0)
@@ -542,12 +420,12 @@ export default function UniversitiesPage() {
                             <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300">
                               {university.name}
                             </h3>
-                            <p className="text-sm text-gray-500 mb-3">{university.nameEn}</p>
+                            <p className="text-sm text-gray-500 mb-3">{university.nameEn || ""}</p>
 
                             <div className="flex items-center justify-center md:justify-start space-x-2 space-x-reverse mb-3">
                               <MapPin className="h-4 w-4 text-gray-500" />
-                              <span className="text-sm text-gray-600">{university.location}</span>
-                              <span className="text-lg">{university.flag}</span>
+                              <span className="text-sm text-gray-600">{university.location || ""}</span>
+                              <span className="text-lg">{university.flag || ""}</span>
                             </div>
 
                             {university.freeOfferLetter && (
@@ -560,15 +438,15 @@ export default function UniversitiesPage() {
                             <div className="flex items-center justify-center md:justify-start space-x-4 space-x-reverse text-sm text-gray-600 mb-4">
                               <div className="flex items-center space-x-1 space-x-reverse">
                                 <BookOpen className="h-4 w-4" />
-                                <span>{university.courses} تخصص</span>
+                                <span>{university.courses || 0} تخصص</span>
                               </div>
                               <div className="flex items-center space-x-1 space-x-reverse">
                                 <Star className="h-4 w-4 text-yellow-500" />
-                                <span>{university.rating}</span>
+                                <span>{university.rating || 0}</span>
                               </div>
                               <div className="flex items-center space-x-1 space-x-reverse">
                                 <Users className="h-4 w-4" />
-                                <span>{university.students}</span>
+                                <span>{university.students || ""}</span>
                               </div>
                             </div>
 
@@ -576,19 +454,19 @@ export default function UniversitiesPage() {
                             <div className="flex items-center justify-center md:justify-start space-x-2 space-x-reverse mb-4">
                               <DollarSign className="h-4 w-4 text-green-600" />
                               <span className="text-lg font-bold text-green-600">
-                                {university.tuitionFee} {university.currency}
+                                {university.tuitionFee || ""} {university.currency || ""}
                               </span>
                               <span className="text-sm text-gray-500">/ سنوياً</span>
                             </div>
 
                             {/* Specializations */}
                             <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                              {university.specializations.slice(0, 3).map((spec, index) => (
+                              {university.specializations?.slice(0, 3).map((spec, index) => (
                                 <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                                   {spec}
                                 </span>
                               ))}
-                              {university.specializations.length > 3 && (
+                              {university.specializations && university.specializations.length > 3 && (
                                 <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
                                   +{university.specializations.length - 3} المزيد
                                 </span>
