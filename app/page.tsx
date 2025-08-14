@@ -43,270 +43,13 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-
-const heroSlides = [
-  {
-    title: "ابدأ رحلتك الجامعية معنا",
-    subtitle: "التقديم أصبح أسهل من أي وقت مضى!",
-    description: "منصة ذكية تربطك بأفضل الجامعات والتخصصات حول العالم، خطوة بخطوة.",
-    image: "/images/students-campus.png",
-    gradient: "from-blue-600 to-purple-700",
-  },
-  {
-    title: "آلاف الطلاب حققوا أحلامهم",
-    subtitle: "انضم إليهم اليوم",
-    description: "أكثر من 5000 طالب حصلوا على قبولات جامعية من خلال منصتنا المتطورة.",
-    image: "/images/students-studying.png",
-    gradient: "from-emerald-600 to-teal-700",
-  },
-  {
-    title: "دعم مباشر من وكلاء معتمدين",
-    subtitle: "خبرة تفوق 10 سنوات",
-    description: "فريق من الخبراء المعتمدين يساعدونك في كل خطوة من رحلة التقديم.",
-    image: "/images/graduation-ceremony.png",
-    gradient: "from-orange-600 to-red-700",
-  },
-]
-
-const universities = [
-  {
-    name: "جامعة هارفارد",
-    country: "الولايات المتحدة",
-    logo: "/placeholder.svg?height=80&width=80",
-    ranking: "#1",
-    students: "23,000+",
-    programs: "180+",
-    acceptance: "3.4%",
-    color: "from-red-500 to-pink-500",
-    flag: "🇺🇸",
-  },
-  {
-    name: "جامعة أكسفورد",
-    country: "المملكة المتحدة",
-    logo: "/placeholder.svg?height=80&width=80",
-    ranking: "#2",
-    students: "24,000+",
-    programs: "350+",
-    acceptance: "17.5%",
-    color: "from-blue-500 to-indigo-500",
-    flag: "🇬🇧",
-  },
-  {
-    name: "جامعة تورنتو",
-    country: "كندا",
-    logo: "/placeholder.svg?height=80&width=80",
-    ranking: "#18",
-    students: "97,000+",
-    programs: "700+",
-    acceptance: "43%",
-    color: "from-green-500 to-emerald-500",
-    flag: "🇨🇦",
-  },
-  {
-    name: "جامعة سيدني",
-    country: "أستراليا",
-    logo: "/placeholder.svg?height=80&width=80",
-    ranking: "#38",
-    students: "70,000+",
-    programs: "400+",
-    acceptance: "30%",
-    color: "from-orange-500 to-yellow-500",
-    flag: "🇦🇺",
-  },
-  {
-    name: "جامعة طوكيو",
-    country: "اليابان",
-    logo: "/placeholder.svg?height=80&width=80",
-    ranking: "#23",
-    students: "28,000+",
-    programs: "280+",
-    acceptance: "36%",
-    color: "from-purple-500 to-violet-500",
-    flag: "🇯🇵",
-  },
-  {
-    name: "جامعة برلين",
-    country: "ألمانيا",
-    logo: "/placeholder.svg?height=80&width=80",
-    ranking: "#64",
-    students: "35,000+",
-    programs: "190+",
-    acceptance: "20%",
-    color: "from-teal-500 to-cyan-500",
-    flag: "🇩🇪",
-  },
-]
-
-const testimonials = [
-  {
-    id: 1,
-    name: "محمد أحمد",
-    program: "طالب بكالوريوس",
-    text: "تم قبولي خلال أسبوع! تجربة احترافية وسلسة. أنصح بشدة بالتقديم من خلال منصة SM Alkaff لما وجدته من دعم متواصل واهتمام بكل التفاصيل.",
-    rating: 5,
-    avatar: "/placeholder.svg?height=120&width=120",
-    university: "جامعة هارفارد",
-    country: "الولايات المتحدة",
-    flag: "🇺🇸",
-    date: "مارس 2025",
-    hasVideo: true,
-    featured: true,
-    category: "بكالوريوس",
-  },
-  {
-    id: 2,
-    name: "فاطمة علي",
-    program: "طالبة ماجستير",
-    text: "الدعم كان رائع والمتابعة مستمرة حتى وصولي للجامعة. لم أتوقع أن تكون عملية التقديم بهذه السهولة، وكان الفريق متعاون للغاية في الرد على جميع استفساراتي.",
-    rating: 5,
-    avatar: "/placeholder.svg?height=120&width=120",
-    university: "جامعة أكسفورد",
-    country: "المملكة المتحدة",
-    flag: "🇬🇧",
-    date: "فبراير 2025",
-    hasVideo: false,
-    featured: false,
-    category: "ماجستير",
-  },
-  {
-    id: 3,
-    name: "عبدالله محمود",
-    program: "طالب دكتوراه",
-    text: "أفضل منصة للتقديم الجامعي، أنصح بها بشدة. استطعت الحصول على قبول في برنامج الدكتوراه الذي كنت أحلم به، وكان الدعم المقدم من المنصة عامل أساسي في نجاحي.",
-    rating: 5,
-    avatar: "/placeholder.svg?height=120&width=120",
-    university: "جامعة تورنتو",
-    country: "كندا",
-    flag: "🇨🇦",
-    date: "يناير 2025",
-    hasVideo: true,
-    featured: true,
-    category: "دكتوراه",
-  },
-  {
-    id: 4,
-    name: "سارة خالد",
-    program: "طالبة بكالوريوس",
-    text: "تجربة مميزة من البداية للنهاية. ساعدتني المنصة في اختيار التخصص المناسب واستكمال جميع متطلبات التقديم بسهولة ويسر.",
-    rating: 4,
-    avatar: "/placeholder.svg?height=120&width=120",
-    university: "جامعة سيدني",
-    country: "أستراليا",
-    flag: "🇦🇺",
-    date: "أبريل 2025",
-    hasVideo: false,
-    featured: false,
-    category: "بكالوريوس",
-  },
-  {
-    id: 5,
-    name: "أحمد علي",
-    program: "طالب ماجستير",
-    text: "خدمة ممتازة وفريق عمل محترف. كنت قلقاً بشأن عملية التقديم، لكن المنصة جعلت كل شيء سهلاً وواضحاً.",
-    rating: 5,
-    avatar: "/placeholder.svg?height=120&width=120",
-    university: "جامعة طوكيو",
-    country: "اليابان",
-    flag: "🇯🇵",
-    date: "مايو 2025",
-    hasVideo: false,
-    featured: false,
-    category: "ماجستير",
-  },
-]
-
-const faqCategories = [
-  { id: "all", name: "جميع الأسئلة" },
-  { id: "application", name: "التقديم" },
-  { id: "payment", name: "الدفع" },
-  { id: "universities", name: "الجامعات" },
-  { id: "agents", name: "الوكلاء" },
-]
-
-const faqs = [
-  {
-    id: 1,
-    question: "هل أحتاج إلى وكيل للتقديم؟",
-    answer:
-      "لا، يمكنك التقديم مباشرة عبر المنصة، لكن الوكلاء متاحون لتقديم المساعدة الإضافية. يمكنك اختيار التقديم بنفسك أو الاستعانة بوكيل معتمد حسب احتياجاتك.",
-    category: "agents",
-    popular: true,
-  },
-  {
-    id: 2,
-    question: "كم تستغرق مدة معالجة الطلب؟",
-    answer:
-      "عادة ما تستغرق معالجة الطلبات من 3-7 أيام عمل حسب الجامعة والتخصص. بعض الجامعات قد تستغرق وقتاً أطول خاصة في فترات التقديم المزدحمة.",
-    category: "application",
-    popular: true,
-  },
-  {
-    id: 3,
-    question: "هل يمكنني التقديم على أكثر من جامعة؟",
-    answer:
-      "نعم، يمكنك التقديم على عدة جامعات وتخصصات في نفس الوقت. منصتنا تتيح لك إدارة جميع طلباتك من مكان واحد بسهولة ويسر.",
-    category: "application",
-    popular: true,
-  },
-  {
-    id: 4,
-    question: "ما هي طرق الدفع المتاحة؟",
-    answer:
-      "نقبل جميع البطاقات الائتمانية والتحويلات البنكية والمحافظ الإلكترونية. يمكنك اختيار طريقة الدفع المناسبة لك عند إتمام عملية التقديم.",
-    category: "payment",
-    popular: true,
-  },
-  {
-    id: 5,
-    question: "هل يمكنني استرداد الرسوم في حالة رفض طلبي؟",
-    answer:
-      "نعم، في حالة رفض طلبك من قبل الجامعة، يمكنك استرداد جزء من الرسوم حسب سياسة الاسترداد الخاصة بنا. يرجى الاطلاع على سياسة الاسترداد للتفاصيل الكاملة.",
-    category: "payment",
-    popular: false,
-  },
-  {
-    id: 6,
-    question: "كيف يمكنني متابعة حالة طلبي؟",
-    answer:
-      "يمكنك متابعة حالة طلبك من خلال حسابك الشخصي على المنصة. ستتلقى أيضاً إشعارات عبر البريد الإلكتروني والرسائل النصية بأي تحديثات على طلبك.",
-    category: "application",
-    popular: false,
-  },
-  {
-    id: 7,
-    question: "ما هي المستندات المطلوبة للتقديم؟",
-    answer:
-      "تختلف المستندات المطلوبة حسب الجامعة والتخصص، لكن بشكل عام ستحتاج إلى شهادة الثانوية العامة، جواز السفر، شهادة اللغة الإنجليزية، والسيرة الذاتية. يمكنك معرفة المستندات المطلوبة بالتفصيل عند اختيار الجامعة والتخصص.",
-    category: "application",
-    popular: false,
-  },
-  {
-    id: 8,
-    question: "هل تقدمون خدمات التأشيرة الدراسية؟",
-    answer:
-      "نعم، نقدم خدمات استشارية للحصول على التأشيرة الدراسية بعد قبولك في الجامعة. فريقنا سيساعدك في تجهيز المستندات المطلوبة وإرشادك خلال عملية التقديم للتأشيرة.",
-    category: "universities",
-    popular: false,
-  },
-  {
-    id: 9,
-    question: "كيف يمكنني التواصل مع فريق الدعم؟",
-    answer:
-      "يمكنك التواصل مع فريق الدعم عبر الدردشة المباشرة على الموقع، أو من خلال البريد الإلكتروني support@smalkaff.com، أو الاتصال على الرقم +966 50 123 4567. فريقنا متاح للرد على استفساراتك على مدار الساعة.",
-    category: "application",
-    popular: false,
-  },
-  {
-    id: 10,
-    question: "كيف يمكنني أن أصبح وكيلاً معتمداً؟",
-    answer:
-      "للتسجيل كوكيل معتمد، يرجى زيارة صفحة 'انضم كوكيل' وتعبئة النموذج المطلوب. سيقوم فريقنا بمراجعة طلبك والتواصل معك خلال 48 ساعة.",
-    category: "agents",
-    popular: false,
-  },
-]
+import { HomePageContent } from "@/lib/types"
 
 export default function LandingPage() {
+  const [content, setContent] = useState<HomePageContent | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
   const [currentSlide, setCurrentSlide] = useState(0)
   const [currentUniversity, setCurrentUniversity] = useState(0)
   const [currentTestimonial, setCurrentTestimonial] = useState(0)
@@ -322,38 +65,324 @@ export default function LandingPage() {
   const [isDragging, setIsDragging] = useState(false)
   const testimonialRef = useRef<HTMLDivElement>(null)
 
+  // Fetch content from API
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await fetch('/api/homepage')
+        if (!response.ok) throw new Error('Failed to fetch content')
+        const data: HomePageContent = await response.json()
+        setContent(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load content')
+        // Fallback to default content if API fails
+        const defaultContent: HomePageContent = {
+          heroSlides: [
+            {
+              title: "ابدأ رحلتك الجامعية معنا",
+              subtitle: "التقديم أصبح أسهل من أي وقت مضى!",
+              description: "منصة ذكية تربطك بأفضل الجامعات والتخصصات حول العالم، خطوة بخطوة.",
+              image: "/images/students-campus.png",
+              gradient: "from-blue-600 to-purple-700",
+            },
+            {
+              title: "آلاف الطلاب حققوا أحلامهم",
+              subtitle: "انضم إليهم اليوم",
+              description: "أكثر من 5000 طالب حصلوا على قبولات جامعية من خلال منصتنا المتطورة.",
+              image: "/images/students-studying.png",
+              gradient: "from-emerald-600 to-teal-700",
+            },
+            {
+              title: "دعم مباشر من وكلاء معتمدين",
+              subtitle: "خبرة تفوق 10 سنوات",
+              description: "فريق من الخبراء المعتمدين يساعدونك في كل خطوة من رحلة التقديم.",
+              image: "/images/graduation-ceremony.png",
+              gradient: "from-orange-600 to-red-700",
+            },
+          ],
+          universities: [
+            {
+              name: "جامعة هارفارد",
+              country: "الولايات المتحدة",
+              logo: "/placeholder.svg?height=80&width=80",
+              ranking: "#1",
+              students: "23,000+",
+              programs: "180+",
+              acceptance: "3.4%",
+              color: "from-red-500 to-pink-500",
+              flag: "🇺🇸",
+            },
+            {
+              name: "جامعة أكسفورد",
+              country: "المملكة المتحدة",
+              logo: "/placeholder.svg?height=80&width=80",
+              ranking: "#2",
+              students: "24,000+",
+              programs: "350+",
+              acceptance: "17.5%",
+              color: "from-blue-500 to-indigo-500",
+              flag: "🇬🇧",
+            },
+            {
+              name: "جامعة تورنتو",
+              country: "كندا",
+              logo: "/placeholder.svg?height=80&width=80",
+              ranking: "#18",
+              students: "97,000+",
+              programs: "700+",
+              acceptance: "43%",
+              color: "from-green-500 to-emerald-500",
+              flag: "🇨🇦",
+            },
+            {
+              name: "جامعة سيدني",
+              country: "أستراليا",
+              logo: "/placeholder.svg?height=80&width=80",
+              ranking: "#38",
+              students: "70,000+",
+              programs: "400+",
+              acceptance: "30%",
+              color: "from-orange-500 to-yellow-500",
+              flag: "🇦🇺",
+            },
+            {
+              name: "جامعة طوكيو",
+              country: "اليابان",
+              logo: "/placeholder.svg?height=80&width=80",
+              ranking: "#23",
+              students: "28,000+",
+              programs: "280+",
+              acceptance: "36%",
+              color: "from-purple-500 to-violet-500",
+              flag: "🇯🇵",
+            },
+            {
+              name: "جامعة برلين",
+              country: "ألمانيا",
+              logo: "/placeholder.svg?height=80&width=80",
+              ranking: "#64",
+              students: "35,000+",
+              programs: "190+",
+              acceptance: "20%",
+              color: "from-teal-500 to-cyan-500",
+              flag: "🇩🇪",
+            },
+          ],
+          testimonials: [
+            {
+              id: 1,
+              name: "محمد أحمد",
+              program: "طالب بكالوريوس",
+              text: "تم قبولي خلال أسبوع! تجربة احترافية وسلسة. أنصح بشدة بالتقديم من خلال منصة SM Alkaff لما وجدته من دعم متواصل واهتمام بكل التفاصيل.",
+              rating: 5,
+              avatar: "/placeholder.svg?height=120&width=120",
+              university: "جامعة هارفارد",
+              country: "الولايات المتحدة",
+              flag: "🇺🇸",
+              date: "مارس 2025",
+              hasVideo: true,
+              featured: true,
+              category: "بكالوريوس",
+            },
+            {
+              id: 2,
+              name: "فاطمة علي",
+              program: "طالبة ماجستير",
+              text: "الدعم كان رائع والمتابعة مستمرة حتى وصولي للجامعة. لم أتوقع أن تكون عملية التقديم بهذه السهولة، وكان الفريق متعاون للغاية في الرد على جميع استفساراتي.",
+              rating: 5,
+              avatar: "/placeholder.svg?height=120&width=120",
+              university: "جامعة أكسفورد",
+              country: "المملكة المتحدة",
+              flag: "🇬🇧",
+              date: "فبراير 2025",
+              hasVideo: false,
+              featured: false,
+              category: "ماجستير",
+            },
+            {
+              id: 3,
+              name: "عبدالله محمود",
+              program: "طالب دكتوراه",
+              text: "أفضل منصة للتقديم الجامعي، أنصح بها بشدة. استطعت الحصول على قبول في برنامج الدكتوراه الذي كنت أحلم به، وكان الدعم المقدم من المنصة عامل أساسي في نجاحي.",
+              rating: 5,
+              avatar: "/placeholder.svg?height=120&width=120",
+              university: "جامعة تورنتو",
+              country: "كندا",
+              flag: "🇨🇦",
+              date: "يناير 2025",
+              hasVideo: true,
+              featured: true,
+              category: "دكتوراه",
+            },
+            {
+              id: 4,
+              name: "سارة خالد",
+              program: "طالبة بكالوريوس",
+              text: "تجربة مميزة من البداية للنهاية. ساعدتني المنصة في اختيار التخصص المناسب واستكمال جميع متطلبات التقديم بسهولة ويسر.",
+              rating: 4,
+              avatar: "/placeholder.svg?height=120&width=120",
+              university: "جامعة سيدني",
+              country: "أستراليا",
+              flag: "🇦🇺",
+              date: "أبريل 2025",
+              hasVideo: false,
+              featured: false,
+              category: "بكالوريوس",
+            },
+            {
+              id: 5,
+              name: "أحمد علي",
+              program: "طالب ماجستير",
+              text: "خدمة ممتازة وفريق عمل محترف. كنت قلقاً بشأن عملية التقديم، لكن المنصة جعلت كل شيء سهلاً وواضحاً.",
+              rating: 5,
+              avatar: "/placeholder.svg?height=120&width=120",
+              university: "جامعة طوكيو",
+              country: "اليابان",
+              flag: "🇯🇵",
+              date: "مايو 2025",
+              hasVideo: false,
+              featured: false,
+              category: "ماجستير",
+            },
+          ],
+          faqs: [
+            {
+              id: 1,
+              question: "هل أحتاج إلى وكيل للتقديم؟",
+              answer:
+                "لا، يمكنك التقديم مباشرة عبر المنصة، لكن الوكلاء متاحون لتقديم المساعدة الإضافية. يمكنك اختيار التقديم بنفسك أو الاستعانة بوكيل معتمد حسب احتياجاتك.",
+              category: "agents",
+              popular: true,
+            },
+            {
+              id: 2,
+              question: "كم تستغرق مدة معالجة الطلب؟",
+              answer:
+                "عادة ما تستغرق معالجة الطلبات من 3-7 أيام عمل حسب الجامعة والتخصص. بعض الجامعات قد تستغرق وقتاً أطول خاصة في فترات التقديم المزدحمة.",
+              category: "application",
+              popular: true,
+            },
+            {
+              id: 3,
+              question: "هل يمكنني التقديم على أكثر من جامعة؟",
+              answer:
+                "نعم، يمكنك التقديم على عدة جامعات وتخصصات في نفس الوقت. منصتنا تتيح لك إدارة جميع طلباتك من مكان واحد بسهولة ويسر.",
+              category: "application",
+              popular: true,
+            },
+            {
+              id: 4,
+              question: "ما هي طرق الدفع المتاحة؟",
+              answer:
+                "نقبل جميع البطاقات الائتمانية والتحويلات البنكية والمحافظ الإلكترونية. يمكنك اختيار طريقة الدفع المناسبة لك عند إتمام عملية التقديم.",
+              category: "payment",
+              popular: true,
+            },
+            {
+              id: 5,
+              question: "هل يمكنني استرداد الرسوم في حالة رفض طلبي؟",
+              answer:
+                "نعم، في حالة رفض طلبك من قبل الجامعة، يمكنك استرداد جزء من الرسوم حسب سياسة الاسترداد الخاصة بنا. يرجى الاطلاع على سياسة الاسترداد للتفاصيل الكاملة.",
+              category: "payment",
+              popular: false,
+            },
+            {
+              id: 6,
+              question: "كيف يمكنني متابعة حالة طلبي؟",
+              answer:
+                "يمكنك متابعة حالة طلبك من خلال حسابك الشخصي على المنصة. ستتلقى أيضاً إشعارات عبر البريد الإلكتروني والرسائل النصية بأي تحديثات على طلبك.",
+              category: "application",
+              popular: false,
+            },
+            {
+              id: 7,
+              question: "ما هي المستندات المطلوبة للتقديم؟",
+              answer:
+                "تختلف المستندات المطلوبة حسب الجامعة والتخصص، لكن بشكل عام ستحتاج إلى شهادة الثانوية العامة، جواز السفر، شهادة اللغة الإنجليزية، والسيرة الذاتية. يمكنك معرفة المستندات المطلوبة بالتفصيل عند اختيار الجامعة والتخصص.",
+              category: "application",
+              popular: false,
+            },
+            {
+              id: 8,
+              question: "هل تقدمون خدمات التأشيرة الدراسية؟",
+              answer:
+                "نعم، نقدم خدمات استشارية للحصول على التأشيرة الدراسية بعد قبولك في الجامعة. فريقنا سيساعدك في تجهيز المستندات المطلوبة وإرشادك خلال عملية التقديم للتأشيرة.",
+              category: "universities",
+              popular: false,
+            },
+            {
+              id: 9,
+              question: "كيف يمكنني التواصل مع فريق الدعم؟",
+              answer:
+                "يمكنك التواصل مع فريق الدعم عبر الدردشة المباشرة على الموقع، أو من خلال البريد الإلكتروني support@smalkaff.com، أو الاتصال على الرقم +966 50 123 4567. فريقنا متاح للرد على استفساراتك على مدار الساعة.",
+              category: "application",
+              popular: false,
+            },
+            {
+              id: 10,
+              question: "كيف يمكنني أن أصبح وكيلاً معتمداً؟",
+              answer:
+                "للتسجيل كوكيل معتمد، يرجى زيارة صفحة 'انضم كوكيل' وتعبئة النموذج المطلوب. سيقوم فريقنا بمراجعة طلبك والتواصل معك خلال 48 ساعة.",
+              category: "agents",
+              popular: false,
+            },
+          ]
+        }
+        setContent(defaultContent)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchContent()
+  }, [])
+
   // Filter testimonials based on active filter
-  const filteredTestimonials = testimonials.filter(
+  const filteredTestimonials = content?.testimonials.filter(
     (testimonial) => activeTestimonialFilter === "all" || testimonial.category === activeTestimonialFilter,
-  )
+  ) || []
 
   // Filter FAQs based on active category and search query
-  const filteredFaqs = faqs.filter(
+  const filteredFaqs = content?.faqs.filter(
     (faq) =>
       (activeFaqCategory === "all" || faq.category === activeFaqCategory) &&
       (searchQuery === "" ||
         faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
         faq.answer.toLowerCase().includes(searchQuery.toLowerCase())),
-  )
+  ) || []
+
+  const faqCategories = [
+    { id: "all", name: "جميع الأسئلة" },
+    { id: "application", name: "التقديم" },
+    { id: "payment", name: "الدفع" },
+    { id: "universities", name: "الجامعات" },
+    { id: "agents", name: "الوكلاء" },
+  ]
 
   useEffect(() => {
+    if (!content) return
+    
     setIsVisible(true)
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+      setCurrentSlide((prev) => (prev + 1) % content.heroSlides.length)
     }, 5000)
     return () => clearInterval(interval)
-  }, [])
+  }, [content])
 
   useEffect(() => {
+    if (!content) return
+    
     const universityInterval = setInterval(() => {
       if (hoveredUniversity === null) {
-        setCurrentUniversity((prev) => (prev + 1) % universities.length)
+        setCurrentUniversity((prev) => (prev + 1) % content.universities.length)
       }
     }, 4000)
     return () => clearInterval(universityInterval)
-  }, [hoveredUniversity])
+  }, [hoveredUniversity, content])
 
   useEffect(() => {
+    if (!content) return
+    
     const testimonialInterval = setInterval(() => {
       if (!isDragging && !isVideoPlaying) {
         setCurrentTestimonial((prev) => (prev + 1) % filteredTestimonials.length)
@@ -363,19 +392,23 @@ export default function LandingPage() {
   }, [filteredTestimonials.length, isDragging, isVideoPlaying])
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+    if (!content) return
+    setCurrentSlide((prev) => (prev + 1) % content.heroSlides.length)
   }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
+    if (!content) return
+    setCurrentSlide((prev) => (prev - 1 + content.heroSlides.length) % content.heroSlides.length)
   }
 
   const nextUniversity = () => {
-    setCurrentUniversity((prev) => (prev + 1) % universities.length)
+    if (!content) return
+    setCurrentUniversity((prev) => (prev + 1) % content.universities.length)
   }
 
   const prevUniversity = () => {
-    setCurrentUniversity((prev) => (prev - 1 + universities.length) % universities.length)
+    if (!content) return
+    setCurrentUniversity((prev) => (prev - 1 + content.universities.length) % content.universities.length)
   }
 
   const nextTestimonial = () => {
@@ -437,6 +470,18 @@ export default function LandingPage() {
     setIsDragging(false)
   }
 
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+  }
+
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center">Error: {error}</div>
+  }
+
+  if (!content) {
+    return <div className="min-h-screen flex items-center justify-center">No content available</div>
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -480,7 +525,7 @@ export default function LandingPage() {
       {/* Hero Carousel */}
       <section className="relative h-screen overflow-hidden">
         <div className="absolute inset-0">
-          {heroSlides.map((slide, index) => (
+          {content.heroSlides.map((slide, index) => (
             <div
               key={index}
               className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
@@ -552,7 +597,7 @@ export default function LandingPage() {
         {/* Slide Indicators */}
         {/*
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
-          {heroSlides.map((_, index) => (
+          {content.heroSlides.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
@@ -746,7 +791,7 @@ export default function LandingPage() {
                   <div className="relative">
                     {/* Background Gradient */}
                     <div
-                      className={`absolute inset-0 bg-gradient-to-r ${universities[currentUniversity].color} opacity-10 group-hover:opacity-20 transition-opacity duration-500`}
+                      className={`absolute inset-0 bg-gradient-to-r ${content.universities[currentUniversity].color} opacity-10 group-hover:opacity-20 transition-opacity duration-500`}
                     ></div>
 
                     <div className="relative z-10 p-12">
@@ -754,35 +799,35 @@ export default function LandingPage() {
                         {/* University Info */}
                         <div className="text-center lg:text-right">
                           <div className="flex items-center justify-center lg:justify-end space-x-4 mb-6">
-                            <div className="text-4xl">{universities[currentUniversity].flag}</div>
+                            <div className="text-4xl">{content.universities[currentUniversity].flag}</div>
                             <div
-                              className={`bg-gradient-to-r ${universities[currentUniversity].color} text-white px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2`}
+                              className={`bg-gradient-to-r ${content.universities[currentUniversity].color} text-white px-4 py-2 rounded-full text-sm font-bold flex items-center space-x-2`}
                             >
                               <Award className="h-4 w-4" />
-                              <span>ترتيب {universities[currentUniversity].ranking} عالمياً</span>
+                              <span>ترتيب {content.universities[currentUniversity].ranking} عالمياً</span>
                             </div>
                           </div>
 
                           <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300">
-                            {universities[currentUniversity].name}
+                            {content.universities[currentUniversity].name}
                           </h3>
 
                           <div className="flex items-center justify-center lg:justify-end space-x-2 mb-6">
                             <MapPin className="h-5 w-5 text-gray-500" />
-                            <span className="text-xl text-gray-600">{universities[currentUniversity].country}</span>
+                            <span className="text-xl text-gray-600">{content.universities[currentUniversity].country}</span>
                           </div>
 
                           {/* Statistics Grid */}
                           <div className="grid grid-cols-2 gap-6 mb-8">
                             <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:scale-105 transition-transform duration-300">
                               <div className="text-3xl font-bold text-gray-900 mb-2">
-                                {universities[currentUniversity].students}
+                                {content.universities[currentUniversity].students}
                               </div>
                               <div className="text-gray-600 text-sm">طالب مسجل</div>
                             </div>
                             <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:scale-105 transition-transform duration-300">
                               <div className="text-3xl font-bold text-gray-900 mb-2">
-                                {universities[currentUniversity].programs}
+                                {content.universities[currentUniversity].programs}
                               </div>
                               <div className="text-gray-600 text-sm">برنامج دراسي</div>
                             </div>
@@ -790,10 +835,10 @@ export default function LandingPage() {
 
                           <div className="flex items-center justify-center lg:justify-end space-x-4">
                             <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-                              معدل القبول: {universities[currentUniversity].acceptance}
+                              معدل القبول: {content.universities[currentUniversity].acceptance}
                             </div>
                             <Button
-                              className={`bg-gradient-to-r ${universities[currentUniversity].color} hover:scale-105 transition-all duration-200 text-white border-0`}
+                              className={`bg-gradient-to-r ${content.universities[currentUniversity].color} hover:scale-105 transition-all duration-200 text-white border-0`}
                             >
                               استكشف البرامج
                             </Button>
@@ -805,14 +850,14 @@ export default function LandingPage() {
                           <div className="relative group-hover:scale-105 transition-transform duration-500">
                             {/* Glow Effect */}
                             <div
-                              className={`absolute inset-0 bg-gradient-to-r ${universities[currentUniversity].color} opacity-20 blur-3xl rounded-full scale-150 group-hover:opacity-40 transition-opacity duration-500`}
+                              className={`absolute inset-0 bg-gradient-to-r ${content.universities[currentUniversity].color} opacity-20 blur-3xl rounded-full scale-150 group-hover:opacity-40 transition-opacity duration-500`}
                             ></div>
 
                             {/* Logo Container */}
                             <div className="relative bg-white rounded-3xl p-12 shadow-2xl border border-white/20">
                               <Image
-                                src={universities[currentUniversity].logo || "/placeholder.svg"}
-                                alt={universities[currentUniversity].name}
+                                src={content.universities[currentUniversity].logo || "/placeholder.svg"}
+                                alt={content.universities[currentUniversity].name}
                                 width={200}
                                 height={200}
                                 className="mx-auto rounded-2xl group-hover:scale-110 transition-transform duration-500"
@@ -865,7 +910,7 @@ export default function LandingPage() {
 
               {/* University Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {universities.map((university, index) => (
+                {content.universities.map((university, index) => (
                   <div
                     key={index}
                     className={`group cursor-pointer transition-all duration-300 ${
@@ -2123,7 +2168,7 @@ export default function LandingPage() {
                 الأسئلة الأكثر شيوعاً
               </h3>
               <div className="grid md:grid-cols-2 gap-4">
-                {faqs
+                {content.faqs
                   .filter((faq) => faq.popular)
                   .map((faq) => (
                     <button
