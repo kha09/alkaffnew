@@ -16,6 +16,22 @@ export interface University {
   acceptance: string;
   color: string;
   flag: string;
+  departments?: Department[];
+}
+
+export interface Department {
+  id: number;
+  name: string;
+  programs?: Program[];
+}
+
+export interface Program {
+  id: number;
+  name: string;
+  description: string;
+  tuitionFees: string;
+  duration: string;
+  intakeMonths: string;
 }
 
 export interface Testimonial {

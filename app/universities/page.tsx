@@ -483,6 +483,7 @@ export default function UniversitiesPage() {
                   key={university.id}
                   className="group bg-white/80 backdrop-blur-lg border-0 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden hover:scale-[1.02]"
                 >
+                  <Link href={`/universities/${university.id}`}>
                   <CardContent className="p-0">
                     <div className={`${viewMode === "grid" ? "block" : "flex flex-row-reverse"} h-full`}>
                       {/* University Logo & Info */}
@@ -631,6 +632,7 @@ export default function UniversitiesPage() {
                     {/* Hover Effect Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                   </CardContent>
+                  </Link>
                 </Card>
               ))}
             </div>

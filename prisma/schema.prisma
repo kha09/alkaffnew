@@ -36,6 +36,26 @@ model University {
   color      String
   flag       String
   order      Int    @default(0)
+  departments Department[]
+}
+
+model Department {
+  id         Int      @id @default(autoincrement())
+  name       String
+  university University @relation(fields: [universityId], references: [id])
+  universityId Int
+  programs   Program[]
+}
+
+model Program {
+  id           Int      @id @default(autoincrement())
+  name         String
+  description  String
+  tuitionFees  String
+  duration     String
+  intakeMonths String
+  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId Int
 }
 
 model Testimonial {
