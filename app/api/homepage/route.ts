@@ -1,28 +1,17 @@
 import { NextResponse } from 'next/server'
-import { HomePageContent } from '@/lib/types'
-import fs from 'fs'
-import path from 'path'
-
-const contentFilePath = path.join(process.cwd(), 'data', 'homepage-content.json')
-
-// Initialize with default content if file doesn't exist
-if (!fs.existsSync(contentFilePath)) {
-  const defaultContent: HomePageContent = {
-    heroSlides: [],
-    universities: [],
-    testimonials: [],
-    faqs: []
-  }
-  fs.writeFileSync(contentFilePath, JSON.stringify(defaultContent, null, 2))
-}
+import { getHomepageContent, updateHomepageContent, initializeDefaultContent } from '@/lib/homepageService'
 
 export async function GET() {
   try {
-    const content = JSON.parse(fs.readFileSync(contentFilePath, 'utf-8'))
+    // Initialize default content if database is empty
+    await initializeDefaultContent()
+    
+    const content = await getHomepageContent()
     return NextResponse.json(content)
   } catch (error) {
+    console.error('Error fetching homepage content:', error)
     return NextResponse.json(
-      { error: 'Failed to load content' },
+      { error: 'Failed to fetch homepage content' },
       { status: 500 }
     )
   }
@@ -30,21 +19,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const newContent: HomePageContent = await request.json()
-    
-    // Basic validation
-    if (!newContent.heroSlides || !newContent.universities || !newContent.testimonials || !newContent.faqs) {
-      return NextResponse.json(
-        { error: 'Invalid content structure' },
-        { status: 400 }
-      )
-    }
-
-    fs.writeFileSync(contentFilePath, JSON.stringify(newContent, null, 2))
-    return NextResponse.json({ success: true })
+    const content = await request.json()
+    await updateHomepageContent(content)
+    return NextResponse.json({ message: 'Content updated successfully' })
   } catch (error) {
+    console.error('Error updating homepage content:', error)
     return NextResponse.json(
-      { error: 'Failed to save content' },
+      { error: 'Failed to update homepage content' },
       { status: 500 }
     )
   }

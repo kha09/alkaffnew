@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model HeroSlide {
+  id          Int      @id @default(autoincrement())
+  title       String
+  subtitle    String
+  description String
+  image       String
+  gradient    String
+  order       Int      @default(0)
+}
+
+model University {
+  id         Int    @id @default(autoincrement())
+  name       String
+  country    String
+  logo       String
+  ranking    String
+  students   String
+  programs   String
+  acceptance String
+  color      String
+  flag       String
+  order      Int    @default(0)
+}
+
+model Testimonial {
+  id         Int    @id @default(autoincrement())
+  name       String
+  program    String
+  text       String
+  rating     Int
+  avatar     String
+  university String
+  country    String
+  flag       String
+  date       String
+  hasVideo   Boolean
+  featured   Boolean
+  category   String
+  order      Int    @default(0)
+}
+
+model Faq {
+  id       Int    @id @default(autoincrement())
+  question String
+  answer   String
+  category String
+  popular  Boolean
+  order    Int    @default(0)
+}
