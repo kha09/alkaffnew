@@ -27,7 +27,6 @@ export interface University {
   rating?: number;
   popular?: boolean;
   featured?: boolean;
-  specializations?: string[];
 }
 
 export interface Department {

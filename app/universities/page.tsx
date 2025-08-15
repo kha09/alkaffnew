@@ -461,14 +461,14 @@ export default function UniversitiesPage() {
 
                             {/* Specializations */}
                             <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                              {university.specializations?.slice(0, 3).map((spec, index) => (
+                              {university.departments?.slice(0, 3).map((department, index) => (
                                 <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                                  {spec}
+                                  {department.name}
                                 </span>
                               ))}
-                              {university.specializations && university.specializations.length > 3 && (
+                              {university.departments && university.departments.length > 3 && (
                                 <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
-                                  +{university.specializations.length - 3} المزيد
+                                  +{university.departments.length - 3} المزيد
                                 </span>
                               )}
                             </div>

@@ -4,7 +4,10 @@ import db from '@/lib/db'
 export async function GET() {
   try {
     const universities = await db.university.findMany({
-      orderBy: { order: 'asc' }
+      orderBy: { order: 'asc' },
+      include: {
+        departments: true
+      }
     })
 
     // Add default values for optional properties
@@ -18,7 +21,7 @@ export async function GET() {
       rating: 4.5,
       popular: true,
       featured: false,
-      specializations: ["تقنية المعلومات", "الهندسة", "إدارة الأعمال", "الفنون الإبداعية"],
+      specializations: university.departments?.map(department => department.name) || [],
       students: university.students
     }))
 
