@@ -45,6 +45,44 @@ import Link from "next/link"
 import Image from "next/image"
 import { HomePageContent } from "@/lib/types"
 
+// Create a mapping from icon names to icon components
+const iconMap: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  Users,
+  FileText,
+  CreditCard,
+  Star,
+  Globe,
+  BookOpen,
+  UserCheck,
+  MessageCircle,
+  Instagram,
+  Mail,
+  Phone,
+  ChevronDown,
+  Search,
+  ArrowRight,
+  Shield,
+  Zap,
+  Heart,
+  Award,
+  MapPin,
+  TrendingUp,
+  Crown,
+  ThumbsUp,
+  ThumbsDown,
+  Play,
+  Quote,
+  X,
+  PlusCircle,
+  MinusCircle,
+  HelpCircle,
+  MessageSquare,
+  Filter,
+}
+
 export default function LandingPage() {
   const [content, setContent] = useState<HomePageContent | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -846,7 +884,10 @@ export default function LandingPage() {
                   <div
                     className={`w-20 h-20 bg-gradient-to-r ${feature.color} rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg`}
                   >
-                    {React.createElement(feature.icon, { className: "h-10 w-10 text-white" })}
+                    {feature.icon && iconMap[feature.icon] 
+                      ? React.createElement(iconMap[feature.icon], { className: "h-10 w-10 text-white" })
+                      : React.createElement(GraduationCap, { className: "h-10 w-10 text-white" })
+                    }
                   </div>
 
                   {/* Content */}
@@ -1016,7 +1057,10 @@ export default function LandingPage() {
                     <div
                       className={`w-20 h-20 bg-gradient-to-r ${step.color} rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg`}
                     >
-                      {React.createElement(step.icon, { className: "h-10 w-10 text-white" })}
+                      {step.icon && iconMap[step.icon] 
+                        ? React.createElement(iconMap[step.icon], { className: "h-10 w-10 text-white" })
+                        : React.createElement(GraduationCap, { className: "h-10 w-10 text-white" })
+                      }
                     </div>
 
                     {/* Content */}
