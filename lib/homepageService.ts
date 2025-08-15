@@ -76,7 +76,7 @@ export async function getHomepageContent(): Promise<HomePageContent> {
         id: howItWorks[0].id,
         title: howItWorks[0].title,
         description: howItWorks[0].description,
-        steps: howItWorks[0].steps ? JSON.parse(howItWorks[0].steps) : [],
+        steps: howItWorks[0].steps ? JSON.parse(howItWorks[0].steps.replace(/\n/g, "\\n").replace(/\r/g, "\\r")) : [],
       } : undefined,
     }
   } catch (error) {
@@ -120,10 +120,12 @@ export async function updateHomepageContent(content: HomePageContent): Promise<v
       // Handle HowItWorks section
       if (content.howItWorks) {
         const existingHowItWorks = await prisma.howItWorks.findMany();
+        // Ensure proper encoding for Arabic characters
+        const stepsString = JSON.stringify(content.howItWorks.steps).replace(/[\u007F-\u009F]/g, "");
         const howItWorksData = {
           title: content.howItWorks.title,
           description: content.howItWorks.description,
-          steps: JSON.stringify(content.howItWorks.steps),
+          steps: stepsString,
         };
 
         if (existingHowItWorks.length > 0) {
