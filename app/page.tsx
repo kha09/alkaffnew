@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
@@ -812,57 +812,16 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold text-white mb-6 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              لماذا SM Alkaff؟
+              {content.whySMAlkaff?.title || "لماذا SM Alkaff؟"}
             </h2>
             <p className="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-              نحن نجعل رحلة التقديم الجامعي أسهل وأكثر فعالية من خلال منصتنا المتطورة والمبتكرة
+              {content.whySMAlkaff?.description || "نحن نجعل رحلة التقديم الجامعي أسهل وأكثر فعالية من خلال منصتنا المتطورة والمبتكرة"}
             </p>
           </div>
 
           {/* Interactive Features Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8" dir="rtl">
-            {[
-              {
-                icon: FileText,
-                title: "تقديم إلكتروني شامل",
-                subtitle: "نظام متكامل ومتطور",
-                description: "نظام متكامل لإدارة جميع طلباتك الجامعية بكفاءة عالية وأمان تام",
-                color: "from-blue-500 to-cyan-500",
-                delay: "0",
-                stats: "99.9%",
-                statsLabel: "معدل النجاح",
-              },
-              {
-                icon: UserCheck,
-                title: "دعم مباشر معتمد",
-                subtitle: "خبراء في خدمتك",
-                description: "فريق من الخبراء المعتمدين متاح 24/7 لمساعدتك في كل خطوة",
-                color: "from-emerald-500 to-teal-500",
-                delay: "200",
-                stats: "24/7",
-                statsLabel: "دعم مستمر",
-              },
-              {
-                icon: Zap,
-                title: "تحديثات فورية",
-                subtitle: "متابعة لحظية",
-                description: "تابع حالة طلبك لحظة بلحظة مع إشعارات فورية ومفصلة",
-                color: "from-purple-500 to-pink-500",
-                delay: "400",
-                stats: "فوري",
-                statsLabel: "الإشعارات",
-              },
-              {
-                icon: Shield,
-                title: "أمان ومرونة",
-                subtitle: "دفع آمن ومتنوع",
-                description: "طرق دفع متنوعة وآمنة مع ضمان حماية بياناتك المالية",
-                color: "from-orange-500 to-red-500",
-                delay: "600",
-                stats: "100%",
-                statsLabel: "الأمان",
-              },
-            ].map((feature, index) => (
+            {content.whySMAlkaff?.features.map((feature, index) => (
               <div
                 key={index}
                 className={`group relative animate-fade-in-up`}
@@ -887,7 +846,7 @@ export default function LandingPage() {
                   <div
                     className={`w-20 h-20 bg-gradient-to-r ${feature.color} rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg`}
                   >
-                    <feature.icon className="h-10 w-10 text-white" />
+                    {React.createElement(feature.icon, { className: "h-10 w-10 text-white" })}
                   </div>
 
                   {/* Content */}
@@ -1020,10 +979,10 @@ export default function LandingPage() {
               <span>عملية بسيطة ومتطورة</span>
             </div>
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              كيف تعمل المنصة؟
+              {content.howItWorks?.title || "كيف تعمل المنصة؟"}
             </h2>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              رحلة تفاعلية بسيطة تقودك إلى حلمك الجامعي خطوة بخطوة - من التسجيل إلى القبول
+              {content.howItWorks?.description || "رحلة تفاعلية بسيطة تقودك إلى حلمك الجامعي خطوة بخطوة - من التسجيل إلى القبول"}
             </p>
           </div>
 
@@ -1033,53 +992,7 @@ export default function LandingPage() {
             <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-l from-blue-500 via-purple-500 to-teal-500 transform -translate-y-1/2 opacity-20"></div>
 
             <div className="grid lg:grid-cols-5 gap-8 relative" dir="rtl">
-              {[
-                {
-                  step: "1",
-                  title: "أنشئ حسابك",
-                  subtitle: "تسجيل سريع وآمن",
-                  description: "ابدأ رحلتك بإنشاء حساب شخصي آمن في دقائق معدودة",
-                  icon: Users,
-                  color: "from-blue-500 to-cyan-500",
-                  delay: "0",
-                },
-                {
-                  step: "2",
-                  title: "اختر تخصصك",
-                  subtitle: "من بين مئات الخيارات",
-                  description: "استكشف التخصصات المتاحة واختر ما يناسب شغفك وأهدافك",
-                  icon: BookOpen,
-                  color: "from-purple-500 to-pink-500",
-                  delay: "200",
-                },
-                {
-                  step: "3",
-                  title: "أرسل طلبك",
-                  subtitle: "بضغطة زر واحدة",
-                  description: "قدم طلبك للجامعات المختارة بنظام إلكتروني متطور",
-                  icon: FileText,
-                  color: "from-teal-500 to-green-500",
-                  delay: "400",
-                },
-                {
-                  step: "4",
-                  title: "تابع وادفع",
-                  subtitle: "بكل سهولة ويسر",
-                  description: "راقب حالة طلبك واستكمل عملية الدفع بطرق آمنة ومتنوعة",
-                  icon: CreditCard,
-                  color: "from-orange-500 to-red-500",
-                  delay: "600",
-                },
-                {
-                  step: "5",
-                  title: "ابدأ دراستك",
-                  subtitle: "حقق حلمك",
-                  description: "استعد لبدء مغامرتك التعليمية في أفضل الجامعات العالمية",
-                  icon: GraduationCap,
-                  color: "from-indigo-500 to-purple-500",
-                  delay: "800",
-                },
-              ].map((step, index) => (
+              {content.howItWorks?.steps.map((step, index) => (
                 <div
                   key={index}
                   className={`group relative animate-fade-in-up`}
@@ -1103,7 +1016,7 @@ export default function LandingPage() {
                     <div
                       className={`w-20 h-20 bg-gradient-to-r ${step.color} rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg`}
                     >
-                      <step.icon className="h-10 w-10 text-white" />
+                      {React.createElement(step.icon, { className: "h-10 w-10 text-white" })}
                     </div>
 
                     {/* Content */}

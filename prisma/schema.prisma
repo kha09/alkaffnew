@@ -91,3 +91,17 @@ model Faq {
   popular  Boolean
   order    Int    @default(0)
 }
+
+model WhySMAlkaff {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  features    String   // JSON string for features array
+}
+
+model HowItWorks {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  steps       String   // JSON string for steps array
+}

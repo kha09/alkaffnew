@@ -1,14 +1,16 @@
 import db from '@/lib/db'
-import { HomePageContent, HeroSlide, University, Testimonial, Faq } from '@/lib/types'
+import { HomePageContent, HeroSlide, University, Testimonial, Faq, WhySMAlkaff, HowItWorks } from '@/lib/types'
 
 export async function getHomepageContent(): Promise<HomePageContent> {
   try {
     // Fetch all content types from the database
-    const [heroSlides, universities, testimonials, faqs] = await Promise.all([
+    const [heroSlides, universities, testimonials, faqs, whySMAlkaff, howItWorks] = await Promise.all([
       db.heroSlide.findMany({ orderBy: { order: 'asc' } }),
       db.university.findMany({ orderBy: { order: 'asc' } }),
       db.testimonial.findMany({ orderBy: { order: 'asc' } }),
       db.faq.findMany({ orderBy: { order: 'asc' } }),
+      db.whySMAlkaff.findMany(),
+      db.howItWorks.findMany(),
     ])
 
     // If no content exists, return empty arrays
@@ -22,14 +24,14 @@ export async function getHomepageContent(): Promise<HomePageContent> {
     }
 
     return {
-      heroSlides: heroSlides.map(slide => ({
+      heroSlides: heroSlides.map((slide: any) => ({
         title: slide.title,
         subtitle: slide.subtitle,
         description: slide.description,
         image: slide.image,
         gradient: slide.gradient,
       })),
-      universities: universities.map(university => ({
+      universities: universities.map((university: any) => ({
         id: university.id,
         name: university.name,
         country: university.country,
@@ -42,7 +44,7 @@ export async function getHomepageContent(): Promise<HomePageContent> {
         flag: university.flag,
         freeOfferLetter: university.freeOfferLetter,
       })),
-      testimonials: testimonials.map(testimonial => ({
+      testimonials: testimonials.map((testimonial: any) => ({
         id: testimonial.id,
         name: testimonial.name,
         program: testimonial.program,
@@ -57,13 +59,25 @@ export async function getHomepageContent(): Promise<HomePageContent> {
         featured: testimonial.featured,
         category: testimonial.category,
       })),
-      faqs: faqs.map(faq => ({
+      faqs: faqs.map((faq: any) => ({
         id: faq.id,
         question: faq.question,
         answer: faq.answer,
         category: faq.category,
         popular: faq.popular,
       })),
+      whySMAlkaff: whySMAlkaff.length > 0 ? {
+        id: whySMAlkaff[0].id,
+        title: whySMAlkaff[0].title,
+        description: whySMAlkaff[0].description,
+        features: whySMAlkaff[0].features ? JSON.parse(whySMAlkaff[0].features) : [],
+      } : undefined,
+      howItWorks: howItWorks.length > 0 ? {
+        id: howItWorks[0].id,
+        title: howItWorks[0].title,
+        description: howItWorks[0].description,
+        steps: howItWorks[0].steps ? JSON.parse(howItWorks[0].steps) : [],
+      } : undefined,
     }
   } catch (error) {
     console.error('Error fetching homepage content:', error)
@@ -79,6 +93,52 @@ export async function updateHomepageContent(content: HomePageContent): Promise<v
       await prisma.heroSlide.deleteMany()
       await prisma.testimonial.deleteMany()
       await prisma.faq.deleteMany()
+
+      // Handle WhySMAlkaff section
+      if (content.whySMAlkaff) {
+        const existingWhySMAlkaff = await prisma.whySMAlkaff.findMany();
+        const whySMAlkaffData = {
+          title: content.whySMAlkaff.title,
+          description: content.whySMAlkaff.description,
+          features: JSON.stringify(content.whySMAlkaff.features),
+        };
+
+        if (existingWhySMAlkaff.length > 0) {
+          // Update existing record
+          await prisma.whySMAlkaff.update({
+            where: { id: existingWhySMAlkaff[0].id },
+            data: whySMAlkaffData,
+          });
+        } else {
+          // Create new record
+          await prisma.whySMAlkaff.create({
+            data: whySMAlkaffData,
+          });
+        }
+      }
+
+      // Handle HowItWorks section
+      if (content.howItWorks) {
+        const existingHowItWorks = await prisma.howItWorks.findMany();
+        const howItWorksData = {
+          title: content.howItWorks.title,
+          description: content.howItWorks.description,
+          steps: JSON.stringify(content.howItWorks.steps),
+        };
+
+        if (existingHowItWorks.length > 0) {
+          // Update existing record
+          await prisma.howItWorks.update({
+            where: { id: existingHowItWorks[0].id },
+            data: howItWorksData,
+          });
+        } else {
+          // Create new record
+          await prisma.howItWorks.create({
+            data: howItWorksData,
+          });
+        }
+      }
 
       // For universities, we need to be more careful due to foreign key constraints
       // with departments and programs. Instead of deleting all universities, we'll
@@ -184,7 +244,9 @@ export async function initializeDefaultContent(): Promise<void> {
     if (content.heroSlides.length > 0 || 
         content.universities.length > 0 || 
         content.testimonials.length > 0 || 
-        content.faqs.length > 0) {
+        content.faqs.length > 0 ||
+        content.whySMAlkaff ||
+        content.howItWorks) {
       return
     }
 

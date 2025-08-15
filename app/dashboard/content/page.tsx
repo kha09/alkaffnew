@@ -8,6 +8,8 @@ import HeroSlidesEditor from './components/HeroSlidesEditor'
 import UniversitiesEditor from './components/UniversitiesEditor'
 import TestimonialsEditor from './components/TestimonialsEditor'
 import FaqsEditor from './components/FaqsEditor'
+import WhySMAlkaffEditor from './components/WhySMAlkaffEditor'
+import HowItWorksEditor from './components/HowItWorksEditor'
 
 export default function ContentEditor() {
   const [content, setContent] = useState<HomePageContent | null>(null)
@@ -62,6 +64,8 @@ export default function ContentEditor() {
           <TabsTrigger value="universities">Universities</TabsTrigger>
           <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
           <TabsTrigger value="faqs">FAQs</TabsTrigger>
+          <TabsTrigger value="why">لماذا SM Alkaff؟</TabsTrigger>
+          <TabsTrigger value="how">كيف تعمل المنصة؟</TabsTrigger>
         </TabsList>
 
         <TabsContent value="hero">
@@ -89,6 +93,20 @@ export default function ContentEditor() {
           <FaqsEditor 
             faqs={content.faqs} 
             onChange={(faqs: any[]) => setContent({...content, faqs})} 
+          />
+        </TabsContent>
+
+        <TabsContent value="why">
+          <WhySMAlkaffEditor 
+            whySMAlkaff={content.whySMAlkaff} 
+            onChange={(whySMAlkaff: any) => setContent({...content, whySMAlkaff})} 
+          />
+        </TabsContent>
+
+        <TabsContent value="how">
+          <HowItWorksEditor 
+            howItWorks={content.howItWorks} 
+            onChange={(howItWorks: any) => setContent({...content, howItWorks})} 
           />
         </TabsContent>
       </Tabs>

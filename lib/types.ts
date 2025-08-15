@@ -78,9 +78,42 @@ export interface Faq {
   popular: boolean;
 }
 
+export interface WhySMAlkaff {
+  id: number;
+  title: string;
+  description: string;
+  features: {
+    icon: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    color: string;
+    delay: string;
+    stats: string;
+    statsLabel: string;
+  }[];
+}
+
+export interface HowItWorks {
+  id: number;
+  title: string;
+  description: string;
+  steps: {
+    step: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    icon: string;
+    color: string;
+    delay: string;
+  }[];
+}
+
 export interface HomePageContent {
   heroSlides: HeroSlide[];
   universities: University[];
   testimonials: Testimonial[];
   faqs: Faq[];
+  whySMAlkaff?: WhySMAlkaff;
+  howItWorks?: HowItWorks;
 }

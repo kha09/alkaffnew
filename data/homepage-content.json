@@ -250,5 +250,104 @@
       "category": "agents",
       "popular": false
     }
-  ]
+  ],
+  "whySMAlkaff": {
+    "id": 1,
+    "title": "لماذا SM Alkaff؟",
+    "description": "نحن نجعل رحلة التقديم الجامعي أسهل وأكثر فعالية من خلال منصتنا المتطورة والمبتكرة",
+    "features": [
+      {
+        "icon": "FileText",
+        "title": "تقديم إلكتروني شامل",
+        "subtitle": "نظام متكامل ومتطور",
+        "description": "نظام متكامل لإدارة جميع طلباتك الجامعية بكفاءة عالية وأمان تام",
+        "color": "from-blue-500 to-cyan-500",
+        "delay": "0",
+        "stats": "99.9%",
+        "statsLabel": "معدل النجاح"
+      },
+      {
+        "icon": "UserCheck",
+        "title": "دعم مباشر معتمد",
+        "subtitle": "خبراء في خدمتك",
+        "description": "فريق من الخبراء المعتمدين متاح 24/7 لمساعدتك في كل خطوة",
+        "color": "from-emerald-500 to-teal-500",
+        "delay": "200",
+        "stats": "24/7",
+        "statsLabel": "دعم مستمر"
+      },
+      {
+        "icon": "Zap",
+        "title": "تحديثات فورية",
+        "subtitle": "متابعة لحظية",
+        "description": "تابع حالة طلبك لحظة بلحظة مع إشعارات فورية ومفصلة",
+        "color": "from-purple-500 to-pink-500",
+        "delay": "400",
+        "stats": "فوري",
+        "statsLabel": "الإشعارات"
+      },
+      {
+        "icon": "Shield",
+        "title": "أمان ومرونة",
+        "subtitle": "دفع آمن ومتنوع",
+        "description": "طرق دفع متنوعة وآمنة مع ضمان حماية بياناتك المالية",
+        "color": "from-orange-500 to-red-500",
+        "delay": "600",
+        "stats": "100%",
+        "statsLabel": "الأمان"
+      }
+    ]
+  },
+  "howItWorks": {
+    "id": 1,
+    "title": "كيف تعمل المنصة؟",
+    "description": "رحلة تفاعلية بسيطة تقودك إلى حلمك الجامعي خطوة بخطوة - من التسجيل إلى القبول",
+    "steps": [
+      {
+        "step": "1",
+        "title": "أنشئ حسابك",
+        "subtitle": "تسجيل سريع وآمن",
+        "description": "ابدأ رحلتك بإنشاء حساب شخصي آمن في دقائق معدودة",
+        "icon": "Users",
+        "color": "from-blue-500 to-cyan-500",
+        "delay": "0"
+      },
+      {
+        "step": "2",
+        "title": "اختر تخصصك",
+        "subtitle": "من بين مئات الخيارات",
+        "description": "استكشف التخصصات المتاحة واختر ما يناسب شغفك وأهدافك",
+        "icon": "BookOpen",
+        "color": "from-purple-500 to-pink-500",
+        "delay": "200"
+      },
+      {
+        "step": "3",
+        "title": "أرسل طلبك",
+        "subtitle": "بضغطة زر واحدة",
+        "description": "قدم طلبك للجامعات المختارة بنظام إلكتروني متطور",
+        "icon": "FileText",
+        "color": "from-teal-500 to-green-500",
+        "delay": "400"
+      },
+      {
+        "step": "4",
+        "title": "تابع وادفع",
+        "subtitle": "بكل سهولة ويسر",
+        "description": "راقب حالة طلبك واستكمل عملية الدفع بطرق آمنة ومتنوعة",
+        "icon": "CreditCard",
+        "color": "from-orange-500 to-red-500",
+        "delay": "600"
+      },
+      {
+        "step": "5",
+        "title": "ابدأ دراستك",
+        "subtitle": "حقق حلمك",
+        "description": "استعد لبدء مغامرتك التعليمية في أفضل الجامعات العالمية",
+        "icon": "GraduationCap",
+        "color": "from-indigo-500 to-purple-500",
+        "delay": "800"
+      }
+    ]
+  }
 }
