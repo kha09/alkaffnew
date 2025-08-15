@@ -1,4 +1,4 @@
-import db from '@/lib/db'
+import db from './db.js'
 
 async function seedDepartmentsAndPrograms() {
   try {
@@ -116,15 +116,15 @@ async function seedDepartmentsAndPrograms() {
     console.log('Seed data created successfully:')
     console.log('University 7 (جامعة آم القرى):')
     console.log('- Department:', csDepartment.name)
-    console.log('  Programs:', csDepartment.programs.map(p => p.name))
+    console.log('  Programs:', csDepartment.programs.map((p: any) => p.name))
     console.log('- Department:', engineeringDepartment.name)
-    console.log('  Programs:', engineeringDepartment.programs.map(p => p.name))
+    console.log('  Programs:', engineeringDepartment.programs.map((p: any) => p.name))
     
     console.log('University 8 (جامعة أكسفورد):')
     console.log('- Department:', businessDepartment.name)
-    console.log('  Programs:', businessDepartment.programs.map(p => p.name))
+    console.log('  Programs:', businessDepartment.programs.map((p: any) => p.name))
     console.log('- Department:', medicineDepartment.name)
-    console.log('  Programs:', medicineDepartment.programs.map(p => p.name))
+    console.log('  Programs:', medicineDepartment.programs.map((p: any) => p.name))
   } catch (error) {
     console.error('Error seeding departments and programs:', error)
   } finally {

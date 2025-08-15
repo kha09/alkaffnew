@@ -17,7 +17,8 @@ import {
   MapPin,
   Star,
   Users,
-  Award
+  Award,
+  CheckCircle
 } from 'lucide-react'
 import Image from 'next/image'
 
@@ -37,17 +38,18 @@ interface Department {
 }
 
 interface University {
-  id: number
-  name: string
-  country: string
-  logo: string
-  ranking: string
-  students: string
-  programs: string
-  acceptance: string
-  color: string
-  flag: string
-  departments: Department[]
+  id: number;
+  name: string;
+  country: string;
+  logo: string;
+  ranking: string;
+  students: string;
+  programs: string;
+  acceptance: string;
+  color: string;
+  flag: string;
+  freeOfferLetter: boolean;
+  departments: Department[];
 }
 
 export default function UniversityDetailPage() {
@@ -61,14 +63,24 @@ export default function UniversityDetailPage() {
   const [selectedDepartment, setSelectedDepartment] = useState<number | 'all'>('all')
   const [selectedDuration, setSelectedDuration] = useState<string | 'all'>('all')
   
-  // Mock data for durations
-  const durations = [
-    { id: 'all', name: 'جميع المدد' },
-    { id: '2', name: 'سنتان' },
-    { id: '3', name: '3 سنوات' },
-    { id: '4', name: '4 سنوات' },
-    { id: '5', name: '5 سنوات' }
-  ]
+  // Extract unique durations from programs
+  const getUniqueDurations = () => {
+    if (!university) return []
+    
+    const durations = university.departments.flatMap(department => 
+      department.programs.map(program => program.duration)
+    )
+    
+    const uniqueDurations = [...new Set(durations)]
+    
+    return [
+      { id: 'all', name: 'جميع المدد' },
+      ...uniqueDurations.map(duration => ({
+        id: duration,
+        name: `${duration} سنوات`
+      }))
+    ]
+  }
 
   useEffect(() => {
     const fetchUniversity = async () => {
@@ -222,6 +234,12 @@ export default function UniversityDetailPage() {
                   <Star className="h-5 w-5 text-yellow-300" />
                   <span>معدل القبول {university.acceptance}</span>
                 </div>
+                {university.freeOfferLetter && (
+                  <div className="flex items-center space-x-2 space-x-reverse bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+                    <CheckCircle className="h-5 w-5 text-green-300" />
+                    <span>خطاب قبول مجاني</span>
+                  </div>
+                )}
               </div>
               
               <div className="flex flex-wrap justify-center md:justify-start gap-3">
@@ -287,7 +305,7 @@ export default function UniversityDetailPage() {
                       onChange={(e) => setSelectedDuration(e.target.value)}
                       className="w-full bg-white/60 backdrop-blur-sm border border-gray-200 rounded-lg px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                      {durations.map(duration => (
+                      {getUniqueDurations().map((duration: { id: string; name: string }) => (
                         <option key={duration.id} value={duration.id}>
                           {duration.name}
                         </option>

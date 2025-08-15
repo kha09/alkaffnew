@@ -17,10 +17,10 @@ export interface University {
   acceptance: string;
   color: string;
   flag: string;
+  freeOfferLetter: boolean;
   departments?: Department[];
   location?: string;
   nameEn?: string;
-  freeOfferLetter?: boolean;
   tuitionFee?: string;
   currency?: string;
   courses?: number;

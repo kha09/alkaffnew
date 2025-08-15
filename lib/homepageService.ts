@@ -40,6 +40,7 @@ export async function getHomepageContent(): Promise<HomePageContent> {
         acceptance: university.acceptance,
         color: university.color,
         flag: university.flag,
+        freeOfferLetter: university.freeOfferLetter,
       })),
       testimonials: testimonials.map(testimonial => ({
         id: testimonial.id,
@@ -105,6 +106,7 @@ export async function updateHomepageContent(content: HomePageContent): Promise<v
           acceptance: university.acceptance,
           color: university.color,
           flag: university.flag,
+          freeOfferLetter: university.freeOfferLetter,
           order: index,
         })),
       })

@@ -22,7 +22,8 @@ export default function UniversitiesEditor({ universities, onChange }: Universit
       programs: '',
       acceptance: '',
       color: 'from-blue-500 to-purple-500',
-      flag: ''
+      flag: '',
+      freeOfferLetter: false
     }
     onChange([...universities, newUniversity])
   }

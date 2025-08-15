@@ -12,7 +12,6 @@ export async function GET() {
       ...university,
       nameEn: university.name,
       location: university.country,
-      freeOfferLetter: true,
       tuitionFee: "15,000",
       currency: "RM",
       courses: 100,
