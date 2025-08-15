@@ -93,6 +93,24 @@ export default function ProgramsManagement() {
     if (!currentProgram) return
     
     try {
+      // Validate JSON format for yearlyTuitionFees
+      if (currentProgram.yearlyTuitionFees) {
+        try {
+          JSON.parse(currentProgram.yearlyTuitionFees)
+        } catch (e) {
+          throw new Error('تنسيق JSON غير صحيح في حقل "الرسوم السنوية"')
+        }
+      }
+      
+      // Validate JSON format for otherFees
+      if (currentProgram.otherFees) {
+        try {
+          JSON.parse(currentProgram.otherFees)
+        } catch (e) {
+          throw new Error('تنسيق JSON غير صحيح في حقل "رسوم أخرى"')
+        }
+      }
+      
       const method = currentProgram.id ? 'PUT' : 'POST'
       const url = currentProgram.id ? `/api/programs/${currentProgram.id}` : '/api/programs'
       
@@ -294,27 +312,39 @@ export default function ProgramsManagement() {
                   className="col-span-3"
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="yearlyTuitionFees" className="text-right">
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="yearlyTuitionFees" className="text-right pt-2">
                   الرسوم السنوية
                 </Label>
-                <Input
-                  id="yearlyTuitionFees"
-                  value={currentProgram.yearlyTuitionFees}
-                  onChange={(e) => handleInputChange('yearlyTuitionFees', e.target.value)}
-                  className="col-span-3"
-                />
+                <div className="col-span-3">
+                  <Textarea
+                    id="yearlyTuitionFees"
+                    value={currentProgram.yearlyTuitionFees}
+                    onChange={(e) => handleInputChange('yearlyTuitionFees', e.target.value)}
+                    placeholder='[{"year": "1st Year", "fee": "USD 5,764"}, {"year": "2nd Year", "fee": "USD 5,764"}]'
+                    className="min-h-[100px]"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    أدخل مصفوفة JSON من الرسوم السنوية. كل عنصر يجب أن يحتوي على "year" و "fee".
+                  </p>
+                </div>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="otherFees" className="text-right">
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label htmlFor="otherFees" className="text-right pt-2">
                   رسوم أخرى
                 </Label>
-                <Input
-                  id="otherFees"
-                  value={currentProgram.otherFees}
-                  onChange={(e) => handleInputChange('otherFees', e.target.value)}
-                  className="col-span-3"
-                />
+                <div className="col-span-3">
+                  <Textarea
+                    id="otherFees"
+                    value={currentProgram.otherFees}
+                    onChange={(e) => handleInputChange('otherFees', e.target.value)}
+                    placeholder='[{"description": "International Processing Fee", "fee": "USD 627"}]'
+                    className="min-h-[100px]"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    أدخل مصفوفة JSON من الرسوم الأخرى. كل عنصر يجب أن يحتوي على "description" و "fee".
+                  </p>
+                </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="offerLetter" className="text-right">
