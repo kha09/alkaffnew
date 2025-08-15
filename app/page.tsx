@@ -2077,7 +2077,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
+      <footer className="bg-gray-900 text-white py-16" dir="rtl">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
