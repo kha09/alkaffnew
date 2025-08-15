@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { JsonEditor } from '@/components/ui/json-editor'
 
 export default function ProgramsManagement() {
   const [programs, setPrograms] = useState<Program[]>([])
@@ -312,40 +313,20 @@ export default function ProgramsManagement() {
                   className="col-span-3"
                 />
               </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="yearlyTuitionFees" className="text-right pt-2">
-                  الرسوم السنوية
-                </Label>
-                <div className="col-span-3">
-                  <Textarea
-                    id="yearlyTuitionFees"
-                    value={currentProgram.yearlyTuitionFees}
-                    onChange={(e) => handleInputChange('yearlyTuitionFees', e.target.value)}
-                    placeholder='[{"year": "1st Year", "fee": "USD 5,764"}, {"year": "2nd Year", "fee": "USD 5,764"}]'
-                    className="min-h-[100px]"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    أدخل مصفوفة JSON من الرسوم السنوية. كل عنصر يجب أن يحتوي على "year" و "fee".
-                  </p>
-                </div>
-              </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="otherFees" className="text-right pt-2">
-                  رسوم أخرى
-                </Label>
-                <div className="col-span-3">
-                  <Textarea
-                    id="otherFees"
-                    value={currentProgram.otherFees}
-                    onChange={(e) => handleInputChange('otherFees', e.target.value)}
-                    placeholder='[{"description": "International Processing Fee", "fee": "USD 627"}]'
-                    className="min-h-[100px]"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    أدخل مصفوفة JSON من الرسوم الأخرى. كل عنصر يجب أن يحتوي على "description" و "fee".
-                  </p>
-                </div>
-              </div>
+              <JsonEditor
+                label="الرسوم السنوية"
+                value={currentProgram.yearlyTuitionFees}
+                onChange={(value) => handleInputChange('yearlyTuitionFees', value)}
+                placeholder='[{"year": "1st Year", "fee": "USD 5,764"}, {"year": "2nd Year", "fee": "USD 5,764"}]'
+                requiredFields={['year', 'fee']}
+              />
+              <JsonEditor
+                label="رسوم أخرى"
+                value={currentProgram.otherFees}
+                onChange={(value) => handleInputChange('otherFees', value)}
+                placeholder='[{"description": "International Processing Fee", "fee": "USD 627"}]'
+                requiredFields={['description', 'fee']}
+              />
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="offerLetter" className="text-right">
                   رسالة قبول
