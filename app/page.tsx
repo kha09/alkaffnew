@@ -245,7 +245,7 @@ export default function LandingPage() {
               <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors duration-200">
                 الرئيسية
               </Link>
-              <Link href="/universities" className="text-blue-600 font-medium">
+              <Link href="/universities" className="text-gray-700 hover:text-blue-600 transition-colors duration-200">
                 التخصصات والجامعات
               </Link>
               <Link href="#" className="text-gray-700 hover:text-blue-600 transition-colors duration-200">
@@ -312,8 +312,7 @@ export default function LandingPage() {
                       </Button>
                       <Button
                         size="lg"
-                        variant="outline"
-                        className="border-white text-white hover:bg-white hover:text-blue-600 transform hover:scale-105 transition-all duration-200"
+                        className="bg-white text-blue-600 hover:bg-gray-100 transform hover:scale-105 transition-all duration-200"
                       >
                         <FileText className="mr-2 h-5 w-5" />
                         قدّم الآن
@@ -382,7 +381,8 @@ export default function LandingPage() {
               <div className="space-y-2 md:order-2">
                 <label className="text-sm font-medium text-slate-300 block text-right">الدرجة العلمية</label>
                 <div className="relative">
-                  <select className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:bg-white/15 transition-all duration-200">
+                  <GraduationCap className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none z-10" />
+                  <select className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:bg-white/15 transition-all duration-200 pl-10">
                     <option value="" className="bg-slate-800 text-white">
                       اختر الدرجة التي ترغب فيه
                     </option>
@@ -399,7 +399,6 @@ export default function LandingPage() {
                       الدبلوم
                     </option>
                   </select>
-                  <GraduationCap className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
                 </div>
               </div>
 
@@ -407,7 +406,8 @@ export default function LandingPage() {
               <div className="space-y-2 md:order-3">
                 <label className="text-sm font-medium text-slate-300 block text-right">البلد</label>
                 <div className="relative">
-                  <select className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:bg-white/15 transition-all duration-200">
+                  <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none z-10" />
+                  <select className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:bg-white/15 transition-all duration-200 pl-10">
                     <option value="" className="bg-slate-800 text-white">
                       اختر البلد الدراسية التي تريدها
                     </option>
@@ -430,7 +430,6 @@ export default function LandingPage() {
                       فرنسا
                     </option>
                   </select>
-                  <Globe className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
                 </div>
               </div>
 
@@ -438,7 +437,8 @@ export default function LandingPage() {
               <div className="space-y-2 md:order-4">
                 <label className="text-sm font-medium text-slate-300 block text-right">التخصص</label>
                 <div className="relative">
-                  <select className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:bg-white/15 transition-all duration-200">
+                  <ChevronDown className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none z-10" />
+                  <select className="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none cursor-pointer hover:bg-white/15 transition-all duration-200 pl-10">
                     <option value="" className="bg-slate-800 text-white">
                       اختر التخصص الذي ترغب فيه
                     </option>
@@ -461,7 +461,6 @@ export default function LandingPage() {
                       الفنون
                     </option>
                   </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
                 </div>
               </div>
             </div>
