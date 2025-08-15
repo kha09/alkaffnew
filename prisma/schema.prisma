@@ -49,14 +49,21 @@ model Department {
 }
 
 model Program {
-  id           Int      @id @default(autoincrement())
-  name         String
-  description  String
-  tuitionFees  String
-  duration     String
-  intakeMonths String
-  department   Department @relation(fields: [departmentId], references: [id])
-  departmentId Int
+  id                Int      @id @default(autoincrement())
+  name              String
+  description       String
+  tuitionFees       String
+  duration          String
+  intakeMonths      String
+  qualification     String   @default("Bachelor's Degree")
+  englishRequirement String   @default("IELTS 5.5")
+  offerLetter       Boolean  @default(true)
+  classType         String   @default("Physical")
+  // Detailed fee structure for international students
+  yearlyTuitionFees String   @default("") // JSON string for yearly fees
+  otherFees         String   @default("") // JSON string for other fees
+  department        Department @relation(fields: [departmentId], references: [id])
+  departmentId      Int
 }
 
 model Testimonial {

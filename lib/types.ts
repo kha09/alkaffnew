@@ -33,6 +33,7 @@ export interface Department {
   id: number;
   name: string;
   programs?: Program[];
+  university?: University;
 }
 
 export interface Program {
@@ -42,6 +43,15 @@ export interface Program {
   tuitionFees: string;
   duration: string;
   intakeMonths: string;
+  qualification: string;
+  englishRequirement: string;
+  offerLetter: boolean;
+  classType: string;
+  yearlyTuitionFees: string;
+  otherFees: string;
+  department?: Department & {
+    university?: University;
+  };
 }
 
 export interface Testimonial {

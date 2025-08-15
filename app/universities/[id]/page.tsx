@@ -22,35 +22,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 
-interface Program {
-  id: number
-  name: string
-  description: string
-  tuitionFees: string
-  duration: string
-  intakeMonths: string
-}
-
-interface Department {
-  id: number
-  name: string
-  programs: Program[]
-}
-
-interface University {
-  id: number;
-  name: string;
-  country: string;
-  logo: string;
-  ranking: string;
-  students: string;
-  programs: string;
-  acceptance: string;
-  color: string;
-  flag: string;
-  freeOfferLetter: boolean;
-  departments: Department[];
-}
+import { Program, Department, University } from '@/lib/types'
 
 export default function UniversityDetailPage() {
   const params = useParams()
@@ -65,10 +37,10 @@ export default function UniversityDetailPage() {
   
   // Extract unique durations from programs
   const getUniqueDurations = () => {
-    if (!university) return []
+    if (!university || !university.departments) return []
     
     const durations = university.departments.flatMap(department => 
-      department.programs.map(program => program.duration)
+      department.programs ? department.programs.map(program => program.duration) : []
     )
     
     const uniqueDurations = [...new Set(durations)]
@@ -142,9 +114,8 @@ export default function UniversityDetailPage() {
   }
 
   // Filter programs based on search query, selected department, and duration
-  const filteredPrograms = university.departments.flatMap(department => 
-    department.programs
-      .filter(program => {
+  const filteredPrograms = university.departments?.flatMap(department => 
+    department.programs?.filter(program => {
         const matchesSearch = program.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           program.description.toLowerCase().includes(searchQuery.toLowerCase())
         
@@ -154,8 +125,8 @@ export default function UniversityDetailPage() {
         
         return matchesSearch && matchesDepartment && matchesDuration
       })
-      .map(program => ({ ...program, departmentName: department.name }))
-  )
+      .map(program => ({ ...program, departmentName: department.name })) || []
+  ) || []
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dir-rtl text-right" dir="rtl">
@@ -289,7 +260,7 @@ export default function UniversityDetailPage() {
                       className="w-full bg-white/60 backdrop-blur-sm border border-gray-200 rounded-lg px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
                       <option value="all">جميع الأقسام</option>
-                      {university.departments.map(department => (
+                      {university.departments?.map(department => (
                         <option key={department.id} value={department.id}>
                           {department.name}
                         </option>
@@ -381,9 +352,11 @@ export default function UniversityDetailPage() {
                             <BookOpen className="ml-2 h-5 w-5" />
                             التقديم الآن
                           </Button>
-                          <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-                            معرفة المزيد
-                          </Button>
+                          <Link href={`/programs/${program.id}`}>
+                            <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                              معرفة المزيد
+                            </Button>
+                          </Link>
                         </div>
                       </div>
                     </CardContent>
