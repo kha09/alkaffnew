@@ -328,7 +328,7 @@ export default function ProgramDetailPage() {
                         {yearlyFees.map((fee: { year: string; fee: string }, index: number) => (
                           <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                             <td className="px-4 py-3 border-b border-gray-200">{fee.year}</td>
-                            <td className="px-4 py-3 border-b border-gray-200 font-medium">{fee.fee}</td>
+                            <td className="px-4 py-3 border-b border-gray-200 font-medium">{fee.fee.replace('MYR', 'USD')}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -351,7 +351,7 @@ export default function ProgramDetailPage() {
                         {otherFees.map((fee: { description: string; fee: string }, index: number) => (
                           <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                             <td className="px-4 py-3 border-b border-gray-200">{fee.description}</td>
-                            <td className="px-4 py-3 border-b border-gray-200 font-medium">{fee.fee}</td>
+                            <td className="px-4 py-3 border-b border-gray-200 font-medium">{fee.fee.replace('MYR', 'USD')}</td>
                           </tr>
                         ))}
                       </tbody>

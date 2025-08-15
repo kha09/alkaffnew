@@ -454,7 +454,7 @@ export default function UniversitiesPage() {
                             <div className="flex items-center justify-center md:justify-start space-x-2 space-x-reverse mb-4">
                               <DollarSign className="h-4 w-4 text-green-600" />
                               <span className="text-lg font-bold text-green-600">
-                                {university.tuitionFee || ""} {university.currency || ""}
+                                {university.tuitionFee?.replace('RM', 'USD') || ""} {university.currency?.replace('RM', 'USD') || ""}
                               </span>
                               <span className="text-sm text-gray-500">/ سنوياً</span>
                             </div>

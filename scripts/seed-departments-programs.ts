@@ -16,7 +16,7 @@ async function seedDepartmentsAndPrograms() {
             {
               name: 'Bachelor of Science in Computer Science',
               description: 'A comprehensive program covering software development, algorithms, and computer systems.',
-              tuitionFees: '15,000 RM',
+              tuitionFees: 'USD 5,764',
               duration: '3',
               intakeMonths: 'September, January',
               qualification: "Bachelor's Degree",
@@ -24,21 +24,21 @@ async function seedDepartmentsAndPrograms() {
               offerLetter: true,
               classType: 'Physical',
               yearlyTuitionFees: JSON.stringify([
-                { year: '1st Year', fee: 'MYR 26,200' },
-                { year: '2nd Year', fee: 'MYR 26,200' },
-                { year: '3rd Year', fee: 'MYR 26,200' }
+                { year: '1st Year', fee: 'USD 5,764' },
+                { year: '2nd Year', fee: 'USD 5,764' },
+                { year: '3rd Year', fee: 'USD 5,764' }
               ]),
               otherFees: JSON.stringify([
-                { description: 'International Processing Fee (Student Visa)', fee: 'MYR 2,850' },
-                { description: 'Other Payment (per year)', fee: 'MYR 400' },
-                { description: 'Registration Fee', fee: 'MYR 2,000' },
-                { description: 'Deposit', fee: 'MYR 1,500' }
+                { description: 'International Processing Fee (Student Visa)', fee: 'USD 627' },
+                { description: 'Other Payment (per year)', fee: 'USD 88' },
+                { description: 'Registration Fee', fee: 'USD 440' },
+                { description: 'Deposit', fee: 'USD 330' }
               ])
             },
             {
               name: 'Master of Science in Artificial Intelligence',
               description: 'Advanced study of AI technologies including machine learning, neural networks, and robotics.',
-              tuitionFees: '20,000 RM',
+              tuitionFees: 'USD 6,160',
               duration: '2',
               intakeMonths: 'September',
               qualification: "Master's Degree",
@@ -46,14 +46,14 @@ async function seedDepartmentsAndPrograms() {
               offerLetter: true,
               classType: 'Physical',
               yearlyTuitionFees: JSON.stringify([
-                { year: '1st Year', fee: 'MYR 28,000' },
-                { year: '2nd Year', fee: 'MYR 28,000' }
+                { year: '1st Year', fee: 'USD 6,160' },
+                { year: '2nd Year', fee: 'USD 6,160' }
               ]),
               otherFees: JSON.stringify([
-                { description: 'International Processing Fee (Student Visa)', fee: 'MYR 2,850' },
-                { description: 'Other Payment (per year)', fee: 'MYR 400' },
-                { description: 'Registration Fee', fee: 'MYR 2,000' },
-                { description: 'Deposit', fee: 'MYR 1,500' }
+                { description: 'International Processing Fee (Student Visa)', fee: 'USD 627' },
+                { description: 'Other Payment (per year)', fee: 'USD 88' },
+                { description: 'Registration Fee', fee: 'USD 440' },
+                { description: 'Deposit', fee: 'USD 330' }
               ])
             }
           ]
@@ -73,7 +73,7 @@ async function seedDepartmentsAndPrograms() {
             {
               name: 'Bachelor of Engineering in Software Engineering',
               description: 'Focuses on software design, development, and maintenance with hands-on projects.',
-              tuitionFees: '18,000 RM',
+              tuitionFees: 'USD 5,940',
               duration: '4',
               intakeMonths: 'September, February',
               qualification: "Bachelor's Degree",
@@ -81,22 +81,22 @@ async function seedDepartmentsAndPrograms() {
               offerLetter: true,
               classType: 'Physical',
               yearlyTuitionFees: JSON.stringify([
-                { year: '1st Year', fee: 'MYR 27,000' },
-                { year: '2nd Year', fee: 'MYR 27,000' },
-                { year: '3rd Year', fee: 'MYR 27,000' },
-                { year: '4th Year', fee: 'MYR 27,000' }
+                { year: '1st Year', fee: 'USD 5,940' },
+                { year: '2nd Year', fee: 'USD 5,940' },
+                { year: '3rd Year', fee: 'USD 5,940' },
+                { year: '4th Year', fee: 'USD 5,940' }
               ]),
               otherFees: JSON.stringify([
-                { description: 'International Processing Fee (Student Visa)', fee: 'MYR 2,850' },
-                { description: 'Other Payment (per year)', fee: 'MYR 400' },
-                { description: 'Registration Fee', fee: 'MYR 2,000' },
-                { description: 'Deposit', fee: 'MYR 1,500' }
+                { description: 'International Processing Fee (Student Visa)', fee: 'USD 627' },
+                { description: 'Other Payment (per year)', fee: 'USD 88' },
+                { description: 'Registration Fee', fee: 'USD 440' },
+                { description: 'Deposit', fee: 'USD 330' }
               ])
             },
             {
               name: 'Master of Engineering in Cybersecurity',
               description: 'Specialized program in network security, cryptography, and information assurance.',
-              tuitionFees: '22,000 RM',
+              tuitionFees: 'USD 6,380',
               duration: '2',
               intakeMonths: 'January, September',
               qualification: "Master's Degree",
@@ -104,14 +104,14 @@ async function seedDepartmentsAndPrograms() {
               offerLetter: true,
               classType: 'Physical',
               yearlyTuitionFees: JSON.stringify([
-                { year: '1st Year', fee: 'MYR 29,000' },
-                { year: '2nd Year', fee: 'MYR 29,000' }
+                { year: '1st Year', fee: 'USD 6,380' },
+                { year: '2nd Year', fee: 'USD 6,380' }
               ]),
               otherFees: JSON.stringify([
-                { description: 'International Processing Fee (Student Visa)', fee: 'MYR 2,850' },
-                { description: 'Other Payment (per year)', fee: 'MYR 400' },
-                { description: 'Registration Fee', fee: 'MYR 2,000' },
-                { description: 'Deposit', fee: 'MYR 1,500' }
+                { description: 'International Processing Fee (Student Visa)', fee: 'USD 627' },
+                { description: 'Other Payment (per year)', fee: 'USD 88' },
+                { description: 'Registration Fee', fee: 'USD 440' },
+                { description: 'Deposit', fee: 'USD 330' }
               ])
             }
           ]
@@ -132,7 +132,7 @@ async function seedDepartmentsAndPrograms() {
             {
               name: 'Bachelor of Business Administration',
               description: 'Comprehensive business education covering management, marketing, and finance.',
-              tuitionFees: '16,000 RM',
+              tuitionFees: 'USD 5,500',
               duration: '3',
               intakeMonths: 'September, January',
               qualification: "Bachelor's Degree",
@@ -140,21 +140,21 @@ async function seedDepartmentsAndPrograms() {
               offerLetter: true,
               classType: 'Physical',
               yearlyTuitionFees: JSON.stringify([
-                { year: '1st Year', fee: 'MYR 25,000' },
-                { year: '2nd Year', fee: 'MYR 25,000' },
-                { year: '3rd Year', fee: 'MYR 25,000' }
+                { year: '1st Year', fee: 'USD 5,500' },
+                { year: '2nd Year', fee: 'USD 5,500' },
+                { year: '3rd Year', fee: 'USD 5,500' }
               ]),
               otherFees: JSON.stringify([
-                { description: 'International Processing Fee (Student Visa)', fee: 'MYR 2,850' },
-                { description: 'Other Payment (per year)', fee: 'MYR 400' },
-                { description: 'Registration Fee', fee: 'MYR 2,000' },
-                { description: 'Deposit', fee: 'MYR 1,500' }
+                { description: 'International Processing Fee (Student Visa)', fee: 'USD 627' },
+                { description: 'Other Payment (per year)', fee: 'USD 88' },
+                { description: 'Registration Fee', fee: 'USD 440' },
+                { description: 'Deposit', fee: 'USD 330' }
               ])
             },
             {
               name: 'Master of Business Administration',
               description: 'Advanced management program for developing leadership and strategic thinking skills.',
-              tuitionFees: '25,000 RM',
+              tuitionFees: 'USD 6,600',
               duration: '2',
               intakeMonths: 'September',
               qualification: "Master's Degree",
@@ -162,14 +162,14 @@ async function seedDepartmentsAndPrograms() {
               offerLetter: true,
               classType: 'Physical',
               yearlyTuitionFees: JSON.stringify([
-                { year: '1st Year', fee: 'MYR 30,000' },
-                { year: '2nd Year', fee: 'MYR 30,000' }
+                { year: '1st Year', fee: 'USD 6,600' },
+                { year: '2nd Year', fee: 'USD 6,600' }
               ]),
               otherFees: JSON.stringify([
-                { description: 'International Processing Fee (Student Visa)', fee: 'MYR 2,850' },
-                { description: 'Other Payment (per year)', fee: 'MYR 400' },
-                { description: 'Registration Fee', fee: 'MYR 2,000' },
-                { description: 'Deposit', fee: 'MYR 1,500' }
+                { description: 'International Processing Fee (Student Visa)', fee: 'USD 627' },
+                { description: 'Other Payment (per year)', fee: 'USD 88' },
+                { description: 'Registration Fee', fee: 'USD 440' },
+                { description: 'Deposit', fee: 'USD 330' }
               ])
             }
           ]
@@ -189,7 +189,7 @@ async function seedDepartmentsAndPrograms() {
             {
               name: 'Bachelor of Medicine',
               description: 'Comprehensive medical program covering all aspects of healthcare and patient treatment.',
-              tuitionFees: '30,000 RM',
+              tuitionFees: 'USD 7,700',
               duration: '5',
               intakeMonths: 'September',
               qualification: "Bachelor's Degree",
@@ -197,17 +197,17 @@ async function seedDepartmentsAndPrograms() {
               offerLetter: true,
               classType: 'Physical',
               yearlyTuitionFees: JSON.stringify([
-                { year: '1st Year', fee: 'MYR 35,000' },
-                { year: '2nd Year', fee: 'MYR 35,000' },
-                { year: '3rd Year', fee: 'MYR 35,000' },
-                { year: '4th Year', fee: 'MYR 35,000' },
-                { year: '5th Year', fee: 'MYR 35,000' }
+                { year: '1st Year', fee: 'USD 7,700' },
+                { year: '2nd Year', fee: 'USD 7,700' },
+                { year: '3rd Year', fee: 'USD 7,700' },
+                { year: '4th Year', fee: 'USD 7,700' },
+                { year: '5th Year', fee: 'USD 7,700' }
               ]),
               otherFees: JSON.stringify([
-                { description: 'International Processing Fee (Student Visa)', fee: 'MYR 2,850' },
-                { description: 'Other Payment (per year)', fee: 'MYR 400' },
-                { description: 'Registration Fee', fee: 'MYR 2,000' },
-                { description: 'Deposit', fee: 'MYR 1,500' }
+                { description: 'International Processing Fee (Student Visa)', fee: 'USD 627' },
+                { description: 'Other Payment (per year)', fee: 'USD 88' },
+                { description: 'Registration Fee', fee: 'USD 440' },
+                { description: 'Deposit', fee: 'USD 330' }
               ])
             }
           ]

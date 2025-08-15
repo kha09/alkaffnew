@@ -333,7 +333,7 @@ export default function UniversityDetailPage() {
                               <DollarSign className="h-5 w-5 text-green-600" />
                               <div>
                                 <p className="text-sm text-gray-500">الرسوم الدراسية</p>
-                                <p className="font-medium">{program.tuitionFees} سنوياً</p>
+                                <p className="font-medium">{program.tuitionFees.replace('RM', 'USD')} سنوياً</p>
                               </div>
                             </div>
                             
