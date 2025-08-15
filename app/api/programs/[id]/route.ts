@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import db from '@/lib/db'
 import { Program } from '@/lib/types'
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params
     const programId = parseInt(params.id)
     
     if (isNaN(programId)) {
@@ -32,8 +33,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params
     const programId = parseInt(params.id)
     
     if (isNaN(programId)) {
@@ -84,8 +86,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
+    const params = await context.params
     const programId = parseInt(params.id)
     
     if (isNaN(programId)) {
