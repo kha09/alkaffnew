@@ -1172,7 +1172,7 @@ export default function LandingPage() {
       </section>
 
       {/* Targeted CTAs - Modern Interactive */}
-      {content.showJoinSection !== false && (
+      {false && (
         <section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
