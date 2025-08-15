@@ -9,13 +9,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { FileUpload } from '@/components/ui/file-upload'
+
+// Extended interface for university data that includes File objects
+interface UniversityFormData extends Omit<University, 'logo'> {
+  logo: string | File;
+}
 
 export default function UniversitiesManagement() {
   const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [currentUniversity, setCurrentUniversity] = useState<University | null>(null)
+  const [currentUniversity, setCurrentUniversity] = useState<UniversityFormData | null>(null)
 
   useEffect(() => {
     fetchUniversities()
@@ -36,7 +42,7 @@ export default function UniversitiesManagement() {
   }
 
   const handleCreate = () => {
-    setCurrentUniversity({
+    const newUniversity: UniversityFormData = {
       id: 0,
       name: '',
       country: '',
@@ -48,12 +54,18 @@ export default function UniversitiesManagement() {
       color: 'from-blue-500 to-purple-500',
       flag: '',
       freeOfferLetter: false
-    })
+    };
+    setCurrentUniversity(newUniversity)
     setIsDialogOpen(true)
   }
 
   const handleEdit = (university: University) => {
-    setCurrentUniversity(university)
+    // Convert University to UniversityFormData
+    const universityFormData: UniversityFormData = {
+      ...university,
+      logo: university.logo
+    };
+    setCurrentUniversity(universityFormData)
     setIsDialogOpen(true)
   }
 
@@ -81,12 +93,23 @@ export default function UniversitiesManagement() {
       const method = currentUniversity.id ? 'PUT' : 'POST'
       const url = currentUniversity.id ? `/api/universities/${currentUniversity.id}` : '/api/universities'
       
+      // Create FormData object
+      const formData = new FormData()
+      
+      // Create a copy of the university data without the logo file
+      const { logo, ...universityData } = currentUniversity;
+      
+      // Append university data as JSON
+      formData.append('university', JSON.stringify(universityData))
+      
+      // Append logo file if it's a File object
+      if (logo instanceof File) {
+        formData.append('logo', logo)
+      }
+      
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(currentUniversity),
+        body: formData,
       })
       
       if (!response.ok) throw new Error(`Failed to ${currentUniversity.id ? 'update' : 'create'} university`)
@@ -99,7 +122,7 @@ export default function UniversitiesManagement() {
     }
   }
 
-  const handleInputChange = (field: keyof University, value: string | boolean) => {
+  const handleInputChange = (field: keyof University, value: string | boolean | File) => {
     if (currentUniversity) {
       setCurrentUniversity({
         ...currentUniversity,
@@ -194,17 +217,12 @@ export default function UniversitiesManagement() {
                   className="col-span-3"
                 />
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="logo" className="text-right">
-                  رابط الشعار
-                </Label>
-                <Input
-                  id="logo"
-                  value={currentUniversity.logo}
-                  onChange={(e) => handleInputChange('logo', e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
+              <FileUpload
+                label="رابط الشعار"
+                value={currentUniversity.logo}
+                onChange={(value) => handleInputChange('logo', value)}
+                placeholder="اختر صورة الشعار"
+              />
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="flag" className="text-right">
                   العلم

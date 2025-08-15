@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import db from '@/lib/db'
 import { University } from '@/lib/types'
+import fs from 'fs/promises'
+import path from 'path'
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
@@ -42,23 +44,49 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Invalid university ID' }, { status: 400 })
     }
 
-    const body: University = await request.json()
+    // Parse form data
+    const formData = await request.formData();
+    
+    // Extract university data from form data
+    const universityJson = formData.get('university') as string;
+    const universityData: any = JSON.parse(universityJson);
+    
+    // Handle logo file upload
+    let logoPath = universityData.logo; // Default to existing logo URL if no file is uploaded
+    const logoFile = formData.get('logo') as File | null;
+    
+    if (logoFile && logoFile.size > 0) {
+      // Generate unique filename
+      const fileExtension = logoFile.name.split('.').pop();
+      const fileName = `university-${Date.now()}.${fileExtension}`;
+      const filePath = path.join(process.cwd(), 'public', 'images', 'universities', fileName);
+      
+      // Save file to disk
+      const fileBuffer = Buffer.from(await logoFile.arrayBuffer());
+      await fs.writeFile(filePath, fileBuffer);
+      
+      // Set logo path to be stored in database
+      logoPath = `/images/universities/${fileName}`;
+    }
     
     // Remove fields that are computed or have default values
-    const { id, nameEn, location, tuitionFee, currency, courses, rating, popular, featured, specializations, departments, ...universityData } = body
+    const { id, nameEn, location, tuitionFee, currency, courses, rating, popular, featured, specializations, departments, logo, ...universityFields } = universityData;
     
     const updatedUniversity = await db.university.update({
       where: { id: universityId },
-      data: universityData
-    })
+      data: {
+        ...universityFields,
+        logo: logoPath
+      }
+    });
 
-    return NextResponse.json(updatedUniversity)
+    return NextResponse.json(updatedUniversity);
   } catch (error) {
-    console.error('Error updating university:', error)
+    console.error('Error updating university:', error);
     return NextResponse.json(
       { error: 'Failed to update university' },
       { status: 500 }
-    )
+    );
   }
 }
 
