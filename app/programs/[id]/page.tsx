@@ -68,9 +68,54 @@ export default function ProgramDetailPage() {
 
   const handleCopy = () => {
     if (program) {
-      navigator.clipboard.writeText(program.name)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      // Format intake months
+      const intakeMonths = program.intakeMonths.split(',').map(month => {
+        const monthMap: Record<string, string> = {
+          'January': 'يناير',
+          'February': 'فبراير',
+          'March': 'مارس',
+          'April': 'أبريل',
+          'May': 'مايو',
+          'June': 'يونيو',
+          'July': 'يوليو',
+          'August': 'أغسطس',
+          'September': 'سبتمبر',
+          'October': 'أكتوبر',
+          'November': 'نوفمبر',
+          'December': 'ديسمبر'
+        };
+        return monthMap[month.trim()] || month.trim();
+      }).join(',');
+
+      // Parse fee data
+      const yearlyFees = program.yearlyTuitionFees ? JSON.parse(program.yearlyTuitionFees) : [];
+      const otherFees = program.otherFees ? JSON.parse(program.otherFees) : [];
+
+      // Construct the formatted text
+      let copyText = `${program.department?.university?.name || ''}\n`;
+      copyText += `${program.name}\n\n`;
+      copyText += `Duration: ${program.duration} year(s)\n`;
+      copyText += `English requirement: ${program.englishRequirement}\n\n`;
+      copyText += `Intake: ${intakeMonths}\n\n`;
+      copyText += `Course fee for international students\n\n`;
+      copyText += `Yearly Tuition fees\n\n`;
+      
+      yearlyFees.forEach((fee: { year: string; fee: string }) => {
+        copyText += `${fee.year}: ${fee.fee}\n`;
+      });
+      
+      copyText += `\nOther fees\n\n`;
+      
+      otherFees.forEach((fee: { description: string; fee: string }) => {
+        copyText += ` ${fee.description}: ${fee.fee}\n`;
+      });
+      
+      copyText += `\nMore details visit the link below:\n`;
+      copyText += `http://localhost:3001/programs/${program.id}`;
+
+      navigator.clipboard.writeText(copyText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   }
 
@@ -203,7 +248,25 @@ export default function ProgramDetailPage() {
                   <Calendar className="h-6 w-6 text-purple-600" />
                   <div>
                     <p className="text-sm text-gray-500">أشهر القبول</p>
-                    <p className="font-medium">{program.intakeMonths}</p>
+                    <p className="font-medium">
+                      {program.intakeMonths.split(',').map(month => {
+                        const monthMap: Record<string, string> = {
+                          'January': 'يناير',
+                          'February': 'فبراير',
+                          'March': 'مارس',
+                          'April': 'أبريل',
+                          'May': 'مايو',
+                          'June': 'يونيو',
+                          'July': 'يوليو',
+                          'August': 'أغسطس',
+                          'September': 'سبتمبر',
+                          'October': 'أكتوبر',
+                          'November': 'نوفمبر',
+                          'December': 'ديسمبر'
+                        };
+                        return monthMap[month.trim()] || month.trim();
+                      }).join(', ')}
+                    </p>
                   </div>
                 </div>
 
