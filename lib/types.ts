@@ -110,10 +110,11 @@ export interface HowItWorks {
 }
 
 export interface HomePageContent {
-  heroSlides: HeroSlide[];
-  universities: University[];
-  testimonials: Testimonial[];
-  faqs: Faq[];
-  whySMAlkaff?: WhySMAlkaff;
-  howItWorks?: HowItWorks;
+  heroSlides: HeroSlide[]
+  universities: University[]
+  testimonials: Testimonial[]
+  faqs: Faq[]
+  whySMAlkaff?: WhySMAlkaff
+  howItWorks?: HowItWorks
+  showJoinSection?: boolean
 }

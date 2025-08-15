@@ -1128,7 +1128,8 @@ export default function LandingPage() {
       </section>
 
       {/* Targeted CTAs - Modern Interactive */}
-      <section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
+      {content.showJoinSection !== false && (
+        <section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0">
           <div className="absolute top-10 right-20 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl animate-pulse"></div>
@@ -1413,7 +1414,8 @@ export default function LandingPage() {
           transform: translateZ(10px);
         }
       `}</style>
-      </section>
+        </section>
+      )}
 
       {/* Testimonials Carousel - Modern Interactive */}
       <section className="py-20 bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 relative overflow-hidden">
