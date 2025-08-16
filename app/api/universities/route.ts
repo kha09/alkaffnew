@@ -19,8 +19,8 @@ export async function GET(request: Request) {
     // Add search condition
     if (searchQuery && searchQuery !== '') {
       whereConditions.OR = [
-        { name: { contains: searchQuery, mode: 'insensitive' } },
-        { country: { contains: searchQuery, mode: 'insensitive' } }
+        { name: { contains: searchQuery } },
+        { country: { contains: searchQuery } }
       ]
     }
 
