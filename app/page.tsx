@@ -2029,7 +2029,7 @@ export default function LandingPage() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-blue-600 transform hover:scale-105 transition-all duration-200"
+                    className="border-white text-blue-600 hover:bg-white transform hover:scale-105 transition-all duration-200"
                   >
                     <Mail className="mr-2 h-5 w-5" />
                     راسلنا

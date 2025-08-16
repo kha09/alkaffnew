@@ -250,7 +250,7 @@ export default function UniversityDetailPage() {
                 <Button className="bg-white text-blue-600 hover:bg-gray-100">
                   تواصل مع خبير
                 </Button>
-                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                <Button variant="outline" className="border-white text-blue-600 hover:bg-white">
                   اسألنا
                 </Button>
               </div>
@@ -443,7 +443,7 @@ export default function UniversityDetailPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-blue-600 transform hover:scale-105 transition-all duration-200"
+                className="border-white text-blue-600 hover:bg-white transform hover:scale-105 transition-all duration-200"
               >
                 تحدث مع خبير
               </Button>
