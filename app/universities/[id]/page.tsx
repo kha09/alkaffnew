@@ -54,30 +54,55 @@ export default function UniversityDetailPage() {
     ]
   }
 
-  useEffect(() => {
-    const fetchUniversity = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch(`/api/universities/${universityId}`)
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch university details')
-        }
-        
-        const data = await response.json()
-        setUniversity(data)
-      } catch (err) {
-        setError('Failed to load university details')
-        console.error(err)
-      } finally {
-        setLoading(false)
+  const fetchUniversity = async (filters = {}) => {
+    try {
+      setLoading(true)
+      const queryParams = new URLSearchParams(filters as any).toString()
+      const url = `/api/universities/${universityId}${queryParams ? `?${queryParams}` : ''}`
+      const response = await fetch(url)
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch university details')
       }
+      
+      const data = await response.json()
+      setUniversity(data)
+    } catch (err) {
+      setError('Failed to load university details')
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  const applyFilters = () => {
+    const filters: any = {}
+    
+    if (searchQuery) filters.search = searchQuery
+    if (selectedDepartment !== 'all') filters.department = selectedDepartment
+    if (selectedDuration !== 'all') filters.duration = selectedDuration
+    
+    fetchUniversity(filters)
+  }
+
+  useEffect(() => {
     if (universityId) {
       fetchUniversity()
     }
   }, [universityId])
+
+  // Apply filters when filter values change
+  useEffect(() => {
+    if (universityId) {
+      const filters: any = {}
+      
+      if (searchQuery) filters.search = searchQuery
+      if (selectedDepartment !== 'all') filters.department = selectedDepartment
+      if (selectedDuration !== 'all') filters.duration = selectedDuration
+      
+      fetchUniversity(filters)
+    }
+  }, [searchQuery, selectedDepartment, selectedDuration, universityId])
 
   if (loading) {
     return (
@@ -113,19 +138,9 @@ export default function UniversityDetailPage() {
     )
   }
 
-  // Filter programs based on search query, selected department, and duration
+  // Programs are now filtered by the backend API
   const filteredPrograms = university.departments?.flatMap(department => 
-    department.programs?.filter(program => {
-        const matchesSearch = program.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          program.description.toLowerCase().includes(searchQuery.toLowerCase())
-        
-        const matchesDepartment = selectedDepartment === 'all' || department.id === selectedDepartment
-        
-        const matchesDuration = selectedDuration === 'all' || program.duration === selectedDuration
-        
-        return matchesSearch && matchesDepartment && matchesDuration
-      })
-      .map(program => ({ ...program, departmentName: department.name })) || []
+    department.programs?.map(program => ({ ...program, departmentName: department.name })) || []
   ) || []
 
   return (

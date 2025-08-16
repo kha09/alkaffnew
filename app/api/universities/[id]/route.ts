@@ -13,12 +13,47 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
       return NextResponse.json({ error: 'Invalid university ID' }, { status: 400 })
     }
 
+    // Parse query parameters for filtering
+    const { searchParams } = new URL(request.url)
+    const searchQuery = searchParams.get('search') || ''
+    const departmentId = searchParams.get('department') || ''
+    const duration = searchParams.get('duration') || ''
+
+    // Build the query conditions for departments and programs
+    const departmentWhere: any = {
+      universityId: universityId
+    }
+
+    // If department filter is applied, filter departments
+    if (departmentId && departmentId !== 'all') {
+      departmentWhere.id = parseInt(departmentId)
+    }
+
+    // Build the query conditions for programs
+    const programWhere: any = {}
+
+    // Add search condition
+    if (searchQuery) {
+      programWhere.OR = [
+        { name: { contains: searchQuery } },
+        { description: { contains: searchQuery } }
+      ]
+    }
+
+    // If duration filter is applied, filter programs by duration
+    if (duration && duration !== 'all') {
+      programWhere.duration = duration
+    }
+
     const university = await db.university.findUnique({
       where: { id: universityId },
       include: {
         departments: {
+          where: departmentWhere,
           include: {
-            programs: true
+            programs: {
+              where: programWhere
+            }
           }
         }
       }
