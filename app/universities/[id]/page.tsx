@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -34,6 +34,9 @@ export default function UniversityDetailPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDepartment, setSelectedDepartment] = useState<number | 'all'>('all')
   const [selectedDuration, setSelectedDuration] = useState<string | 'all'>('all')
+  
+  // Ref for debouncing search
+  const searchDebounceRef = useRef<NodeJS.Timeout | null>(null)
   
   // Extract unique durations from programs
   const getUniqueDurations = () => {
@@ -91,16 +94,31 @@ export default function UniversityDetailPage() {
     }
   }, [universityId])
 
-  // Apply filters when filter values change
+  // Apply filters when filter values change (with debouncing for search)
   useEffect(() => {
     if (universityId) {
-      const filters: any = {}
+      // Clear previous timeout
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current)
+      }
       
-      if (searchQuery) filters.search = searchQuery
-      if (selectedDepartment !== 'all') filters.department = selectedDepartment
-      if (selectedDuration !== 'all') filters.duration = selectedDuration
+      // Set new timeout
+      searchDebounceRef.current = setTimeout(() => {
+        const filters: any = {}
+        
+        if (searchQuery) filters.search = searchQuery
+        if (selectedDepartment !== 'all') filters.department = selectedDepartment
+        if (selectedDuration !== 'all') filters.duration = selectedDuration
+        
+        fetchUniversity(filters)
+      }, 1000) // 1000ms delay
       
-      fetchUniversity(filters)
+      // Cleanup function to clear timeout
+      return () => {
+        if (searchDebounceRef.current) {
+          clearTimeout(searchDebounceRef.current)
+        }
+      }
     }
   }, [searchQuery, selectedDepartment, selectedDuration, universityId])
 
