@@ -5,9 +5,64 @@ import formidable from 'formidable'
 import fs from 'fs/promises'
 import path from 'path'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const universities = await db.university.findMany({
+    const { searchParams } = new URL(request.url)
+    const level = searchParams.get('level') || 'all'
+    const location = searchParams.get('location') || 'all'
+    const offerLetterFee = searchParams.get('offerLetterFee') || 'all'
+    const searchQuery = searchParams.get('search') || ''
+
+    // Build the query conditions
+    const whereConditions: any = {}
+
+    // Add search condition
+    if (searchQuery && searchQuery !== '') {
+      whereConditions.OR = [
+        { name: { contains: searchQuery, mode: 'insensitive' } },
+        { country: { contains: searchQuery, mode: 'insensitive' } }
+      ]
+    }
+
+    // Add location condition
+    if (location && location !== 'all') {
+      whereConditions.country = location
+    }
+
+    // Add offer letter fee condition
+    if (offerLetterFee && offerLetterFee !== 'all') {
+      whereConditions.freeOfferLetter = offerLetterFee === 'free'
+    }
+
+    // If level filter is applied, we need to join with programs
+    let universities
+    if (level && level !== 'all') {
+      // Find programs with the specified qualification
+      const programs = await db.program.findMany({
+        where: {
+          qualification: {
+            contains: level.replace(/-/g, ' ') // Convert back from URL-friendly format
+          }
+        },
+        select: {
+          department: {
+            select: {
+              universityId: true
+            }
+          }
+        }
+      })
+
+      // Extract unique university IDs
+      const universityIds = [...new Set(programs.map(p => p.department.universityId))]
+
+      // Add university ID condition
+      whereConditions.id = { in: universityIds }
+    }
+
+    // Fetch universities with conditions
+    universities = await db.university.findMany({
+      where: whereConditions,
       orderBy: { order: 'asc' },
       include: {
         departments: true

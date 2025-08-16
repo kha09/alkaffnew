@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { University } from "@/lib/types"
+import { University, Department } from "@/lib/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -27,24 +27,14 @@ import Link from "next/link"
 import Image from "next/image"
 
 
-const levels = [
-  { id: "all", name: "جميع المستويات" },
-  { id: "foundation", name: "التأسيسي" },
-  { id: "diploma", name: "الدبلوم" },
-  { id: "bachelor", name: "البكالوريوس" },
-  { id: "master", name: "الماجستير" },
-  { id: "phd", name: "الدكتوراه" },
-]
+interface FilterOption {
+  id: string;
+  name: string;
+}
 
-const locations = [
-  { id: "all", name: "جميع المواقع" },
-  { id: "kuala-lumpur", name: "كوالالمبور" },
-  { id: "selangor", name: "سيلانجور" },
-  { id: "penang", name: "بينانغ" },
-  { id: "johor", name: "جوهور" },
-  { id: "sabah", name: "صباح" },
-]
-
+// Filter options will be fetched from the API
+const defaultLevels: FilterOption[] = [{ id: "all", name: "جميع المستويات" }]
+const defaultLocations: FilterOption[] = [{ id: "all", name: "جميع المواقع" }]
 const offerLetterFees = [
   { id: "all", name: "جميع الأنواع" },
   { id: "free", name: "مجاني" },
@@ -72,12 +62,33 @@ export default function UniversitiesPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("list")
   const [favorites, setFavorites] = useState<number[]>([])
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [levels, setLevels] = useState<FilterOption[]>(defaultLevels)
+  const [locations, setLocations] = useState<FilterOption[]>(defaultLocations)
 
   useEffect(() => {
-    const fetchUniversities = async () => {
+    const fetchFilterOptions = async () => {
+      try {
+        const response = await fetch('/api/universities/filters')
+        if (!response.ok) {
+          throw new Error('Failed to fetch filter options')
+        }
+        const data = await response.json()
+        setLevels([...defaultLevels, ...data.levels])
+        setLocations([...defaultLocations, ...data.locations])
+      } catch (err) {
+        console.error('Error fetching filter options:', err)
+        // Use default values if API fails
+        setLevels(defaultLevels)
+        setLocations(defaultLocations)
+      }
+    }
+
+    const fetchUniversities = async (filters = {}) => {
       try {
         setLoading(true)
-        const response = await fetch('/api/universities')
+        const queryParams = new URLSearchParams(filters as any).toString()
+        const url = `/api/universities${queryParams ? `?${queryParams}` : ''}`
+        const response = await fetch(url)
         if (!response.ok) {
           throw new Error('Failed to fetch universities')
         }
@@ -90,43 +101,54 @@ export default function UniversitiesPage() {
       }
     }
 
+    fetchFilterOptions()
     fetchUniversities()
   }, [])
 
-  // Filter and sort universities
-  const filteredUniversities = universities
-    .filter((uni) => {
-      const matchesSearch =
-        uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (uni.nameEn && uni.nameEn.toLowerCase().includes(searchQuery.toLowerCase()))
-      const matchesLevel = selectedLevel === "all" // In real app, would filter by available levels
-      const matchesLocation =
-        selectedLocation === "all" ||
-        (uni.location && uni.location.includes(locations.find((l) => l.id === selectedLocation)?.name || ""))
-      const matchesOfferFee =
-        selectedOfferFee === "all" ||
-        (selectedOfferFee === "free" && uni.freeOfferLetter) ||
-        (selectedOfferFee === "paid" && !uni.freeOfferLetter)
+  // Sort universities
+  const sortedUniversities = [...universities].sort((a, b) => {
+    switch (sortBy) {
+      case "ranking":
+        return Number.parseInt(a.ranking.replace("#", "")) - Number.parseInt(b.ranking.replace("#", ""))
+      case "tuition-low":
+        return Number.parseInt((a.tuitionFee || "0").replace(",", "")) - Number.parseInt((b.tuitionFee || "0").replace(",", ""))
+      case "tuition-high":
+        return Number.parseInt((b.tuitionFee || "0").replace(",", "")) - Number.parseInt((a.tuitionFee || "0").replace(",", ""))
+      case "courses":
+        return (b.courses || 0) - (a.courses || 0)
+      case "rating":
+        return (b.rating || 0) - (a.rating || 0)
+      case "popular":
+      default:
+        return (b.popular ? 1 : 0) - (a.popular ? 1 : 0)
+    }
+  })
 
-      return matchesSearch && matchesLevel && matchesLocation && matchesOfferFee
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "ranking":
-          return Number.parseInt(a.ranking.replace("#", "")) - Number.parseInt(b.ranking.replace("#", ""))
-        case "tuition-low":
-          return Number.parseInt((a.tuitionFee || "0").replace(",", "")) - Number.parseInt((b.tuitionFee || "0").replace(",", ""))
-        case "tuition-high":
-          return Number.parseInt((b.tuitionFee || "0").replace(",", "")) - Number.parseInt((a.tuitionFee || "0").replace(",", ""))
-        case "courses":
-          return (b.courses || 0) - (a.courses || 0)
-        case "rating":
-          return (b.rating || 0) - (a.rating || 0)
-        case "popular":
-        default:
-          return (b.popular ? 1 : 0) - (a.popular ? 1 : 0)
+  // Fetch universities with current filters
+  const fetchUniversitiesWithFilters = async () => {
+    try {
+      setLoading(true)
+      const filters: any = {}
+      
+      if (searchQuery) filters.search = searchQuery
+      if (selectedLevel && selectedLevel !== "all") filters.level = selectedLevel
+      if (selectedLocation && selectedLocation !== "all") filters.location = selectedLocation
+      if (selectedOfferFee && selectedOfferFee !== "all") filters.offerLetterFee = selectedOfferFee
+      
+      const queryParams = new URLSearchParams(filters).toString()
+      const url = `/api/universities${queryParams ? `?${queryParams}` : ''}`
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error('Failed to fetch universities')
       }
-    })
+      const data = await response.json()
+      setUniversities(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const resetFilters = () => {
     setSearchQuery("")
@@ -135,6 +157,11 @@ export default function UniversitiesPage() {
     setSelectedOfferFee("all")
     setSortBy("popular")
   }
+
+  // Apply filters when filter options change
+  useEffect(() => {
+    fetchUniversitiesWithFilters()
+  }, [selectedLevel, selectedLocation, selectedOfferFee, searchQuery])
 
   const toggleFavorite = (id: number) => {
     setFavorites((prev) => (prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]))
@@ -313,7 +340,7 @@ export default function UniversitiesPage() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">الجامعات</h2>
                 <p className="text-gray-600">
-                  إجمالي الجامعات: <span className="font-semibold text-blue-600">{filteredUniversities.length}</span>
+                  إجمالي الجامعات: <span className="font-semibold text-blue-600">{sortedUniversities.length}</span>
                 </p>
               </div>
 
@@ -356,7 +383,7 @@ export default function UniversitiesPage() {
             <div
               className={`space-y-6 ${viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-6 space-y-0" : ""}`}
             >
-              {filteredUniversities.map((university) => (
+              {sortedUniversities.map((university: University) => (
                 <Card
                   key={university.id}
                   className="group bg-white/80 backdrop-blur-lg border-0 shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden hover:scale-[1.02]"
@@ -461,7 +488,7 @@ export default function UniversitiesPage() {
 
                             {/* Specializations */}
                             <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
-                              {university.departments?.slice(0, 3).map((department, index) => (
+                              {university.departments?.slice(0, 3).map((department: Department, index: number) => (
                                 <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                                   {department.name}
                                 </span>
@@ -516,7 +543,7 @@ export default function UniversitiesPage() {
             </div>
 
             {/* No Results */}
-            {filteredUniversities.length === 0 && (
+            {sortedUniversities.length === 0 && (
               <div className="text-center py-16">
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Search className="h-12 w-12 text-gray-400" />
@@ -530,7 +557,7 @@ export default function UniversitiesPage() {
             )}
 
             {/* Load More */}
-            {filteredUniversities.length > 0 && (
+            {sortedUniversities.length > 0 && (
               <div className="text-center mt-12">
                 <Button
                   variant="outline"
