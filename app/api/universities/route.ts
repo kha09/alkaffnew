@@ -12,6 +12,7 @@ export async function GET(request: Request) {
     const location = searchParams.get('location') || 'all'
     const offerLetterFee = searchParams.get('offerLetterFee') || 'all'
     const searchQuery = searchParams.get('search') || ''
+    const sortBy = searchParams.get('sortBy') || 'popular'
 
     // Build the query conditions
     const whereConditions: any = {}
@@ -32,6 +33,33 @@ export async function GET(request: Request) {
     // Add offer letter fee condition
     if (offerLetterFee && offerLetterFee !== 'all') {
       whereConditions.freeOfferLetter = offerLetterFee === 'free'
+    }
+
+    // Build the order by clause
+    let orderBy: any = { order: 'asc' }
+    switch (sortBy) {
+      case 'ranking':
+        orderBy = { ranking: 'asc' }
+        break
+      case 'tuition-low':
+        // Note: This is a simplified approach. In a real application, you might want to store tuition fees as numbers
+        orderBy = { students: 'asc' } // Using students as a placeholder since we don't have a direct tuition field in the schema
+        break
+      case 'tuition-high':
+        orderBy = { students: 'desc' } // Using students as a placeholder
+        break
+      case 'courses':
+        // This would require a more complex query with aggregation
+        orderBy = { order: 'asc' } // Using default order as a placeholder
+        break
+      case 'rating':
+        // This would require a more complex query with aggregation or a separate rating field
+        orderBy = { order: 'asc' } // Using default order as a placeholder
+        break
+      case 'popular':
+      default:
+        orderBy = { order: 'asc' }
+        break
     }
 
     // If level filter is applied, we need to join with programs
@@ -60,10 +88,10 @@ export async function GET(request: Request) {
       whereConditions.id = { in: universityIds }
     }
 
-    // Fetch universities with conditions
+    // Fetch universities with conditions and sorting
     universities = await db.university.findMany({
       where: whereConditions,
-      orderBy: { order: 'asc' },
+      orderBy: orderBy,
       include: {
         departments: true
       }

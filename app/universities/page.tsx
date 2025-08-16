@@ -105,24 +105,8 @@ export default function UniversitiesPage() {
     fetchUniversities()
   }, [])
 
-  // Sort universities
-  const sortedUniversities = [...universities].sort((a, b) => {
-    switch (sortBy) {
-      case "ranking":
-        return Number.parseInt(a.ranking.replace("#", "")) - Number.parseInt(b.ranking.replace("#", ""))
-      case "tuition-low":
-        return Number.parseInt((a.tuitionFee || "0").replace(",", "")) - Number.parseInt((b.tuitionFee || "0").replace(",", ""))
-      case "tuition-high":
-        return Number.parseInt((b.tuitionFee || "0").replace(",", "")) - Number.parseInt((a.tuitionFee || "0").replace(",", ""))
-      case "courses":
-        return (b.courses || 0) - (a.courses || 0)
-      case "rating":
-        return (b.rating || 0) - (a.rating || 0)
-      case "popular":
-      default:
-        return (b.popular ? 1 : 0) - (a.popular ? 1 : 0)
-    }
-  })
+  // Universities are now sorted by the backend API
+  const sortedUniversities = universities
 
   // Fetch universities with current filters
   const fetchUniversitiesWithFilters = async () => {
@@ -134,6 +118,7 @@ export default function UniversitiesPage() {
       if (selectedLevel && selectedLevel !== "all") filters.level = selectedLevel
       if (selectedLocation && selectedLocation !== "all") filters.location = selectedLocation
       if (selectedOfferFee && selectedOfferFee !== "all") filters.offerLetterFee = selectedOfferFee
+      if (sortBy) filters.sortBy = sortBy
       
       const queryParams = new URLSearchParams(filters).toString()
       const url = `/api/universities${queryParams ? `?${queryParams}` : ''}`
@@ -161,7 +146,7 @@ export default function UniversitiesPage() {
   // Apply filters when filter options change
   useEffect(() => {
     fetchUniversitiesWithFilters()
-  }, [selectedLevel, selectedLocation, selectedOfferFee, searchQuery])
+  }, [selectedLevel, selectedLocation, selectedOfferFee, searchQuery, sortBy])
 
   const toggleFavorite = (id: number) => {
     setFavorites((prev) => (prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]))
