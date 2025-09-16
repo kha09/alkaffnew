@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import prisma from '@/lib/db'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
-
-const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,6 +37,21 @@ export async function POST(request: NextRequest) {
       console.error('Error creating upload directory:', error)
     }
     
+    // Create form submission record first
+    const formSubmission = await prisma.formSubmission.create({
+      data: {
+        fullName,
+        nationality,
+        email,
+        countryOfResidence,
+        contactNumber,
+        cityOfResidence,
+        preferredProgram,
+        universityId: universityId ? parseInt(universityId) : null,
+        programId: programId ? parseInt(programId) : null,
+      }
+    })
+    
     // Process uploaded files
     const uploadedFiles = []
     const fileFields = ['highSchoolCertificate', 'personalPhoto', 'passport', 'additionalDocuments']
@@ -59,7 +72,7 @@ export async function POST(request: NextRequest) {
         // Save file to disk
         await writeFile(filePath, buffer)
         
-        // Save file metadata to database
+        // Save file metadata to database with form submission ID
         const fileRecord = await prisma.uploadedFile.create({
           data: {
             filename: uniqueFilename,
@@ -67,38 +80,14 @@ export async function POST(request: NextRequest) {
             path: `/uploads/${uniqueFilename}`,
             size: file.size,
             type: file.type,
+            formSubmission: {
+              connect: { id: formSubmission.id }
+            }
           }
         })
         
         uploadedFiles.push(fileRecord)
       }
-    }
-    
-    // Create form submission record
-    const formSubmission = await prisma.formSubmission.create({
-      data: {
-        fullName,
-        nationality,
-        email,
-        countryOfResidence,
-        contactNumber,
-        cityOfResidence,
-        preferredProgram,
-        universityId: universityId ? parseInt(universityId) : null,
-        programId: programId ? parseInt(programId) : null,
-      }
-    })
-    
-    // Connect uploaded files to the form submission
-    for (const file of uploadedFiles) {
-      await prisma.uploadedFile.update({
-        where: { id: file.id },
-        data: {
-          formSubmission: {
-            connect: { id: formSubmission.id }
-          }
-        }
-      })
     }
     
     // Fetch the complete form submission with uploaded files

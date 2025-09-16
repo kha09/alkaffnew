@@ -197,8 +197,8 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
           <CardContent className="pt-6">
             <div className="text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">تم إرسال الطلب بنجاح!</h3>
-              <p className="text-gray-600 mb-6">
+              <h3 className="text-2xl font-bold text-foreground mb-2">تم إرسال الطلب بنجاح!</h3>
+              <p className="text-muted-foreground mb-6">
                 شكراً لك على تقديم طلبك. سيتم مراجعة طلبك من قبل فريقنا وسنتواصل معك قريباً.
               </p>
               <Button onClick={onClose} className="w-full">
@@ -228,13 +228,13 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
           <div className="flex items-center justify-center mt-4">
             <div className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                step >= 1 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-gray-200 text-gray-500'
               }`}>
                 1
               </div>
-              <div className={`w-24 h-1 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+              <div className={`w-24 h-1 ${step >= 2 ? 'bg-primary' : 'bg-gray-200'}`}></div>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                step >= 2 ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-gray-200 text-gray-500'
               }`}>
                 2
               </div>
@@ -425,7 +425,7 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
                     type="checkbox"
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary border-gray-300 rounded"
                     required
                   />
                   <Label htmlFor="terms" className="text-sm">

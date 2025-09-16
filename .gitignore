@@ -28,3 +28,9 @@ next-env.d.ts
 /lib/generated/prisma
 
 plan.md
+dev.md
+summ.md
+
+public/uploads
+
+prisma/dev.db
