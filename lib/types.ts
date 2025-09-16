@@ -118,3 +118,29 @@ export interface HomePageContent {
   howItWorks?: HowItWorks
   showJoinSection?: boolean
 }
+
+export interface FormSubmission {
+  id: number;
+  fullName: string;
+  nationality: string;
+  email: string;
+  countryOfResidence: string;
+  contactNumber: string;
+  cityOfResidence: string;
+  preferredProgram: string;
+  universityId?: number;
+  programId?: number;
+  submittedAt: string;
+  uploadedFiles?: UploadedFile[];
+}
+
+export interface UploadedFile {
+  id: number;
+  filename: string;
+  originalName: string;
+  path: string;
+  size: number;
+  type: string;
+  formSubmissionId: number;
+  uploadedAt: string;
+}

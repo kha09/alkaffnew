@@ -105,3 +105,30 @@ model HowItWorks {
   description String
   steps       String   // JSON string for steps array
 }
+
+model FormSubmission {
+  id                Int           @id @default(autoincrement())
+  fullName          String
+  nationality       String
+  email             String
+  countryOfResidence String
+  contactNumber     String
+  cityOfResidence   String
+  preferredProgram  String
+  universityId      Int?
+  programId         Int?
+  submittedAt       DateTime      @default(now())
+  uploadedFiles     UploadedFile[]
+}
+
+model UploadedFile {
+  id              Int      @id @default(autoincrement())
+  filename        String
+  originalName    String
+  path            String
+  size            Int
+  type            String
+  formSubmission  FormSubmission @relation(fields: [formSubmissionId], references: [id])
+  formSubmissionId Int
+  uploadedAt      DateTime @default(now())
+}

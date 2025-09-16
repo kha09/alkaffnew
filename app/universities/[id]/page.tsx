@@ -23,6 +23,7 @@ import {
 import Image from 'next/image'
 
 import { Program, Department, University } from '@/lib/types'
+import { ApplicationForm } from '@/components/application-form'
 
 export default function UniversityDetailPage() {
   const params = useParams()
@@ -34,6 +35,7 @@ export default function UniversityDetailPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDepartment, setSelectedDepartment] = useState<number | 'all'>('all')
   const [selectedDuration, setSelectedDuration] = useState<string | 'all'>('all')
+  const [showApplicationForm, setShowApplicationForm] = useState(false)
   
   // Ref for debouncing search
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null)
@@ -381,7 +383,10 @@ export default function UniversityDetailPage() {
                         </div>
                         
                         <div className="mt-6 md:mt-0 md:mr-6 flex flex-col justify-between">
-                          <Button className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white mb-3">
+                          <Button 
+                            className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white mb-3"
+                            onClick={() => setShowApplicationForm(true)}
+                          >
                             <BookOpen className="ml-2 h-5 w-5" />
                             التقديم الآن
                           </Button>
@@ -451,6 +456,13 @@ export default function UniversityDetailPage() {
           </div>
         </div>
       </section>
+      
+      {showApplicationForm && (
+        <ApplicationForm 
+          universityId={parseInt(universityId as string)} 
+          onClose={() => setShowApplicationForm(false)} 
+        />
+      )}
     </div>
   )
 }
