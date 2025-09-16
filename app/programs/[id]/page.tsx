@@ -37,7 +37,7 @@ export default function ProgramDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [showApplicationForm, setShowApplicationForm] = useState(false)
+  const [showApplicationForm, setShowApplicationForm] = useState<{ programId: number; programName: string } | false>(false)
   
   // Parse fee data
   const yearlyFees = program?.yearlyTuitionFees ? JSON.parse(program.yearlyTuitionFees) : []
@@ -297,7 +297,10 @@ export default function ProgramDetailPage() {
               <div className="mt-8 flex flex-wrap gap-4">
                 <Button 
                   className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white"
-                  onClick={() => setShowApplicationForm(true)}
+                  onClick={() => setShowApplicationForm({
+                    programId: program.id,
+                    programName: program.name
+                  })}
                 >
                   <BookOpen className="ml-2 h-5 w-5" />
                   التقديم الآن
@@ -467,7 +470,8 @@ export default function ProgramDetailPage() {
       
       {showApplicationForm && (
         <ApplicationForm 
-          programId={parseInt(programId as string)} 
+          programId={showApplicationForm.programId}
+          programName={showApplicationForm.programName}
           onClose={() => setShowApplicationForm(false)} 
         />
       )}

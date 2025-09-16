@@ -35,7 +35,7 @@ export default function UniversityDetailPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedDepartment, setSelectedDepartment] = useState<number | 'all'>('all')
   const [selectedDuration, setSelectedDuration] = useState<string | 'all'>('all')
-  const [showApplicationForm, setShowApplicationForm] = useState(false)
+  const [showApplicationForm, setShowApplicationForm] = useState<{ programId: number; programName: string } | false>(false)
   
   // Ref for debouncing search
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null)
@@ -385,7 +385,10 @@ export default function UniversityDetailPage() {
                         <div className="mt-6 md:mt-0 md:mr-6 flex flex-col justify-between">
                           <Button 
                             className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white mb-3"
-                            onClick={() => setShowApplicationForm(true)}
+                            onClick={() => setShowApplicationForm({
+                              programId: program.id,
+                              programName: program.name
+                            })}
                           >
                             <BookOpen className="ml-2 h-5 w-5" />
                             التقديم الآن
@@ -460,6 +463,8 @@ export default function UniversityDetailPage() {
       {showApplicationForm && (
         <ApplicationForm 
           universityId={parseInt(universityId as string)} 
+          programId={showApplicationForm.programId}
+          programName={showApplicationForm.programName}
           onClose={() => setShowApplicationForm(false)} 
         />
       )}

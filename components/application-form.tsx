@@ -34,10 +34,12 @@ import countries from '@/data/countries.json'
 interface ApplicationFormProps {
   universityId?: number
   programId?: number
+  universityName?: string
+  programName?: string
   onClose: () => void
 }
 
-export function ApplicationForm({ universityId, programId, onClose }: ApplicationFormProps) {
+export function ApplicationForm({ universityId, programId, universityName, programName, onClose }: ApplicationFormProps) {
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     fullName: '',
@@ -46,8 +48,15 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
     countryOfResidence: '',
     contactNumber: '',
     cityOfResidence: '',
-    preferredProgram: '',
+    preferredProgram: programName || '',
   })
+  
+  // Set the preferred program name when it's provided
+  useEffect(() => {
+    if (programName) {
+      setFormData(prev => ({ ...prev, preferredProgram: programName }));
+    }
+  }, [programName]);
   
   const [files, setFiles] = useState({
     highSchoolCertificate: null as File | null,
