@@ -1,12 +1,19 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileUpload } from '@/components/ui/file-upload'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -22,6 +29,7 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { FormSubmission } from '@/lib/types'
+import countries from '@/data/countries.json'
 
 interface ApplicationFormProps {
   universityId?: number
@@ -52,6 +60,10 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [errors, setErrors] = useState({
+    email: '',
+    contactNumber: '',
+  })
   
   const fileInputRefs = {
     highSchoolCertificate: useRef<HTMLInputElement>(null),
@@ -82,7 +94,33 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
   }
 
   const validateStep1 = () => {
+    // Email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    // Phone number validation (digits only, max 15)
+    const phoneRegex = /^\d{1,15}$/;
+    
+    // Reset errors
+    setErrors({
+      email: '',
+      contactNumber: '',
+    });
+    
+    // Check for specific validation errors
+    let isValid = true;
+    
+    if (formData.email.trim() !== '' && !emailRegex.test(formData.email)) {
+      setErrors(prev => ({ ...prev, email: 'البريد الإلكتروني غير صحيح' }));
+      isValid = false;
+    }
+    
+    if (formData.contactNumber.trim() !== '' && !phoneRegex.test(formData.contactNumber)) {
+      setErrors(prev => ({ ...prev, contactNumber: 'رقم الهاتف يجب أن يكون أرقامًا فقط وبحد أقصى 15 رقمًا' }));
+      isValid = false;
+    }
+    
     return (
+      isValid &&
       formData.fullName.trim() !== '' &&
       formData.nationality.trim() !== '' &&
       formData.email.trim() !== '' &&
@@ -273,14 +311,21 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
                     <Label htmlFor="nationality">الجنسية *</Label>
                     <div className="relative">
                       <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <Input
-                        id="nationality"
-                        name="nationality"
+                      <Select
                         value={formData.nationality}
-                        onChange={handleInputChange}
-                        className="pr-10"
-                        required
-                      />
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, nationality: value }))}
+                      >
+                        <SelectTrigger className="pr-10">
+                          <SelectValue placeholder="اختر الجنسية" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countries.map((country) => (
+                            <SelectItem key={country} value={country}>
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   
@@ -298,20 +343,30 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
                         required
                       />
                     </div>
+                    {errors.email && (
+                      <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                    )}
                   </div>
                   
                   <div>
                     <Label htmlFor="countryOfResidence">بلد الإقامة *</Label>
                     <div className="relative">
                       <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <Input
-                        id="countryOfResidence"
-                        name="countryOfResidence"
+                      <Select
                         value={formData.countryOfResidence}
-                        onChange={handleInputChange}
-                        className="pr-10"
-                        required
-                      />
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, countryOfResidence: value }))}
+                      >
+                        <SelectTrigger className="pr-10">
+                          <SelectValue placeholder="اختر بلد الإقامة" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countries.map((country) => (
+                            <SelectItem key={country} value={country}>
+                              {country}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   
@@ -322,12 +377,20 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
                       <Input
                         id="contactNumber"
                         name="contactNumber"
+                        type="tel"
                         value={formData.contactNumber}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                          // Allow only digits and limit to 15 characters
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                          setFormData(prev => ({ ...prev, contactNumber: value }));
+                        }}
                         className="pr-10"
                         required
                       />
                     </div>
+                    {errors.contactNumber && (
+                      <p className="text-red-500 text-sm mt-1">{errors.contactNumber}</p>
+                    )}
                   </div>
                   
                   <div>
@@ -363,7 +426,14 @@ export function ApplicationForm({ universityId, programId, onClose }: Applicatio
                 
                 <div className="flex justify-between">
                   <div></div> {/* Empty div for spacing */}
-                  <Button type="button" onClick={nextStep} disabled={!validateStep1()}>
+                  <Button 
+                    type="button" 
+                    onClick={() => {
+                      if (validateStep1()) {
+                        nextStep();
+                      }
+                    }}
+                  >
                     التالي
                     <ChevronLeft className="mr-2 h-4 w-4" />
                   </Button>
