@@ -258,7 +258,7 @@ export default function StudentsPage() {
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلبات</h1>
+            <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلاب</h1>
             <p className="text-[#4b5563] mt-1">إدارة جميع طلبات الطلاب</p>
           </div>
         </div>
@@ -274,7 +274,7 @@ export default function StudentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلبات</h1>
+          <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلاب</h1>
           <p className="text-[#4b5563] mt-1">إدارة جميع طلبات الطلاب</p>
         </div>
         <div className="flex items-center gap-3">

@@ -124,6 +124,7 @@ model FormSubmission {
   orderStage        String        @default("New") // For order stage management
   userId            Int?          @unique // For user account linking (one-to-one)
   user              User?         @relation(fields: [userId], references: [id])
+  orders            Order[]
 }
 
 model Agent {
@@ -134,6 +135,7 @@ model Agent {
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
   submissions FormSubmission[]
+  orders     Order[]
 }
 
 model User {
@@ -144,6 +146,7 @@ model User {
   fullName      String
   formSubmissionId Int?        @unique // Link to form submission (one-to-one)
   formSubmission FormSubmission?
+  orders        Order[]
   role          String         @default("student") // "student", "agent", or "admin"
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -159,4 +162,21 @@ model UploadedFile {
   formSubmission  FormSubmission @relation(fields: [formSubmissionId], references: [id])
   formSubmissionId Int
   uploadedAt      DateTime @default(now())
+}
+
+model Order {
+  id              Int        @id @default(autoincrement())
+  userId          Int
+  user            User       @relation(fields: [userId], references: [id])
+  formSubmissionId Int?
+  formSubmission   FormSubmission? @relation(fields: [formSubmissionId], references: [id])
+  agentId         Int?
+  agent           Agent?     @relation(fields: [agentId], references: [id])
+  price           Float
+  status          String     @default("pending") // pending, completed, cancelled
+  paymentStatus   String     @default("unpaid")  // paid, unpaid, refunded
+  dateCreated     DateTime   @default(now())
+  receipt         String?    // URL or path to receipt file
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }
