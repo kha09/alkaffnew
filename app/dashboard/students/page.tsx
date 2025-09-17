@@ -62,13 +62,6 @@ type FormSubmission = {
   uploadedFiles: UploadedFile[]
 }
 
-// Mock data for agents (in a real app, this would be fetched from the API)
-const mockAgents = [
-  { id: 1, name: "محمد أحمد" },
-  { id: 2, name: "فاطمة علي" },
-  { id: 3, name: "عبدالله سالم" },
-]
-
 // Mock data for order stages
 const orderStages = [
   { value: "New", label: "جديد" },
@@ -79,6 +72,7 @@ const orderStages = [
 
 export default function StudentsPage() {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedAgent, setSelectedAgent] = useState("")
@@ -90,6 +84,7 @@ export default function StudentsPage() {
 
   useEffect(() => {
     fetchSubmissions()
+    fetchAgents()
   }, [])
 
   const fetchSubmissions = async () => {
@@ -110,13 +105,28 @@ export default function StudentsPage() {
     }
   }
 
+  const fetchAgents = async () => {
+    try {
+      const response = await fetch('/api/admin/agents')
+      const data = await response.json()
+      setAgents(data.agents)
+    } catch (error) {
+      console.error('Error fetching agents:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب الوكلاء",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleAssignAgent = async (submissionId: number, agentId: string) => {
     try {
       const response = await fetch(`/api/admin/form-submissions/${submissionId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          agentId: agentId === "" ? null : parseInt(agentId)
+          agentId: agentId === "unassigned" ? null : parseInt(agentId)
         })
       })
       
@@ -245,7 +255,7 @@ export default function StudentsPage() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-6" dir="rtl">
+      <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلبات</h1>
@@ -260,7 +270,7 @@ export default function StudentsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6" dir="rtl">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -348,7 +358,7 @@ export default function StudentsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">جميع الوكلاء</SelectItem>
-                {mockAgents.map(agent => (
+                {agents.map(agent => (
                   <SelectItem key={agent.id} value={agent.id.toString()}>{agent.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -425,15 +435,15 @@ export default function StudentsPage() {
                               <div>
                                 <Label>تعيين وكيل</Label>
                                 <Select 
-                                  value={submission.agent?.id.toString() || ""} 
+                                  value={submission.agent?.id?.toString() || ""} 
                                   onValueChange={(value) => handleAssignAgent(submission.id, value)}
                                 >
                                   <SelectTrigger>
                                     <SelectValue placeholder="اختر وكيل" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="">غير محدد</SelectItem>
-                                    {mockAgents.map(agent => (
+                                    <SelectItem value="unassigned">غير محدد</SelectItem>
+                                    {agents.map(agent => (
                                       <SelectItem key={agent.id} value={agent.id.toString()}>{agent.name}</SelectItem>
                                     ))}
                                   </SelectContent>

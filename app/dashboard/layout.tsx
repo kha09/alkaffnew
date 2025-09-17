@@ -12,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
-      <body className={inter.className}>
+      <body className={`${inter.className} rtl`}>
         <div className="min-h-screen bg-[#f9fafb] flex">
           <Sidebar />
           <main className="flex-1">{children}</main>
