@@ -119,6 +119,34 @@ model FormSubmission {
   programId         Int?
   submittedAt       DateTime      @default(now())
   uploadedFiles     UploadedFile[]
+  agentId           Int?          // For agent assignment
+  agent             Agent?        @relation(fields: [agentId], references: [id])
+  orderStage        String        @default("New") // For order stage management
+  userId            Int?          @unique // For user account linking (one-to-one)
+  user              User?         @relation(fields: [userId], references: [id])
+}
+
+model Agent {
+  id         Int            @id @default(autoincrement())
+  name       String
+  email      String         @unique
+  phone      String?
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  submissions FormSubmission[]
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  username      String         @unique
+  password      String         // Hashed password
+  email         String         @unique
+  fullName      String
+  formSubmissionId Int?        @unique // Link to form submission (one-to-one)
+  formSubmission FormSubmission?
+  role          String         @default("student") // "student", "agent", or "admin"
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model UploadedFile {

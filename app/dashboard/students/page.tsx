@@ -1,186 +1,262 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Search, Plus, Download, Filter, Eye, Edit, Trash2, Send, Key, User } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import {
-  Search,
-  Plus,
-  Download,
-  Filter,
-  Eye,
-  Edit,
-  Trash2,
-  Users,
-  GraduationCap,
-  BookOpen,
-  Phone,
-  Mail,
-  Calendar,
-} from "lucide-react"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { toast } from "@/hooks/use-toast"
 
-interface Student {
-  id: string
+// Types
+type Agent = {
+  id: number
   name: string
   email: string
-  phone: string
-  studentId: string
-  major: string
-  status: "تم الدفع" | "لم يكمل الدفع" | "تم رفع البيانات" | "لم يتم رفع البيانات"
-  enrollmentDate: string
-  avatar?: string
+  phone?: string
+  createdAt: string
+  updatedAt: string
 }
 
+type User = {
+  id: number
+  username: string
+  email: string
+  fullName: string
+  role: string
+  createdAt: string
+  updatedAt: string
+}
+
+type UploadedFile = {
+  id: number
+  filename: string
+  originalName: string
+  path: string
+  size: number
+  type: string
+  uploadedAt: string
+}
+
+type FormSubmission = {
+  id: number
+  fullName: string
+  nationality: string
+  email: string
+  countryOfResidence: string
+  contactNumber: string
+  cityOfResidence: string
+  preferredProgram: string
+  universityId: number | null
+  programId: number | null
+  submittedAt: string
+  agentId: number | null
+  orderStage: string
+  userId: number | null
+  agent: Agent | null
+  user: User | null
+  uploadedFiles: UploadedFile[]
+}
+
+// Mock data for agents (in a real app, this would be fetched from the API)
+const mockAgents = [
+  { id: 1, name: "محمد أحمد" },
+  { id: 2, name: "فاطمة علي" },
+  { id: 3, name: "عبدالله سالم" },
+]
+
+// Mock data for order stages
+const orderStages = [
+  { value: "New", label: "جديد" },
+  { value: "In Progress", label: "قيد المعالجة" },
+  { value: "Completed", label: "مكتمل" },
+  { value: "Cancelled", label: "ملغي" },
+]
+
 export default function StudentsPage() {
-  const [students, setStudents] = useState<Student[]>([
-    {
-      id: "1",
-      name: "أحمد محمد علي",
-      email: "ahmed.ali@university.edu",
-      phone: "+966 50 123 4567",
-      studentId: "STU-2023-001",
-      major: "علوم الحاسوب",
-      status: "تم الدفع",
-      enrollmentDate: "2023-09-01",
-    },
-    {
-      id: "2",
-      name: "فاطمة أحمد سالم",
-      email: "fatima.salem@university.edu",
-      phone: "+966 55 987 6543",
-      studentId: "STU-2022-045",
-      major: "إدارة الأعمال",
-      status: "تم رفع البيانات",
-      enrollmentDate: "2022-09-01",
-    },
-    {
-      id: "3",
-      name: "محمد سالم الأحمد",
-      email: "mohammed.ahmed@university.edu",
-      phone: "+966 56 456 7890",
-      studentId: "STU-2021-089",
-      major: "الهندسة المدنية",
-      status: "لم يكمل الدفع",
-      enrollmentDate: "2021-09-01",
-    },
-    {
-      id: "4",
-      name: "نور الدين يوسف",
-      email: "nour.youssef@university.edu",
-      phone: "+966 54 321 0987",
-      studentId: "STU-2024-012",
-      major: "الطب",
-      status: "لم يتم رفع البيانات",
-      enrollmentDate: "2024-09-01",
-    },
-    {
-      id: "5",
-      name: "عائشة محمود حسن",
-      email: "aisha.hassan@university.edu",
-      phone: "+966 53 789 0123",
-      studentId: "STU-2023-067",
-      major: "الصيدلة",
-      status: "تم الدفع",
-      enrollmentDate: "2023-09-01",
-    },
-    {
-      id: "6",
-      name: "يوسف عبدالله النور",
-      email: "youssef.nour@university.edu",
-      phone: "+966 52 654 3210",
-      studentId: "STU-2022-134",
-      major: "القانون",
-      status: "تم رفع البيانات",
-      enrollmentDate: "2022-09-01",
-    },
-  ])
-
+  const [submissions, setSubmissions] = useState<FormSubmission[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [formData, setFormData] = useState<Partial<Student>>({})
+  const [selectedAgent, setSelectedAgent] = useState("")
+  const [selectedOrderStage, setSelectedOrderStage] = useState("")
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
+  const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null)
+  const [emailSubject, setEmailSubject] = useState("")
+  const [emailMessage, setEmailMessage] = useState("")
 
-  const filteredStudents = students.filter((student) => {
-    const matchesSearch =
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || student.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  useEffect(() => {
+    fetchSubmissions()
+  }, [])
 
-  const handleAddStudent = () => {
-    if (formData.name && formData.email && formData.phone && formData.major) {
-      const newStudent: Student = {
-        id: Date.now().toString(),
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        studentId: `STU-${new Date().getFullYear()}-${String(students.length + 1).padStart(3, "0")}`,
-        major: formData.major,
-        status: "لم يكمل الدفع",
-        enrollmentDate: new Date().toISOString().split("T")[0],
+  const fetchSubmissions = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/form-submissions')
+      const data = await response.json()
+      setSubmissions(data.submissions)
+    } catch (error) {
+      console.error('Error fetching submissions:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب الطلبات",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAssignAgent = async (submissionId: number, agentId: string) => {
+    try {
+      const response = await fetch(`/api/admin/form-submissions/${submissionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          agentId: agentId === "" ? null : parseInt(agentId)
+        })
+      })
+      
+      if (response.ok) {
+        const updatedSubmission = await response.json()
+        setSubmissions(submissions.map(sub => 
+          sub.id === submissionId ? updatedSubmission : sub
+        ))
+        toast({
+          title: "نجاح",
+          description: "تم تعيين الوكيل بنجاح",
+        })
+      } else {
+        throw new Error('Failed to update submission')
       }
-      setStudents([...students, newStudent])
-      setFormData({})
-      setIsAddDialogOpen(false)
+    } catch (error) {
+      console.error('Error assigning agent:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تعيين الوكيل",
+        variant: "destructive",
+      })
     }
   }
 
-  const handleEditStudent = () => {
-    if (selectedStudent && formData.name && formData.email && formData.phone && formData.major) {
-      const updatedStudents = students.map((student) =>
-        student.id === selectedStudent.id ? { ...student, ...formData } : student,
-      )
-      setStudents(updatedStudents)
-      setFormData({})
-      setSelectedStudent(null)
-      setIsEditDialogOpen(false)
+  const handleUpdateOrderStage = async (submissionId: number, stage: string) => {
+    try {
+      const response = await fetch(`/api/admin/form-submissions/${submissionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderStage: stage })
+      })
+      
+      if (response.ok) {
+        const updatedSubmission = await response.json()
+        setSubmissions(submissions.map(sub => 
+          sub.id === submissionId ? updatedSubmission : sub
+        ))
+        toast({
+          title: "نجاح",
+          description: "تم تحديث حالة الطلب بنجاح",
+        })
+      } else {
+        throw new Error('Failed to update submission')
+      }
+    } catch (error) {
+      console.error('Error updating order stage:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث حالة الطلب",
+        variant: "destructive",
+      })
     }
   }
 
-  const handleDeleteStudent = (studentId: string) => {
-    setStudents(students.filter((student) => student.id !== studentId))
-  }
-
-  const openEditDialog = (student: Student) => {
-    setSelectedStudent(student)
-    setFormData(student)
-    setIsEditDialogOpen(true)
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "تم الدفع":
-        return "bg-green-100 text-green-800"
-      case "لم يكمل الدفع":
-        return "bg-red-100 text-red-800"
-      case "تم رفع البيانات":
-        return "bg-blue-100 text-blue-800"
-      case "لم يتم رفع البيانات":
-        return "bg-yellow-100 text-yellow-800"
-      default:
-        return "bg-gray-100 text-gray-800"
+  const handleGenerateUser = async (submissionId: number) => {
+    try {
+      const response = await fetch('/api/admin/form-submissions/generate-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submissionId })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        // Refresh submissions to get updated data
+        fetchSubmissions()
+        toast({
+          title: "نجاح",
+          description: `تم إنشاء المستخدم بنجاح. اسم المستخدم: ${data.username}, كلمة المرور: ${data.password}`,
+        })
+      } else {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to generate user')
+      }
+    } catch (error: any) {
+      console.error('Error generating user:', error)
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء إنشاء المستخدم",
+        variant: "destructive",
+      })
     }
+  }
+
+  const handleSendEmail = async () => {
+    if (!selectedSubmission || !emailSubject || !emailMessage) return
+
+    try {
+      const response = await fetch('/api/admin/form-submissions/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          submissionId: selectedSubmission.id,
+          subject: emailSubject,
+          message: emailMessage
+        })
+      })
+      
+      if (response.ok) {
+        setIsEmailDialogOpen(false)
+        setEmailSubject("")
+        setEmailMessage("")
+        setSelectedSubmission(null)
+        toast({
+          title: "نجاح",
+          description: "تم إرسال البريد الإلكتروني بنجاح",
+        })
+      } else {
+        throw new Error('Failed to send email')
+      }
+    } catch (error) {
+      console.error('Error sending email:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إرسال البريد الإلكتروني",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const openEmailDialog = (submission: FormSubmission) => {
+    setSelectedSubmission(submission)
+    setIsEmailDialogOpen(true)
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6" dir="rtl">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلبات</h1>
+            <p className="text-[#4b5563] mt-1">إدارة جميع طلبات الطلاب</p>
+          </div>
+        </div>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#111827]"></div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -188,74 +264,14 @@ export default function StudentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلاب</h1>
-          <p className="text-[#4b5563] mt-1">إدارة بيانات الطلاب والمتدربين</p>
+          <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلبات</h1>
+          <p className="text-[#4b5563] mt-1">إدارة جميع طلبات الطلاب</p>
         </div>
         <div className="flex items-center gap-3">
           <Button variant="outline">
             <Download className="w-4 h-4 ml-2" />
             تصدير
           </Button>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-[#111827] hover:bg-[#374151]">
-                <Plus className="w-4 h-4 ml-2" />
-                طالب جديد
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>إضافة طالب جديد</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name">الاسم الكامل</Label>
-                  <Input
-                    id="name"
-                    value={formData.name || ""}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="أدخل الاسم الكامل"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email">البريد الإلكتروني</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email || ""}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="student@university.edu"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">رقم الهاتف</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone || ""}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="+966 50 123 4567"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="major">التخصص</Label>
-                  <Input
-                    id="major"
-                    value={formData.major || ""}
-                    onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                    placeholder="أدخل التخصص"
-                  />
-                </div>
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={handleAddStudent} className="flex-1">
-                    إضافة الطالب
-                  </Button>
-                  <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="flex-1">
-                    إلغاء
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
       </div>
 
@@ -265,10 +281,10 @@ export default function StudentsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#4b5563]">إجمالي الطلاب</p>
-                <p className="text-2xl font-bold text-[#111827]">{students.length}</p>
+                <p className="text-sm text-[#4b5563]">إجمالي الطلبات</p>
+                <p className="text-2xl font-bold text-[#111827]">{submissions.length}</p>
               </div>
-              <Users className="w-8 h-8 text-[#4b5563]" />
+              <User className="w-8 h-8 text-[#4b5563]" />
             </div>
           </CardContent>
         </Card>
@@ -276,12 +292,25 @@ export default function StudentsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#4b5563]">تم الدفع</p>
+                <p className="text-sm text-[#4b5563]">قيد المعالجة</p>
+                <p className="text-2xl font-bold text-[#f59e0b]">
+                  {submissions.filter(s => s.orderStage === "In Progress").length}
+                </p>
+              </div>
+              <Filter className="w-8 h-8 text-[#f59e0b]" />
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-[#4b5563]">مكتملة</p>
                 <p className="text-2xl font-bold text-[#10b981]">
-                  {students.filter((s) => s.status === "تم الدفع").length}
+                  {submissions.filter(s => s.orderStage === "Completed").length}
                 </p>
               </div>
-              <GraduationCap className="w-8 h-8 text-[#10b981]" />
+              <Key className="w-8 h-8 text-[#10b981]" />
             </div>
           </CardContent>
         </Card>
@@ -289,217 +318,220 @@ export default function StudentsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#4b5563]">تم رفع البيانات</p>
-                <p className="text-2xl font-bold text-[#3b82f6]">
-                  {students.filter((s) => s.status === "تم رفع البيانات").length}
-                </p>
-              </div>
-              <BookOpen className="w-8 h-8 text-[#3b82f6]" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[#4b5563]">لم يكمل الدفع</p>
+                <p className="text-sm text-[#4b5563]">ملغية</p>
                 <p className="text-2xl font-bold text-[#ef4444]">
-                  {students.filter((s) => s.status === "لم يكمل الدفع").length}
+                  {submissions.filter(s => s.orderStage === "Cancelled").length}
                 </p>
               </div>
-              <Users className="w-8 h-8 text-[#ef4444]" />
+              <Trash2 className="w-8 h-8 text-[#ef4444]" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Students Table */}
+      {/* Filters */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>قائمة الطلاب</CardTitle>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4b5563] w-4 h-4" />
-                <Input
-                  placeholder="البحث في الطلاب..."
-                  className="pr-10 w-64"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الحالات</SelectItem>
-                  <SelectItem value="تم الدفع">تم الدفع</SelectItem>
-                  <SelectItem value="لم يكمل الدفع">لم يكمل الدفع</SelectItem>
-                  <SelectItem value="تم رفع البيانات">تم رفع البيانات</SelectItem>
-                  <SelectItem value="لم يتم رفع البيانات">لم يتم رفع البيانات</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4 ml-2" />
-                فلترة
-              </Button>
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4b5563] w-4 h-4" />
+              <Input 
+                placeholder="البحث في الطلبات..." 
+                className="pr-10" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredStudents.map((student) => (
-              <Card key={student.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={student.avatar || "/placeholder.svg"} />
-                        <AvatarFallback>
-                          {student.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-semibold text-[#111827]">{student.name}</h3>
-                        <p className="text-sm text-[#4b5563]">{student.studentId}</p>
-                      </div>
-                    </div>
-                    <Badge className={getStatusColor(student.status)}>{student.status}</Badge>
-                  </div>
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-[#4b5563]">
-                      <BookOpen className="w-4 h-4" />
-                      <span>{student.major}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-[#4b5563]">
-                      <Phone className="w-4 h-4" />
-                      <span>{student.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-[#4b5563]">
-                      <Mail className="w-4 h-4" />
-                      <span>{student.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-[#4b5563]">
-                      <Calendar className="w-4 h-4" />
-                      <span>{student.enrollmentDate}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 bg-transparent">
-                      <Eye className="w-4 h-4 ml-2" />
-                      عرض
-                    </Button>
-                    <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => openEditDialog(student)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-md">
-                        <DialogHeader>
-                          <DialogTitle>تعديل بيانات الطالب</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="edit-name">الاسم الكامل</Label>
-                            <Input
-                              id="edit-name"
-                              value={formData.name || ""}
-                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="edit-email">البريد الإلكتروني</Label>
-                            <Input
-                              id="edit-email"
-                              type="email"
-                              value={formData.email || ""}
-                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="edit-phone">رقم الهاتف</Label>
-                            <Input
-                              id="edit-phone"
-                              value={formData.phone || ""}
-                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="edit-major">التخصص</Label>
-                            <Input
-                              id="edit-major"
-                              value={formData.major || ""}
-                              onChange={(e) => setFormData({ ...formData, major: e.target.value })}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="edit-status">الحالة</Label>
-                            <Select
-                              value={formData.status || ""}
-                              onValueChange={(value) =>
-                                setFormData({ ...formData, status: value as Student["status"] })
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="تم الدفع">تم الدفع</SelectItem>
-                                <SelectItem value="لم يكمل الدفع">لم يكمل الدفع</SelectItem>
-                                <SelectItem value="تم رفع البيانات">تم رفع البيانات</SelectItem>
-                                <SelectItem value="لم يتم رفع البيانات">لم يتم رفع البيانات</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="flex gap-2 pt-4">
-                            <Button onClick={handleEditStudent} className="flex-1">
-                              حفظ التغييرات
-                            </Button>
-                            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="flex-1">
-                              إلغاء
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 bg-transparent">
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>تأكيد الحذف</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            هل أنت متأكد من حذف الطالب "{student.name}"؟ لا يمكن التراجع عن هذا الإجراء.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteStudent(student.id)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            حذف
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="الوكيل" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع الوكلاء</SelectItem>
+                {mockAgents.map(agent => (
+                  <SelectItem key={agent.id} value={agent.id.toString()}>{agent.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedOrderStage} onValueChange={setSelectedOrderStage}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="حالة الطلب" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع الحالات</SelectItem>
+                {orderStages.map(stage => (
+                  <SelectItem key={stage.value} value={stage.value}>{stage.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm">
+              <Filter className="w-4 h-4 ml-2" />
+              فلترة
+            </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Submissions Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>قائمة الطلبات</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#e5e7eb]">
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">الإجراءات</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">الوكيل</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">حالة الطلب</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">التخصص المفضل</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">رقم الاتصال</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">البريد الإلكتروني</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">الاسم الكامل</th>
+                </tr>
+              </thead>
+              <tbody>
+                {submissions.map((submission) => (
+                  <tr key={submission.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => openEmailDialog(submission)}
+                        >
+                          <Send className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleGenerateUser(submission.id)}
+                          disabled={!!submission.user}
+                        >
+                          <Key className="w-4 h-4" />
+                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>تعديل الطلب</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label>تعيين وكيل</Label>
+                                <Select 
+                                  value={submission.agent?.id.toString() || ""} 
+                                  onValueChange={(value) => handleAssignAgent(submission.id, value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="اختر وكيل" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="">غير محدد</SelectItem>
+                                    {mockAgents.map(agent => (
+                                      <SelectItem key={agent.id} value={agent.id.toString()}>{agent.name}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label>حالة الطلب</Label>
+                                <Select 
+                                  value={submission.orderStage} 
+                                  onValueChange={(value) => handleUpdateOrderStage(submission.id, value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {orderStages.map(stage => (
+                                      <SelectItem key={stage.value} value={stage.value}>{stage.label}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      {submission.agent ? (
+                        <Badge className="bg-blue-100 text-blue-800">{submission.agent.name}</Badge>
+                      ) : (
+                        <Badge variant="outline">غير محدد</Badge>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <Badge 
+                        className={
+                          submission.orderStage === "Completed" ? "bg-green-100 text-green-800" :
+                          submission.orderStage === "In Progress" ? "bg-yellow-100 text-yellow-800" :
+                          submission.orderStage === "Cancelled" ? "bg-red-100 text-red-800" :
+                          "bg-gray-100 text-gray-800"
+                        }
+                      >
+                        {orderStages.find(s => s.value === submission.orderStage)?.label || submission.orderStage}
+                      </Badge>
+                    </td>
+                    <td className="p-3 text-sm text-[#111827]">{submission.preferredProgram}</td>
+                    <td className="p-3 text-sm text-[#111827]">{submission.contactNumber}</td>
+                    <td className="p-3 text-sm text-[#111827]">{submission.email}</td>
+                    <td className="p-3 text-sm font-medium text-[#111827]">{submission.fullName}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Email Dialog */}
+      <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>إرسال بريد إلكتروني</DialogTitle>
+          </DialogHeader>
+          {selectedSubmission && (
+            <div className="space-y-4">
+              <div>
+                <Label>إلى</Label>
+                <Input value={selectedSubmission.email} disabled />
+              </div>
+              <div>
+                <Label>الموضوع</Label>
+                <Input 
+                  value={emailSubject} 
+                  onChange={(e) => setEmailSubject(e.target.value)} 
+                  placeholder="موضوع البريد الإلكتروني"
+                />
+              </div>
+              <div>
+                <Label>الرسالة</Label>
+                <Textarea 
+                  value={emailMessage} 
+                  onChange={(e) => setEmailMessage(e.target.value)} 
+                  placeholder="محتوى البريد الإلكتروني"
+                  rows={5}
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setIsEmailDialogOpen(false)}>
+                  إلغاء
+                </Button>
+                <Button onClick={handleSendEmail}>
+                  إرسال
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
