@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Home, FileText, BarChart3, Users, Bell, FileEdit, University, Building, BookOpen } from "lucide-react"
+import { Home, FileText, BarChart3, Users, Bell, FileEdit, University, Building, BookOpen, DollarSign } from "lucide-react"
 
 const navigation = [
   { name: "لوحة التحكم", href: "/dashboard", icon: Home },
@@ -15,6 +15,7 @@ const navigation = [
   { name: "الجامعات", href: "/dashboard/universities", icon: University },
   { name: "الأقسام", href: "/dashboard/departments", icon: Building },
   { name: "البرامج", href: "/dashboard/programs", icon: BookOpen },
+  { name: "عمولات ومدفوعات", href: "/dashboard/commissions", icon: DollarSign },
 ]
 
 export function Sidebar() {
