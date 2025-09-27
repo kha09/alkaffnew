@@ -561,7 +561,30 @@ export default function StudentsPage() {
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                disabled
+                                onClick={async () => {
+                                  try {
+                                    const response = await fetch(`/api/admin/form-submissions/${submission.id}/reset-password`, {
+                                      method: 'POST'
+                                    });
+                                    const data = await response.json();
+                                    if (response.ok) {
+                                      // Show password in a dialog/modal
+                                      window.alert(`كلمة المرور الجديدة: ${data.newPassword}`);
+                                    } else {
+                                      toast({
+                                        title: "خطأ",
+                                        description: data.error || "حدث خطأ أثناء إعادة تعيين كلمة المرور",
+                                        variant: "destructive",
+                                      });
+                                    }
+                                  } catch (error) {
+                                    toast({
+                                      title: "خطأ",
+                                      description: "حدث خطأ أثناء إعادة تعيين كلمة المرور",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
                               >
                                 <Key className="w-4 h-4" />
                               </Button>
