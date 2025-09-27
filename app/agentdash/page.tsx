@@ -160,7 +160,7 @@ export default function AgentDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
-              طلبات خاصة من الأدميس
+              ملاحظات من الأدمن
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
