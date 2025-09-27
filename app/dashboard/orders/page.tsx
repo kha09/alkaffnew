@@ -39,14 +39,17 @@ type Order = {
   price: number
   status: string
   paymentStatus: string
+  agentStatus: string
+  adminStatus: string
   dateCreated: string
   receipt: string | null
+  agentNotes: string | null
+  adminNotes: string | null
   createdAt: string
   updatedAt: string
   user: User
   formSubmission: FormSubmission | null
   agent: Agent | null
-  notes?: string
 }
 
 type UserOption = {
@@ -160,7 +163,7 @@ export default function OrdersPage() {
 
   const handleViewOrder = (order: Order) => {
     setSelectedOrder(order)
-    setOrderNotes(order.notes || "")
+    setOrderNotes(order.adminNotes || "")
     setIsViewDialogOpen(true)
   }
 

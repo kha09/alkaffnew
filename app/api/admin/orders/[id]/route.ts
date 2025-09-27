@@ -18,7 +18,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const body = await request.json()
     
-    const { userId, formSubmissionId, agentId, price, status, paymentStatus, receipt, notes } = body
+    const { userId, formSubmissionId, agentId, price, status, paymentStatus, receipt } = body
 
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({

@@ -175,9 +175,12 @@ model Order {
   price           Float
   status          String     @default("pending") // pending, completed, cancelled
   paymentStatus   String     @default("unpaid")  // paid, unpaid, refunded
+  agentStatus     String     @default("Draft")   // Draft, Submitted, Follow-up (editable by agent)
+  adminStatus     String     @default("Pending")  // Pending, Approved, Rejected, Completed (editable by admin)
   dateCreated     DateTime   @default(now())
   receipt         String?    // URL or path to receipt file
-  notes           String?    // Additional notes about the order
+  agentNotes      String?    // Private notes from agent to admin
+  adminNotes      String?    // Private notes from admin to agent
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
