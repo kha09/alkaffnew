@@ -41,22 +41,43 @@ export default function AgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [filterStatus, setFilterStatus] = useState("all")
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [currentAgent, setCurrentAgent] = useState<Agent | null>(null)
   const [agentName, setAgentName] = useState("")
   const [agentEmail, setAgentEmail] = useState("")
   const [agentPhone, setAgentPhone] = useState("")
+  const [dialogMode, setDialogMode] = useState<"view" | "edit" | "create">("create")
 
   useEffect(() => {
     fetchAgents()
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, filterStatus, page])
 
-  const fetchAgents = async () => {
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setPage(1)
+      fetchAgents(1)
+    }, 400)
+    return () => clearTimeout(handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm])
+
+  const fetchAgents = async (customPage?: number) => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/agents')
+      const params = new URLSearchParams()
+      if (searchTerm) params.append("search", searchTerm)
+      if (filterStatus !== "all") params.append("status", filterStatus)
+      params.append("page", String(customPage || page))
+      params.append("limit", "9")
+      const response = await fetch(`/api/admin/agents?${params.toString()}`)
       const data = await response.json()
       setAgents(data.agents)
+      setTotalPages(data.pagination?.pages || 1)
     } catch (error) {
       console.error('Error fetching agents:', error)
       toast({
@@ -74,6 +95,7 @@ export default function AgentsPage() {
     setAgentName("")
     setAgentEmail("")
     setAgentPhone("")
+    setDialogMode("create")
     setIsDialogOpen(true)
   }
 
@@ -82,6 +104,16 @@ export default function AgentsPage() {
     setAgentName(agent.name)
     setAgentEmail(agent.email)
     setAgentPhone(agent.phone || "")
+    setDialogMode("edit")
+    setIsDialogOpen(true)
+  }
+
+  const handleViewAgent = (agent: Agent) => {
+    setCurrentAgent(agent)
+    setAgentName(agent.name)
+    setAgentEmail(agent.email)
+    setAgentPhone(agent.phone || "")
+    setDialogMode("view")
     setIsDialogOpen(true)
   }
 
@@ -260,27 +292,28 @@ export default function AgentsPage() {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4b5563] w-4 h-4" />
-                <Input 
-                  placeholder="البحث في الوكلاء..." 
-                  className="pr-10 w-64" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <Select defaultValue="all">
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع الوكلاء</SelectItem>
-                  <SelectItem value="active">نشط</SelectItem>
-                  <SelectItem value="inactive">غير نشط</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm">
-                <Filter className="w-4 h-4 ml-2" />
-                فلترة
-              </Button>
+              <Input 
+                placeholder="البحث في الوكلاء..." 
+                className="pr-10 w-64" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Select value={filterStatus} onValueChange={(val) => { setFilterStatus(val); setPage(1); }}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع الوكلاء</SelectItem>
+                <SelectItem value="active">نشط</SelectItem>
+                <SelectItem value="inactive">غير نشط</SelectItem>
+              </SelectContent>
+            </Select>
+            {/* Filter button can be used for advanced filters in the future */}
+            <Button variant="outline" size="sm" disabled>
+              <Filter className="w-4 h-4 ml-2" />
+              فلترة
+            </Button>
             </div>
           </div>
         </CardHeader>
@@ -337,7 +370,12 @@ export default function AgentsPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 bg-transparent">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 bg-transparent"
+                      onClick={() => handleViewAgent(agent)}
+                    >
                       <Eye className="w-4 h-4 ml-2" />
                       عرض
                     </Button>
@@ -360,48 +398,82 @@ export default function AgentsPage() {
         </CardContent>
       </Card>
 
+      {/* Pagination */}
+      <div className="flex justify-center mt-6 gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page === 1}
+        >
+          السابق
+        </Button>
+        <span className="px-3 py-2 rounded bg-gray-100 text-gray-700">
+          صفحة {page} من {totalPages}
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          disabled={page === totalPages}
+        >
+          التالي
+        </Button>
+      </div>
+
       {/* Agent Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{currentAgent ? "تعديل وكيل" : "وكيل جديد"}</DialogTitle>
+            <DialogTitle>
+              {dialogMode === "view"
+                ? "تفاصيل الوكيل"
+                : currentAgent
+                ? "تعديل وكيل"
+                : "وكيل جديد"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label htmlFor="agentName">الاسم</Label>
-              <Input 
-                id="agentName" 
-                value={agentName} 
-                onChange={(e) => setAgentName(e.target.value)} 
+              <Input
+                id="agentName"
+                value={agentName}
+                onChange={(e) => setAgentName(e.target.value)}
                 placeholder="اسم الوكيل"
+                disabled={dialogMode === "view"}
               />
             </div>
             <div>
               <Label htmlFor="agentEmail">البريد الإلكتروني</Label>
-              <Input 
-                id="agentEmail" 
-                type="email" 
-                value={agentEmail} 
-                onChange={(e) => setAgentEmail(e.target.value)} 
+              <Input
+                id="agentEmail"
+                type="email"
+                value={agentEmail}
+                onChange={(e) => setAgentEmail(e.target.value)}
                 placeholder="البريد الإلكتروني"
+                disabled={dialogMode === "view"}
               />
             </div>
             <div>
               <Label htmlFor="agentPhone">رقم الهاتف</Label>
-              <Input 
-                id="agentPhone" 
-                value={agentPhone} 
-                onChange={(e) => setAgentPhone(e.target.value)} 
+              <Input
+                id="agentPhone"
+                value={agentPhone}
+                onChange={(e) => setAgentPhone(e.target.value)}
                 placeholder="رقم الهاتف"
+                disabled={dialogMode === "view"}
               />
             </div>
             <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                إلغاء
+                إغلاق
               </Button>
-              <Button onClick={handleSaveAgent}>
-                حفظ
-              </Button>
+              {dialogMode !== "view" && (
+                <Button onClick={handleSaveAgent}>
+                  حفظ
+                </Button>
+              )}
             </div>
           </div>
         </DialogContent>

@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
     const search = searchParams.get('search') || ''
+    const status = searchParams.get('status') || 'all'
 
     const skip = (page - 1) * limit
 
@@ -25,6 +26,14 @@ export async function GET(request: NextRequest) {
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } }
       ]
+    }
+
+    // Status filter (future-proof, currently all agents are "active")
+    if (status === "active") {
+      // If you add a status field to Agent, filter here
+      // where.status = "active"
+    } else if (status === "inactive") {
+      // where.status = "inactive"
     }
 
     // Fetch agents
@@ -97,106 +106,6 @@ export async function POST(request: NextRequest) {
     console.error('Error creating agent:', error)
     return NextResponse.json(
       { error: 'حدث خطأ أثناء إنشاء الوكيل' },
-      { status: 500 }
-    )
-  }
-}
-
-// PUT /api/admin/agents/:id - Update an agent
-export async function PUT(request: NextRequest) {
-  try {
-    // Check if user is admin (would need to implement auth)
-    // const session = await getServerSession(authOptions)
-    // if (!session || session.user.role !== 'admin') {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
-
-    const url = new URL(request.url)
-    const pathParts = url.pathname.split('/')
-    const id = parseInt(pathParts[pathParts.length - 1])
-    
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
-    }
-
-    const data = await request.json()
-    
-    // Check if agent exists
-    const existingAgent = await prisma.agent.findUnique({
-      where: { id }
-    })
-
-    if (!existingAgent) {
-      return NextResponse.json({ error: 'الوكيل غير موجود' }, { status: 404 })
-    }
-
-    // Check if another agent with this email already exists
-    if (data.email && data.email !== existingAgent.email) {
-      const agentWithSameEmail = await prisma.agent.findUnique({
-        where: { email: data.email }
-      })
-
-      if (agentWithSameEmail) {
-        return NextResponse.json({ error: 'وكيل مع هذا البريد الإلكتروني موجود بالفعل' }, { status: 400 })
-      }
-    }
-
-    // Update the agent
-    const agent = await prisma.agent.update({
-      where: { id },
-      data: {
-        name: data.name || existingAgent.name,
-        email: data.email || existingAgent.email,
-        phone: data.phone !== undefined ? data.phone : existingAgent.phone
-      }
-    })
-
-    return NextResponse.json(agent)
-  } catch (error) {
-    console.error('Error updating agent:', error)
-    return NextResponse.json(
-      { error: 'حدث خطأ أثناء تحديث الوكيل' },
-      { status: 500 }
-    )
-  }
-}
-
-// DELETE /api/admin/agents/:id - Delete an agent
-export async function DELETE(request: NextRequest) {
-  try {
-    // Check if user is admin (would need to implement auth)
-    // const session = await getServerSession(authOptions)
-    // if (!session || session.user.role !== 'admin') {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
-
-    const url = new URL(request.url)
-    const pathParts = url.pathname.split('/')
-    const id = parseInt(pathParts[pathParts.length - 1])
-    
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
-    }
-
-    // Check if agent exists
-    const existingAgent = await prisma.agent.findUnique({
-      where: { id }
-    })
-
-    if (!existingAgent) {
-      return NextResponse.json({ error: 'الوكيل غير موجود' }, { status: 404 })
-    }
-
-    // Delete the agent
-    await prisma.agent.delete({
-      where: { id }
-    })
-
-    return NextResponse.json({ message: 'تم حذف الوكيل بنجاح' })
-  } catch (error) {
-    console.error('Error deleting agent:', error)
-    return NextResponse.json(
-      { error: 'حدث خطأ أثناء حذف الوكيل' },
       { status: 500 }
     )
   }
