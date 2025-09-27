@@ -184,7 +184,7 @@ export default function StudentsPage() {
 
   const handleGenerateUser = async (submissionId: number) => {
     try {
-      const response = await fetch('/api/admin/form-submissions/generate-user', {
+      const response = await fetch('/api/admin/form-submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ submissionId })
@@ -406,21 +406,41 @@ export default function StudentsPage() {
                   <tr key={submission.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => openEmailDialog(submission)}
-                        >
-                          <Send className="w-4 h-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleGenerateUser(submission.id)}
-                          disabled={!!submission.user}
-                        >
-                          <Key className="w-4 h-4" />
-                        </Button>
+                        {submission.user ? (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => openEmailDialog(submission)}
+                            >
+                              <Send className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              disabled
+                            >
+                              <Key className="w-4 h-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleGenerateUser(submission.id)}
+                            >
+                              قبول
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              disabled
+                            >
+                              رفض
+                            </Button>
+                          </>
+                        )}
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="outline" size="sm">

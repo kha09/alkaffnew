@@ -122,9 +122,7 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         email: submission.email,
         fullName: submission.fullName,
-        formSubmission: {
-          connect: { id: submissionId }
-        },
+        formSubmissionId: submissionId,
         role: 'student'
       }
     })
