@@ -83,7 +83,9 @@ export default function OrdersPage() {
   const [programFilter, setProgramFilter] = useState("all")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null)
   const [newOrder, setNewOrder] = useState({
     userId: null as number | null,
     formSubmissionId: null as number | null,
@@ -160,6 +162,53 @@ export default function OrdersPage() {
     setSelectedOrder(order)
     setOrderNotes(order.notes || "")
     setIsViewDialogOpen(true)
+  }
+
+  const handleEditOrder = (order: Order) => {
+    setEditingOrder(order)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleSaveEditedOrder = async () => {
+    if (!editingOrder) return
+
+    try {
+      const response = await fetch(`/api/admin/orders/${editingOrder.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: editingOrder.userId,
+          formSubmissionId: editingOrder.formSubmissionId,
+          agentId: editingOrder.agentId,
+          price: editingOrder.price,
+          status: editingOrder.status,
+          paymentStatus: editingOrder.paymentStatus,
+          receipt: editingOrder.receipt,
+        })
+      })
+      
+      if (response.ok) {
+        const updatedOrder = await response.json()
+        setOrders(orders.map(order => 
+          order.id === updatedOrder.id ? updatedOrder : order
+        ))
+        setIsEditDialogOpen(false)
+        setEditingOrder(null)
+        toast({
+          title: "نجاح",
+          description: "تم تحديث الطلب بنجاح",
+        })
+      } else {
+        throw new Error('Failed to update order')
+      }
+    } catch (error) {
+      console.error('Error updating order:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث الطلب",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleUpdateOrder = async () => {
@@ -639,7 +688,11 @@ export default function OrdersPage() {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditOrder(order)}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button 
@@ -792,6 +845,97 @@ export default function OrdersPage() {
                   disabled={!notificationMessage}
                 >
                   إرسال إشعار
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Order Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>تعديل الطلب #{editingOrder?.id}</DialogTitle>
+          </DialogHeader>
+          {editingOrder && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="editUserId">المستخدم</Label>
+                  <Select 
+                    value={editingOrder.userId?.toString() || ''} 
+                    onValueChange={(value) => setEditingOrder({...editingOrder, userId: value ? parseInt(value) : null})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر مستخدم" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id.toString()}>
+                          {user.formSubmission?.fullName || user.fullName} - {user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editPrice">السعر</Label>
+                  <Input
+                    id="editPrice"
+                    type="number"
+                    value={editingOrder.price || ''}
+                    onChange={(e) => setEditingOrder({...editingOrder, price: parseFloat(e.target.value) || 0})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="editStatus">الحالة</Label>
+                  <Select 
+                    value={editingOrder.status} 
+                    onValueChange={(value) => setEditingOrder({...editingOrder, status: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">قيد المعالجة</SelectItem>
+                      <SelectItem value="completed">مكتمل</SelectItem>
+                      <SelectItem value="cancelled">ملغي</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editPaymentStatus">حالة الدفع</Label>
+                  <Select 
+                    value={editingOrder.paymentStatus} 
+                    onValueChange={(value) => setEditingOrder({...editingOrder, paymentStatus: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unpaid">غير مدفوع</SelectItem>
+                      <SelectItem value="paid">مدفوع</SelectItem>
+                      <SelectItem value="refunded">مرتجع</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="editReceipt">رابط الإيصال</Label>
+                  <Input
+                    id="editReceipt"
+                    value={editingOrder.receipt || ''}
+                    onChange={(e) => setEditingOrder({...editingOrder, receipt: e.target.value})}
+                    placeholder="https://example.com/receipt.pdf"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  إلغاء
+                </Button>
+                <Button onClick={handleSaveEditedOrder}>
+                  حفظ التغييرات
                 </Button>
               </div>
             </div>
