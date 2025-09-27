@@ -68,6 +68,7 @@ const orderStages = [
   { value: "In Progress", label: "قيد المعالجة" },
   { value: "Completed", label: "مكتمل" },
   { value: "Cancelled", label: "ملغي" },
+  { value: "Rejected", label: "مرفوض" },
 ]
 
 export default function StudentsPage() {
@@ -207,6 +208,66 @@ export default function StudentsPage() {
       toast({
         title: "خطأ",
         description: error.message || "حدث خطأ أثناء إنشاء المستخدم",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleRejectUser = async (submissionId: number) => {
+    try {
+      const response = await fetch(`/api/admin/form-submissions/${submissionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderStage: "Rejected" })
+      })
+      
+      if (response.ok) {
+        const updatedSubmission = await response.json()
+        setSubmissions(submissions.map(sub => 
+          sub.id === submissionId ? updatedSubmission : sub
+        ))
+        toast({
+          title: "نجاح",
+          description: "تم رفض الطلب بنجاح",
+        })
+      } else {
+        throw new Error('Failed to reject submission')
+      }
+    } catch (error) {
+      console.error('Error rejecting submission:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء رفض الطلب",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleUpdateSubmissionField = async (submissionId: number, field: string, value: string) => {
+    try {
+      const response = await fetch(`/api/admin/form-submissions/${submissionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
+      })
+      
+      if (response.ok) {
+        const updatedSubmission = await response.json()
+        setSubmissions(submissions.map(sub => 
+          sub.id === submissionId ? updatedSubmission : sub
+        ))
+        toast({
+          title: "نجاح",
+          description: "تم تحديث المعلومات بنجاح",
+        })
+      } else {
+        throw new Error('Failed to update submission field')
+      }
+    } catch (error) {
+      console.error(`Error updating submission ${field}:`, error)
+      toast({
+        title: "خطأ",
+        description: `حدث خطأ أثناء تحديث ${field}`,
         variant: "destructive",
       })
     }
@@ -399,6 +460,9 @@ export default function StudentsPage() {
                   <th className="text-right p-3 text-sm font-medium text-[#4b5563]">رقم الاتصال</th>
                   <th className="text-right p-3 text-sm font-medium text-[#4b5563]">البريد الإلكتروني</th>
                   <th className="text-right p-3 text-sm font-medium text-[#4b5563]">الاسم الكامل</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">الجنسية</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">بلد الإقامة</th>
+                  <th className="text-right p-3 text-sm font-medium text-[#4b5563]">مدينة الإقامة</th>
                 </tr>
               </thead>
               <tbody>
@@ -435,7 +499,7 @@ export default function StudentsPage() {
                             <Button 
                               variant="outline" 
                               size="sm"
-                              disabled
+                              onClick={() => handleRejectUser(submission.id)}
                             >
                               رفض
                             </Button>
@@ -485,6 +549,158 @@ export default function StudentsPage() {
                                   </SelectContent>
                                 </Select>
                               </div>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label>عرض الملفات المرفقة</Label>
+                                  {submission.uploadedFiles && submission.uploadedFiles.length > 0 ? (
+                                    <div className="mt-2 space-y-2">
+                                      {submission.uploadedFiles.map((file) => (
+                                        <div key={file.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                                          <span className="text-sm">{file.originalName}</span>
+                                          <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => window.open(file.path, '_blank')}
+                                          >
+                                            عرض
+                                          </Button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-gray-500 mt-2">لا توجد ملفات مرفقة</p>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="fullName">الاسم الكامل</Label>
+                                    <Input
+                                      id="fullName"
+                                      value={submission.fullName}
+                                      onChange={(e) => {
+                                        const updatedSubmissions = submissions.map(sub => 
+                                          sub.id === submission.id 
+                                            ? { ...sub, fullName: e.target.value } 
+                                            : sub
+                                        );
+                                        setSubmissions(updatedSubmissions);
+                                      }}
+                                      onBlur={(e) => {
+                                        handleUpdateSubmissionField(submission.id, 'fullName', e.target.value);
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="nationality">الجنسية</Label>
+                                    <Input
+                                      id="nationality"
+                                      value={submission.nationality}
+                                      onChange={(e) => {
+                                        const updatedSubmissions = submissions.map(sub => 
+                                          sub.id === submission.id 
+                                            ? { ...sub, nationality: e.target.value } 
+                                            : sub
+                                        );
+                                        setSubmissions(updatedSubmissions);
+                                      }}
+                                      onBlur={(e) => {
+                                        handleUpdateSubmissionField(submission.id, 'nationality', e.target.value);
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="email">البريد الإلكتروني</Label>
+                                    <Input
+                                      id="email"
+                                      type="email"
+                                      value={submission.email}
+                                      onChange={(e) => {
+                                        const updatedSubmissions = submissions.map(sub => 
+                                          sub.id === submission.id 
+                                            ? { ...sub, email: e.target.value } 
+                                            : sub
+                                        );
+                                        setSubmissions(updatedSubmissions);
+                                      }}
+                                      onBlur={(e) => {
+                                        handleUpdateSubmissionField(submission.id, 'email', e.target.value);
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="contactNumber">رقم الاتصال</Label>
+                                    <Input
+                                      id="contactNumber"
+                                      value={submission.contactNumber}
+                                      onChange={(e) => {
+                                        const updatedSubmissions = submissions.map(sub => 
+                                          sub.id === submission.id 
+                                            ? { ...sub, contactNumber: e.target.value } 
+                                            : sub
+                                        );
+                                        setSubmissions(updatedSubmissions);
+                                      }}
+                                      onBlur={(e) => {
+                                        handleUpdateSubmissionField(submission.id, 'contactNumber', e.target.value);
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="countryOfResidence">بلد الإقامة</Label>
+                                    <Input
+                                      id="countryOfResidence"
+                                      value={submission.countryOfResidence}
+                                      onChange={(e) => {
+                                        const updatedSubmissions = submissions.map(sub => 
+                                          sub.id === submission.id 
+                                            ? { ...sub, countryOfResidence: e.target.value } 
+                                            : sub
+                                        );
+                                        setSubmissions(updatedSubmissions);
+                                      }}
+                                      onBlur={(e) => {
+                                        handleUpdateSubmissionField(submission.id, 'countryOfResidence', e.target.value);
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="cityOfResidence">مدينة الإقامة</Label>
+                                    <Input
+                                      id="cityOfResidence"
+                                      value={submission.cityOfResidence}
+                                      onChange={(e) => {
+                                        const updatedSubmissions = submissions.map(sub => 
+                                          sub.id === submission.id 
+                                            ? { ...sub, cityOfResidence: e.target.value } 
+                                            : sub
+                                        );
+                                        setSubmissions(updatedSubmissions);
+                                      }}
+                                      onBlur={(e) => {
+                                        handleUpdateSubmissionField(submission.id, 'cityOfResidence', e.target.value);
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="preferredProgram">التخصص المفضل</Label>
+                                    <Input
+                                      id="preferredProgram"
+                                      value={submission.preferredProgram}
+                                      onChange={(e) => {
+                                        const updatedSubmissions = submissions.map(sub => 
+                                          sub.id === submission.id 
+                                            ? { ...sub, preferredProgram: e.target.value } 
+                                            : sub
+                                        );
+                                        setSubmissions(updatedSubmissions);
+                                      }}
+                                      onBlur={(e) => {
+                                        handleUpdateSubmissionField(submission.id, 'preferredProgram', e.target.value);
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </DialogContent>
                         </Dialog>
@@ -513,6 +729,9 @@ export default function StudentsPage() {
                     <td className="p-3 text-sm text-[#111827]">{submission.contactNumber}</td>
                     <td className="p-3 text-sm text-[#111827]">{submission.email}</td>
                     <td className="p-3 text-sm font-medium text-[#111827]">{submission.fullName}</td>
+                    <td className="p-3 text-sm text-[#111827]">{submission.nationality}</td>
+                    <td className="p-3 text-sm text-[#111827]">{submission.countryOfResidence}</td>
+                    <td className="p-3 text-sm text-[#111827]">{submission.cityOfResidence}</td>
                   </tr>
                 ))}
               </tbody>

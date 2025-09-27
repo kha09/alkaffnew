@@ -30,6 +30,15 @@ export async function PUT(request: NextRequest) {
     }
     
     // Add other fields that can be updated as needed
+    if (data.fullName !== undefined) updateData.fullName = data.fullName
+    if (data.nationality !== undefined) updateData.nationality = data.nationality
+    if (data.email !== undefined) updateData.email = data.email
+    if (data.countryOfResidence !== undefined) updateData.countryOfResidence = data.countryOfResidence
+    if (data.contactNumber !== undefined) updateData.contactNumber = data.contactNumber
+    if (data.cityOfResidence !== undefined) updateData.cityOfResidence = data.cityOfResidence
+    if (data.preferredProgram !== undefined) updateData.preferredProgram = data.preferredProgram
+    if (data.universityId !== undefined) updateData.universityId = data.universityId
+    if (data.programId !== undefined) updateData.programId = data.programId
     
     // Update the form submission
     const updatedSubmission = await prisma.formSubmission.update({
