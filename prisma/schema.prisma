@@ -177,6 +177,7 @@ model Order {
   paymentStatus   String     @default("unpaid")  // paid, unpaid, refunded
   dateCreated     DateTime   @default(now())
   receipt         String?    // URL or path to receipt file
+  notes           String?    // Additional notes about the order
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }

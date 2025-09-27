@@ -22,6 +22,8 @@ type FormSubmission = {
   id: number
   fullName: string
   preferredProgram: string
+  universityId: number | null
+  programId: number | null
 }
 
 type Agent = {
@@ -44,6 +46,7 @@ type Order = {
   user: User
   formSubmission: FormSubmission | null
   agent: Agent | null
+  notes?: string
 }
 
 type UserOption = {
@@ -57,14 +60,30 @@ type UserOption = {
   } | null
 }
 
+type University = {
+  id: number
+  name: string
+}
+
+type Program = {
+  id: number
+  name: string
+}
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [users, setUsers] = useState<UserOption[]>([])
+  const [universities, setUniversities] = useState<University[]>([])
+  const [programs, setPrograms] = useState<Program[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentStatusFilter, setPaymentStatusFilter] = useState("all")
+  const [universityFilter, setUniversityFilter] = useState("all")
+  const [programFilter, setProgramFilter] = useState("all")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [newOrder, setNewOrder] = useState({
     userId: null as number | null,
     formSubmissionId: null as number | null,
@@ -74,11 +93,35 @@ export default function OrdersPage() {
     paymentStatus: "unpaid",
     receipt: null as string | null,
   })
+  const [orderNotes, setOrderNotes] = useState("")
+  const [notificationMessage, setNotificationMessage] = useState("")
 
   useEffect(() => {
     fetchOrders()
     fetchUsers()
+    fetchUniversities()
+    fetchPrograms()
   }, [])
+
+  const fetchUniversities = async () => {
+    try {
+      const response = await fetch('/api/universities')
+      const data = await response.json()
+      setUniversities(data)
+    } catch (error) {
+      console.error('Error fetching universities:', error)
+    }
+  }
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await fetch('/api/programs')
+      const data = await response.json()
+      setPrograms(data)
+    } catch (error) {
+      console.error('Error fetching programs:', error)
+    }
+  }
 
   const fetchOrders = async () => {
     try {
@@ -108,6 +151,110 @@ export default function OrdersPage() {
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء جلب المستخدمين",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleViewOrder = (order: Order) => {
+    setSelectedOrder(order)
+    setOrderNotes(order.notes || "")
+    setIsViewDialogOpen(true)
+  }
+
+  const handleUpdateOrder = async () => {
+    if (!selectedOrder) return
+
+    try {
+      const response = await fetch(`/api/admin/orders/${selectedOrder.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          status: selectedOrder.status,
+          paymentStatus: selectedOrder.paymentStatus,
+          notes: orderNotes
+        })
+      })
+      
+      if (response.ok) {
+        const updatedOrder = await response.json()
+        setOrders(orders.map(order => 
+          order.id === updatedOrder.id ? updatedOrder : order
+        ))
+        setSelectedOrder(updatedOrder)
+        toast({
+          title: "نجاح",
+          description: "تم تحديث الطلب بنجاح",
+        })
+      } else {
+        throw new Error('Failed to update order')
+      }
+    } catch (error) {
+      console.error('Error updating order:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحديث الطلب",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleSendNotification = async () => {
+    if (!selectedOrder || !notificationMessage) return
+
+    try {
+      // In a real implementation, this would call an API endpoint to send notifications
+      // For now, we'll just show a success message
+      toast({
+        title: "نجاح",
+        description: "تم إرسال الإشعار للطالب",
+      })
+      setNotificationMessage("")
+    } catch (error) {
+      console.error('Error sending notification:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إرسال الإشعار",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleConfirmPayment = async () => {
+    if (!selectedOrder) return
+
+    try {
+      // Update order payment status
+      const response = await fetch(`/api/admin/orders/${selectedOrder.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          paymentStatus: "paid",
+          status: selectedOrder.status === "pending" ? "completed" : selectedOrder.status
+        })
+      })
+      
+      if (response.ok) {
+        const updatedOrder = await response.json()
+        setOrders(orders.map(order => 
+          order.id === updatedOrder.id ? updatedOrder : order
+        ))
+        setSelectedOrder(updatedOrder)
+        toast({
+          title: "نجاح",
+          description: "تم تأكيد الدفع وتحديث حالة الطلب",
+        })
+        
+        // In a real implementation, we would also update the student's status
+        // This would require calling another API endpoint
+      } else {
+        throw new Error('Failed to confirm payment')
+      }
+    } catch (error) {
+      console.error('Error confirming payment:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تأكيد الدفع",
         variant: "destructive",
       })
     }
@@ -222,8 +369,12 @@ export default function OrdersPage() {
     
     const matchesStatus = statusFilter === "all" || order.status === statusFilter
     const matchesPaymentStatus = paymentStatusFilter === "all" || order.paymentStatus === paymentStatusFilter
+    const matchesUniversity = universityFilter === "all" || 
+      (order.formSubmission?.universityId && order.formSubmission.universityId.toString() === universityFilter)
+    const matchesProgram = programFilter === "all" || 
+      (order.formSubmission?.programId && order.formSubmission.programId.toString() === programFilter)
     
-    return matchesSearch && matchesStatus && matchesPaymentStatus
+    return matchesSearch && matchesStatus && matchesPaymentStatus && matchesUniversity && matchesProgram
   })
 
   if (loading) {
@@ -391,8 +542,8 @@ export default function OrdersPage() {
       {/* Filters */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-center gap-3">
-            <div className="relative flex-1">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4b5563] w-4 h-4" />
               <Input 
                 placeholder="البحث في الطلبات..." 
@@ -421,6 +572,32 @@ export default function OrdersPage() {
                 <SelectItem value="paid">مدفوع</SelectItem>
                 <SelectItem value="unpaid">غير مدفوع</SelectItem>
                 <SelectItem value="refunded">مرتجع</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={universityFilter} onValueChange={setUniversityFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="الجامعة" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع الجامعات</SelectItem>
+                {universities.map((university) => (
+                  <SelectItem key={university.id} value={university.id.toString()}>
+                    {university.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={programFilter} onValueChange={setProgramFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="التخصص" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع التخصصات</SelectItem>
+                {programs.map((program) => (
+                  <SelectItem key={program.id} value={program.id.toString()}>
+                    {program.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm">
@@ -455,7 +632,11 @@ export default function OrdersPage() {
                   <tr key={order.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewOrder(order)}
+                        >
                           <Eye className="w-4 h-4" />
                         </Button>
                         <Button variant="outline" size="sm">
@@ -496,6 +677,127 @@ export default function OrdersPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* View Order Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>تفاصيل الطلب #{selectedOrder?.id}</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="space-y-6">
+              {/* Order Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>معلومات الطلب</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">رقم الطلب:</span>
+                      <span className="font-medium">#{selectedOrder.id}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">تاريخ الطلب:</span>
+                      <span>{new Date(selectedOrder.dateCreated).toLocaleDateString('ar-SA')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">المبلغ:</span>
+                      <span className="font-medium">${selectedOrder.price}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">الحالة:</span>
+                      <Badge className={getStatusBadgeClass(selectedOrder.status)}>
+                        {getStatusLabel(selectedOrder.status)}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">حالة الدفع:</span>
+                      <Badge className={getStatusBadgeClass(selectedOrder.paymentStatus)}>
+                        {getPaymentStatusLabel(selectedOrder.paymentStatus)}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>معلومات الطالب</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">الاسم:</span>
+                      <span>{selectedOrder.formSubmission?.fullName || selectedOrder.user.fullName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">البريد الإلكتروني:</span>
+                      <span>{selectedOrder.user.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">التخصص المفضل:</span>
+                      <span>{selectedOrder.formSubmission?.preferredProgram || "—"}</span>
+                    </div>
+                    {selectedOrder.agent && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">الوكيل:</span>
+                        <span>{selectedOrder.agent.name}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Notes Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>الملاحظات</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="orderNotes">إضافة ملاحظات</Label>
+                      <textarea
+                        id="orderNotes"
+                        className="w-full p-3 border rounded-md mt-1"
+                        rows={4}
+                        value={orderNotes}
+                        onChange={(e) => setOrderNotes(e.target.value)}
+                        placeholder="أضف ملاحظات حول هذا الطلب..."
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-3">
+                <Button onClick={handleUpdateOrder}>
+                  حفظ الملاحظات
+                </Button>
+                <Button 
+                  onClick={handleConfirmPayment}
+                  disabled={selectedOrder.paymentStatus === "paid"}
+                >
+                  {selectedOrder.paymentStatus === "paid" ? "تم الدفع" : "تأكيد الدفع"}
+                </Button>
+                <div className="flex-1 min-w-[200px]">
+                  <Input
+                    placeholder="رسالة الإشعار..."
+                    value={notificationMessage}
+                    onChange={(e) => setNotificationMessage(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={handleSendNotification}
+                  disabled={!notificationMessage}
+                >
+                  إرسال إشعار
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

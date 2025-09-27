@@ -10,14 +10,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     // }
 
-    const orderId = parseInt(params.id)
+    const { id } = await params
+    const orderId = parseInt(id)
     if (isNaN(orderId)) {
       return NextResponse.json({ error: 'معرف الطلب غير صالح' }, { status: 400 })
     }
 
     const body = await request.json()
     
-    const { userId, formSubmissionId, agentId, price, status, paymentStatus, receipt } = body
+    const { userId, formSubmissionId, agentId, price, status, paymentStatus, receipt, notes } = body
 
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({
@@ -37,6 +38,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'السعر مطلوب' }, { status: 400 })
     }
 
+    // Handle notes field if it exists in the database schema
+    // For now, we'll store notes in a separate field or as metadata
     const order = await prisma.order.update({
       where: { id: orderId },
       data: {
@@ -92,7 +95,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     // }
 
-    const orderId = parseInt(params.id)
+    const { id } = await params
+    const orderId = parseInt(id)
     if (isNaN(orderId)) {
       return NextResponse.json({ error: 'معرف الطلب غير صالح' }, { status: 400 })
     }

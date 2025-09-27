@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     
-    const { userId, formSubmissionId, agentId, price, status, paymentStatus, receipt } = body
+    const { userId, formSubmissionId, agentId, price, status, paymentStatus, receipt, notes } = body
 
     // Validate required fields
     if (userId === undefined || userId === null || userId === 0 || price === undefined || price === null || price === 0) {
