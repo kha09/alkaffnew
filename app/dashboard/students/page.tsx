@@ -71,29 +71,62 @@ const orderStages = [
   { value: "Rejected", label: "مرفوض" },
 ]
 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationEllipsis,
+} from "@/components/ui/pagination"
+
 export default function StudentsPage() {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([])
   const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedAgent, setSelectedAgent] = useState("")
-  const [selectedOrderStage, setSelectedOrderStage] = useState("")
+  const [selectedAgent, setSelectedAgent] = useState("all")
+  const [selectedOrderStage, setSelectedOrderStage] = useState("all")
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null)
   const [emailSubject, setEmailSubject] = useState("")
   const [emailMessage, setEmailMessage] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalSubmissions, setTotalSubmissions] = useState(0)
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    fetchSubmissions()
     fetchAgents()
   }, [])
 
-  const fetchSubmissions = async () => {
+  useEffect(() => {
+    fetchSubmissions(currentPage, searchTerm, selectedAgent, selectedOrderStage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, selectedAgent, selectedOrderStage])
+
+  const fetchSubmissions = async (
+    page = 1,
+    search = "",
+    agentId = "all",
+    orderStage = "all"
+  ) => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/form-submissions')
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: "10",
+        ...(search && { search }),
+        ...(agentId && agentId !== "all" && { agentId }),
+        ...(orderStage && orderStage !== "all" && { orderStage }),
+      })
+      const response = await fetch(`/api/admin/form-submissions?${params}`)
       const data = await response.json()
       setSubmissions(data.submissions)
+      setTotalPages(data.pagination.pages)
+      setTotalSubmissions(data.pagination.total)
+      setCurrentPage(data.pagination.page)
     } catch (error) {
       console.error('Error fetching submissions:', error)
       toast({
@@ -406,14 +439,27 @@ export default function StudentsPage() {
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#4b5563] w-4 h-4" />
-              <Input 
-                placeholder="البحث في الطلبات..." 
-                className="pr-10" 
+              <Input
+                placeholder="البحث في الطلبات..."
+                className="pr-10"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value)
+                  if (searchTimeout) clearTimeout(searchTimeout)
+                  const timeout = setTimeout(() => {
+                    fetchSubmissions(1, e.target.value, selectedAgent, selectedOrderStage)
+                  }, 500)
+                  setSearchTimeout(timeout)
+                }}
+                onBlur={() => {
+                  fetchSubmissions(1, searchTerm, selectedAgent, selectedOrderStage)
+                }}
               />
             </div>
-            <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+            <Select value={selectedAgent} onValueChange={(value) => {
+              setSelectedAgent(value)
+              setCurrentPage(1)
+            }}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="الوكيل" />
               </SelectTrigger>
@@ -424,7 +470,10 @@ export default function StudentsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={selectedOrderStage} onValueChange={setSelectedOrderStage}>
+            <Select value={selectedOrderStage} onValueChange={(value) => {
+              setSelectedOrderStage(value)
+              setCurrentPage(1)
+            }}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="حالة الطلب" />
               </SelectTrigger>
@@ -435,7 +484,13 @@ export default function StudentsPage() {
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                fetchSubmissions(1, searchTerm, selectedAgent, selectedOrderStage)
+              }}
+            >
               <Filter className="w-4 h-4 ml-2" />
               فلترة
             </Button>
@@ -468,6 +523,8 @@ export default function StudentsPage() {
               <tbody>
                 {submissions.map((submission) => (
                   <tr key={submission.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
+                    {/* ... unchanged row rendering ... */}
+                    {/* (keep the rest of the row code as is) */}
                     <td className="p-3">
                       <div className="flex items-center gap-2">
                         {submission.user ? (
@@ -736,6 +793,52 @@ export default function StudentsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+          {/* Pagination */}
+          <div className="mt-6 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={e => {
+                      e.preventDefault()
+                      if (currentPage > 1) {
+                        setCurrentPage(currentPage - 1)
+                        fetchSubmissions(currentPage - 1, searchTerm, selectedAgent, selectedOrderStage)
+                      }
+                    }}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <PaginationItem key={i + 1}>
+                    <PaginationLink
+                      href="#"
+                      isActive={currentPage === i + 1}
+                      onClick={e => {
+                        e.preventDefault()
+                        setCurrentPage(i + 1)
+                        fetchSubmissions(i + 1, searchTerm, selectedAgent, selectedOrderStage)
+                      }}
+                    >
+                      {i + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={e => {
+                      e.preventDefault()
+                      if (currentPage < totalPages) {
+                        setCurrentPage(currentPage + 1)
+                        fetchSubmissions(currentPage + 1, searchTerm, selectedAgent, selectedOrderStage)
+                      }
+                    }}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
         </CardContent>
       </Card>
