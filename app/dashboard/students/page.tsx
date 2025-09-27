@@ -249,10 +249,7 @@ export default function StudentsPage() {
         const data = await response.json()
         // Refresh submissions to get updated data
         fetchSubmissions()
-        toast({
-          title: "نجاح",
-          description: `تم إنشاء المستخدم بنجاح. اسم المستخدم: ${data.username}, كلمة المرور: ${data.password}`,
-        })
+        window.alert(`تم إنشاء المستخدم بنجاح.\nاسم المستخدم: ${data.username}\nكلمة المرور: ${data.password}`)
       } else {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Failed to generate user')
