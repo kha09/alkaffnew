@@ -1,6 +1,5 @@
 "use client"
 
-import { AgentSidebar } from "@/components/agent-sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -54,9 +53,7 @@ export default function AgentDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] flex">
-      <AgentSidebar />
-      <main className="flex-1 p-6 space-y-6" dir="rtl">
+    <div className="p-6 space-y-6" dir="rtl">
         {/* Dashboard Header */}
         <div>
           <h1 className="text-3xl font-bold text-[#111827]">لوحة وكيل المبيعات</h1>
@@ -209,7 +206,6 @@ export default function AgentDashboard() {
             </div>
           </CardContent>
         </Card>
-      </main>
     </div>
   )
 }
