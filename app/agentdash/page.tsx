@@ -30,245 +30,6 @@ type Submission = {
   orders: any[];
 };
 
-function PaymentsSection() {
-  const [payments, setPayments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchPayments() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch("/api/agent/payments");
-        if (!res.ok) throw new Error("فشل في جلب بيانات المدفوعات");
-        const data = await res.json();
-        setPayments(data.payments || []);
-      } catch (err: any) {
-        setError(err.message || "حدث خطأ");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPayments();
-  }, []);
-
-  // Show only unpaid or pending payments
-  const outstanding = payments.filter(
-    (p) => p.paymentStatus !== "paid"
-  );
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <DollarSign className="w-5 h-5" />
-          المدفوعات والمستحقات
-        </CardTitle>
-        <Button variant="outline">تحديث</Button>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-6 text-center text-gray-500">جاري التحميل...</div>
-          ) : error ? (
-            <div className="p-6 text-center text-red-600">{error}</div>
-          ) : outstanding.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">لا يوجد مدفوعات مستحقة حالياً.</div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-right p-3 font-medium">اسم الطالب</th>
-                  <th className="text-right p-3 font-medium">المبلغ المستحق</th>
-                  <th className="text-right p-3 font-medium">الحالة</th>
-                  <th className="text-right p-3 font-medium">تاريخ الاستحقاق</th>
-                </tr>
-              </thead>
-              <tbody>
-                {outstanding.map((p) => (
-                  <tr className="border-b" key={p.id}>
-                    <td className="p-3">{p.formSubmission?.fullName || "—"}</td>
-                    <td className="p-3">{p.price ? `${p.price}$` : "—"}</td>
-                    <td className="p-3">
-                      <Badge className={p.paymentStatus === "unpaid" ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}>
-                        {p.paymentStatus === "unpaid" ? "مطلوب" : "قيد المتابعة"}
-                      </Badge>
-                    </td>
-                    <td className="p-3">{p.dateCreated?.slice(0, 10)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function PaymentHistorySection() {
-  const [payments, setPayments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchPayments() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch("/api/agent/payments");
-        if (!res.ok) throw new Error("فشل في جلب بيانات المدفوعات");
-        const data = await res.json();
-        setPayments(data.payments || []);
-      } catch (err: any) {
-        setError(err.message || "حدث خطأ");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchPayments();
-  }, []);
-
-  // Show only paid payments
-  const paid = payments.filter((p) => p.paymentStatus === "paid");
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          تتبع المدفوعات المستلمة
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-6 text-center text-gray-500">جاري التحميل...</div>
-          ) : error ? (
-            <div className="p-6 text-center text-red-600">{error}</div>
-          ) : paid.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">لا يوجد مدفوعات مستلمة بعد.</div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-right p-3 font-medium">تاريخ الدفع</th>
-                  <th className="text-right p-3 font-medium">المبلغ</th>
-                  <th className="text-right p-3 font-medium">الحالة</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paid.map((p) => (
-                  <tr className="border-b" key={p.id}>
-                    <td className="p-3">{p.dateCreated?.slice(0, 10)}</td>
-                    <td className="p-3">{p.price ? `${p.price}$` : "—"}</td>
-                    <td className="p-3">
-                      <Badge className="bg-green-100 text-green-800">مدفوع</Badge>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function FollowUpRequestsSection() {
-  const [orders, setOrders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchOrders() {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch("/api/agent/orders");
-        if (!res.ok) throw new Error("فشل في جلب بيانات الطلبات");
-        const data = await res.json();
-        setOrders(data.orders || []);
-      } catch (err: any) {
-        setError(err.message || "حدث خطأ");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchOrders();
-  }, []);
-
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="w-5 h-5" />
-          متابعة الطلبات
-        </CardTitle>
-        <Button variant="outline" className="flex items-center gap-2 bg-transparent">
-          <Download className="w-4 h-4" />
-          تحديث الحالة
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <div className="mb-4 flex gap-4">
-          <Input placeholder="بحث برقم الطلب..." className="max-w-xs" />
-          <select className="px-3 py-2 border rounded-md">
-            <option>كل الحالات</option>
-            <option>قيد المراجعة</option>
-            <option>مقبول</option>
-            <option>مرفوض</option>
-          </select>
-        </div>
-        <div className="overflow-x-auto">
-          {loading ? (
-            <div className="p-6 text-center text-gray-500">جاري التحميل...</div>
-          ) : error ? (
-            <div className="p-6 text-center text-red-600">{error}</div>
-          ) : orders.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">لا يوجد طلبات متابعة بعد.</div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-right p-3 font-medium">رقم الطلب</th>
-                  <th className="text-right p-3 font-medium">اسم الطالب</th>
-                  <th className="text-right p-3 font-medium">الحالة</th>
-                  <th className="text-right p-3 font-medium">تاريخ التقديم</th>
-                  <th className="text-right p-3 font-medium">إجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((order) => (
-                  <tr className="border-b" key={order.id}>
-                    <td className="p-3">#{order.id}</td>
-                    <td className="p-3">
-                      {order.formSubmission?.fullName || "—"}
-                    </td>
-                    <td className="p-3">
-                      <Badge className="bg-green-100 text-green-800">{order.status || "قيد المتابعة"}</Badge>
-                    </td>
-                    <td className="p-3">
-                      {order.dateCreated?.slice(0, 10)}
-                    </td>
-                    <td className="p-3">
-                      <Button size="sm" variant="outline">
-                        عرض
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function AgentDashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -296,6 +57,51 @@ export default function AgentDashboard() {
     <div className="min-h-screen bg-[#f9fafb] flex">
       <AgentSidebar />
       <main className="flex-1 p-6 space-y-6" dir="rtl">
+        {/* Dashboard Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-[#111827]">لوحة وكيل المبيعات</h1>
+          <p className="text-[#4b5563] mt-1">مرحباً بك في لوحة التحكم الخاصة بك</p>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#4b5563]">الطلاب المسجلون</p>
+                  <p className="text-2xl font-bold text-[#111827]">{submissions.length}</p>
+                </div>
+                <Users className="w-8 h-8 text-[#4b5563]" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#4b5563]">الطلبات النشطة</p>
+                  <p className="text-2xl font-bold text-[#f59e0b]">
+                    {submissions.filter(s => s.orderStage !== "Completed").length}
+                  </p>
+                </div>
+                <FileText className="w-8 h-8 text-[#f59e0b]" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#4b5563]">الإيرادات</p>
+                  <p className="text-2xl font-bold text-[#10b981]">$0.00</p>
+                </div>
+                <DollarSign className="w-8 h-8 text-[#10b981]" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Students Registration Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
@@ -352,9 +158,6 @@ export default function AgentDashboard() {
           </CardContent>
         </Card>
 
-        {/* Follow-up Requests */}
-        <FollowUpRequestsSection />
-
         {/* University Requests */}
         <Card>
           <CardHeader>
@@ -403,30 +206,6 @@ export default function AgentDashboard() {
               <Button variant="outline" className="w-full bg-transparent">
                 إرسال طلب
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payments Section */}
-        <PaymentsSection />
-
-        {/* Payment History */}
-        <PaymentHistorySection />
-
-        {/* Notifications */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5" />
-              الإشعارات
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <FileText className="w-5 h-5 text-gray-600" />
-                <span className="text-sm">حالة الطلبات</span>
-              </div>
             </div>
           </CardContent>
         </Card>
