@@ -1,6 +1,6 @@
 "use client"
 
-import { Sidebar } from "@/components/sidebar"
+import { AgentSidebar } from "@/components/agent-sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -294,7 +294,7 @@ export default function AgentDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f9fafb] flex">
-      <Sidebar />
+      <AgentSidebar />
       <main className="flex-1 p-6 space-y-6" dir="rtl">
         {/* Students Registration Section */}
         <Card>
