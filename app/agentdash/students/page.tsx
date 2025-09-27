@@ -5,7 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Users, Search } from "lucide-react"
+import { Users, Search, Plus } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { ApplicationForm } from "@/components/application-form"
+import { toast } from "@/hooks/use-toast"
 
 type Submission = {
   id: number;
@@ -52,6 +55,29 @@ export default function AgentStudentsPage() {
     );
   });
 
+  const handleSubmissionSuccess = () => {
+    // Refresh the submissions list
+    async function refreshSubmissions() {
+      try {
+        const res = await fetch("/api/agent/submissions");
+        if (!res.ok) throw new Error("فشل في جلب بيانات الطلاب");
+        const data = await res.json();
+        setSubmissions(data.submissions || []);
+        toast({
+          title: "نجاح",
+          description: "تم إنشاء الطالب بنجاح",
+        });
+      } catch (err: any) {
+        toast({
+          title: "خطأ",
+          description: err.message || "حدث خطأ أثناء تحديث القائمة",
+          variant: "destructive",
+        });
+      }
+    }
+    refreshSubmissions();
+  };
+
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Header */}
@@ -67,7 +93,26 @@ export default function AgentStudentsPage() {
             <Users className="w-5 h-5" />
             الطلاب المسجلين عبرك
           </CardTitle>
-          <Button className="bg-[#1f2937] hover:bg-[#374151]">إضافة طالب جديد</Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="bg-[#1f2937] hover:bg-[#374151]">
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة طالب جديد
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
+              <DialogHeader>
+                <DialogTitle>إضافة طالب جديد</DialogTitle>
+              </DialogHeader>
+              <ApplicationForm 
+                inline={true}
+                agentId={1} // TODO: Replace with actual agent ID from session
+                onClose={() => {}} 
+                onSubmissionSuccess={handleSubmissionSuccess}
+                hideSuccessModal={true}
+              />
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
           <div className="mb-4">

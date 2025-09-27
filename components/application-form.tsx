@@ -36,10 +36,14 @@ interface ApplicationFormProps {
   programId?: number
   universityName?: string
   programName?: string
+  agentId?: number
   onClose: () => void
+  onSubmissionSuccess?: () => void
+  hideSuccessModal?: boolean
+  inline?: boolean
 }
 
-export function ApplicationForm({ universityId, programId, universityName, programName, onClose }: ApplicationFormProps) {
+export function ApplicationForm({ universityId, programId, universityName, programName, agentId, onClose, onSubmissionSuccess, hideSuccessModal, inline = false }: ApplicationFormProps) {
   const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
     fullName: '',
@@ -182,6 +186,11 @@ export function ApplicationForm({ universityId, programId, universityName, progr
         formDataToSend.append('programId', programId.toString())
       }
       
+      // Add agentId if provided
+      if (agentId) {
+        formDataToSend.append('agentId', agentId.toString())
+      }
+      
       // Add files
       if (files.highSchoolCertificate) {
         formDataToSend.append('highSchoolCertificate', files.highSchoolCertificate)
@@ -209,7 +218,17 @@ export function ApplicationForm({ universityId, programId, universityName, progr
         throw new Error('فشل في إرسال الطلب')
       }
       
-      setSubmitSuccess(true)
+      if (onSubmissionSuccess) {
+        onSubmissionSuccess();
+      }
+      
+      if (!hideSuccessModal) {
+        setSubmitSuccess(true);
+      } else {
+        // Close the form directly
+        onClose();
+      }
+      
       // Reset form after successful submission
       setFormData({
         fullName: '',
@@ -239,8 +258,8 @@ export function ApplicationForm({ universityId, programId, universityName, progr
 
   if (submitSuccess) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" dir="rtl">
-        <Card className="w-full max-w-md bg-white">
+      <div className={inline ? "" : "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"} dir="rtl">
+        <Card className={inline ? "w-full" : "w-full max-w-md bg-white"}>
           <CardContent className="pt-6">
             <div className="text-center">
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -259,8 +278,8 @@ export function ApplicationForm({ universityId, programId, universityName, progr
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" dir="rtl">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className={inline ? "" : "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"} dir="rtl">
+      <Card className={inline ? "w-full" : "w-full max-w-2xl max-h-[90vh] overflow-y-auto"}>
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="text-2xl font-bold">

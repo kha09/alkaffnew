@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
+import { ApplicationForm } from "@/components/application-form"
 
 // Types
 type Agent = {
@@ -390,6 +391,28 @@ export default function StudentsPage() {
           <p className="text-[#4b5563] mt-1">إدارة جميع طلبات الطلاب</p>
         </div>
         <div className="flex items-center gap-3">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 ml-2" />
+                إنشاء طالب
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
+              <DialogHeader>
+                <DialogTitle>إنشاء طالب</DialogTitle>
+              </DialogHeader>
+              <ApplicationForm 
+                inline={true}
+                onClose={() => {}} 
+                onSubmissionSuccess={() => {
+                  // Refresh the submissions list
+                  fetchSubmissions();
+                }}
+                hideSuccessModal={true}
+              />
+            </DialogContent>
+          </Dialog>
           <Button variant="outline">
             <Download className="w-4 h-4 ml-2" />
             تصدير

@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
     const preferredProgram = formData.get('preferredProgram') as string
     const universityId = formData.get('universityId') as string | null
     const programId = formData.get('programId') as string | null
+    const agentId = formData.get('agentId') as string | null
     
     // Validate required fields
     if (!fullName || !nationality || !email || !countryOfResidence || 
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
         preferredProgram,
         universityId: universityId ? parseInt(universityId) : null,
         programId: programId ? parseInt(programId) : null,
+        agentId: agentId ? parseInt(agentId) : null,
       }
     })
     
