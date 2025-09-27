@@ -122,13 +122,34 @@ export default function StudentsPage() {
         ...(orderStage && orderStage !== "all" && { orderStage }),
       })
       const response = await fetch(`/api/admin/form-submissions?${params}`)
-      const data = await response.json()
+      let data: any = null
+      try {
+        data = await response.json()
+      } catch (e) {
+        data = null
+      }
+      if (!response.ok || !data || !Array.isArray(data.submissions) || !data.pagination) {
+        setSubmissions([])
+        setTotalPages(1)
+        setTotalSubmissions(0)
+        setCurrentPage(1)
+        toast({
+          title: "خطأ",
+          description: data?.error || "حدث خطأ أثناء جلب الطلبات",
+          variant: "destructive",
+        })
+        return
+      }
       setSubmissions(data.submissions)
       setTotalPages(data.pagination.pages)
       setTotalSubmissions(data.pagination.total)
       setCurrentPage(data.pagination.page)
     } catch (error) {
       console.error('Error fetching submissions:', error)
+      setSubmissions([])
+      setTotalPages(1)
+      setTotalSubmissions(0)
+      setCurrentPage(1)
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء جلب الطلبات",
@@ -521,276 +542,284 @@ export default function StudentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {submissions.map((submission) => (
-                  <tr key={submission.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
-                    {/* ... unchanged row rendering ... */}
-                    {/* (keep the rest of the row code as is) */}
-                    <td className="p-3">
-                      <div className="flex items-center gap-2">
-                        {submission.user ? (
-                          <>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => openEmailDialog(submission)}
-                            >
-                              <Send className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              disabled
-                            >
-                              <Key className="w-4 h-4" />
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              onClick={() => handleGenerateUser(submission.id)}
-                            >
-                              قبول
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleRejectUser(submission.id)}
-                            >
-                              رفض
-                            </Button>
-                          </>
-                        )}
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>تعديل الطلب</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div>
-                                <Label>تعيين وكيل</Label>
-                                <Select 
-                                  value={submission.agent?.id?.toString() || ""} 
-                                  onValueChange={(value) => handleAssignAgent(submission.id, value)}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="اختر وكيل" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="unassigned">غير محدد</SelectItem>
-                                    {agents.map(agent => (
-                                      <SelectItem key={agent.id} value={agent.id.toString()}>{agent.name}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div>
-                                <Label>حالة الطلب</Label>
-                                <Select 
-                                  value={submission.orderStage} 
-                                  onValueChange={(value) => handleUpdateOrderStage(submission.id, value)}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {orderStages.map(stage => (
-                                      <SelectItem key={stage.value} value={stage.value}>{stage.label}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
+                {submissions && submissions.length > 0 ? (
+                  submissions.map((submission) => (
+                    <tr key={submission.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
+                      {/* ... unchanged row rendering ... */}
+                      {/* (keep the rest of the row code as is) */}
+                      <td className="p-3">
+                        <div className="flex items-center gap-2">
+                          {submission.user ? (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => openEmailDialog(submission)}
+                              >
+                                <Send className="w-4 h-4" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                disabled
+                              >
+                                <Key className="w-4 h-4" />
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleGenerateUser(submission.id)}
+                              >
+                                قبول
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleRejectUser(submission.id)}
+                              >
+                                رفض
+                              </Button>
+                            </>
+                          )}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>تعديل الطلب</DialogTitle>
+                              </DialogHeader>
                               <div className="space-y-4">
                                 <div>
-                                  <Label>عرض الملفات المرفقة</Label>
-                                  {submission.uploadedFiles && submission.uploadedFiles.length > 0 ? (
-                                    <div className="mt-2 space-y-2">
-                                      {submission.uploadedFiles.map((file) => (
-                                        <div key={file.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                          <span className="text-sm">{file.originalName}</span>
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm"
-                                            onClick={() => window.open(file.path, '_blank')}
-                                          >
-                                            عرض
-                                          </Button>
-                                        </div>
+                                  <Label>تعيين وكيل</Label>
+                                  <Select 
+                                    value={submission.agent?.id?.toString() || ""} 
+                                    onValueChange={(value) => handleAssignAgent(submission.id, value)}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="اختر وكيل" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="unassigned">غير محدد</SelectItem>
+                                      {agents.map(agent => (
+                                        <SelectItem key={agent.id} value={agent.id.toString()}>{agent.name}</SelectItem>
                                       ))}
-                                    </div>
-                                  ) : (
-                                    <p className="text-sm text-gray-500 mt-2">لا توجد ملفات مرفقة</p>
-                                  )}
+                                    </SelectContent>
+                                  </Select>
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <Label>حالة الطلب</Label>
+                                  <Select 
+                                    value={submission.orderStage} 
+                                    onValueChange={(value) => handleUpdateOrderStage(submission.id, value)}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {orderStages.map(stage => (
+                                        <SelectItem key={stage.value} value={stage.value}>{stage.label}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="space-y-4">
                                   <div>
-                                    <Label htmlFor="fullName">الاسم الكامل</Label>
-                                    <Input
-                                      id="fullName"
-                                      value={submission.fullName}
-                                      onChange={(e) => {
-                                        const updatedSubmissions = submissions.map(sub => 
-                                          sub.id === submission.id 
-                                            ? { ...sub, fullName: e.target.value } 
-                                            : sub
-                                        );
-                                        setSubmissions(updatedSubmissions);
-                                      }}
-                                      onBlur={(e) => {
-                                        handleUpdateSubmissionField(submission.id, 'fullName', e.target.value);
-                                      }}
-                                    />
+                                    <Label>عرض الملفات المرفقة</Label>
+                                    {submission.uploadedFiles && submission.uploadedFiles.length > 0 ? (
+                                      <div className="mt-2 space-y-2">
+                                        {submission.uploadedFiles.map((file) => (
+                                          <div key={file.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                                            <span className="text-sm">{file.originalName}</span>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              onClick={() => window.open(file.path, '_blank')}
+                                            >
+                                              عرض
+                                            </Button>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      <p className="text-sm text-gray-500 mt-2">لا توجد ملفات مرفقة</p>
+                                    )}
                                   </div>
-                                  <div>
-                                    <Label htmlFor="nationality">الجنسية</Label>
-                                    <Input
-                                      id="nationality"
-                                      value={submission.nationality}
-                                      onChange={(e) => {
-                                        const updatedSubmissions = submissions.map(sub => 
-                                          sub.id === submission.id 
-                                            ? { ...sub, nationality: e.target.value } 
-                                            : sub
-                                        );
-                                        setSubmissions(updatedSubmissions);
-                                      }}
-                                      onBlur={(e) => {
-                                        handleUpdateSubmissionField(submission.id, 'nationality', e.target.value);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="email">البريد الإلكتروني</Label>
-                                    <Input
-                                      id="email"
-                                      type="email"
-                                      value={submission.email}
-                                      onChange={(e) => {
-                                        const updatedSubmissions = submissions.map(sub => 
-                                          sub.id === submission.id 
-                                            ? { ...sub, email: e.target.value } 
-                                            : sub
-                                        );
-                                        setSubmissions(updatedSubmissions);
-                                      }}
-                                      onBlur={(e) => {
-                                        handleUpdateSubmissionField(submission.id, 'email', e.target.value);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="contactNumber">رقم الاتصال</Label>
-                                    <Input
-                                      id="contactNumber"
-                                      value={submission.contactNumber}
-                                      onChange={(e) => {
-                                        const updatedSubmissions = submissions.map(sub => 
-                                          sub.id === submission.id 
-                                            ? { ...sub, contactNumber: e.target.value } 
-                                            : sub
-                                        );
-                                        setSubmissions(updatedSubmissions);
-                                      }}
-                                      onBlur={(e) => {
-                                        handleUpdateSubmissionField(submission.id, 'contactNumber', e.target.value);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="countryOfResidence">بلد الإقامة</Label>
-                                    <Input
-                                      id="countryOfResidence"
-                                      value={submission.countryOfResidence}
-                                      onChange={(e) => {
-                                        const updatedSubmissions = submissions.map(sub => 
-                                          sub.id === submission.id 
-                                            ? { ...sub, countryOfResidence: e.target.value } 
-                                            : sub
-                                        );
-                                        setSubmissions(updatedSubmissions);
-                                      }}
-                                      onBlur={(e) => {
-                                        handleUpdateSubmissionField(submission.id, 'countryOfResidence', e.target.value);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="cityOfResidence">مدينة الإقامة</Label>
-                                    <Input
-                                      id="cityOfResidence"
-                                      value={submission.cityOfResidence}
-                                      onChange={(e) => {
-                                        const updatedSubmissions = submissions.map(sub => 
-                                          sub.id === submission.id 
-                                            ? { ...sub, cityOfResidence: e.target.value } 
-                                            : sub
-                                        );
-                                        setSubmissions(updatedSubmissions);
-                                      }}
-                                      onBlur={(e) => {
-                                        handleUpdateSubmissionField(submission.id, 'cityOfResidence', e.target.value);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label htmlFor="preferredProgram">التخصص المفضل</Label>
-                                    <Input
-                                      id="preferredProgram"
-                                      value={submission.preferredProgram}
-                                      onChange={(e) => {
-                                        const updatedSubmissions = submissions.map(sub => 
-                                          sub.id === submission.id 
-                                            ? { ...sub, preferredProgram: e.target.value } 
-                                            : sub
-                                        );
-                                        setSubmissions(updatedSubmissions);
-                                      }}
-                                      onBlur={(e) => {
-                                        handleUpdateSubmissionField(submission.id, 'preferredProgram', e.target.value);
-                                      }}
-                                    />
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                      <Label htmlFor="fullName">الاسم الكامل</Label>
+                                      <Input
+                                        id="fullName"
+                                        value={submission.fullName}
+                                        onChange={(e) => {
+                                          const updatedSubmissions = submissions.map(sub => 
+                                            sub.id === submission.id 
+                                              ? { ...sub, fullName: e.target.value } 
+                                              : sub
+                                          );
+                                          setSubmissions(updatedSubmissions);
+                                        }}
+                                        onBlur={(e) => {
+                                          handleUpdateSubmissionField(submission.id, 'fullName', e.target.value);
+                                        }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="nationality">الجنسية</Label>
+                                      <Input
+                                        id="nationality"
+                                        value={submission.nationality}
+                                        onChange={(e) => {
+                                          const updatedSubmissions = submissions.map(sub => 
+                                            sub.id === submission.id 
+                                              ? { ...sub, nationality: e.target.value } 
+                                              : sub
+                                          );
+                                          setSubmissions(updatedSubmissions);
+                                        }}
+                                        onBlur={(e) => {
+                                          handleUpdateSubmissionField(submission.id, 'nationality', e.target.value);
+                                        }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="email">البريد الإلكتروني</Label>
+                                      <Input
+                                        id="email"
+                                        type="email"
+                                        value={submission.email}
+                                        onChange={(e) => {
+                                          const updatedSubmissions = submissions.map(sub => 
+                                            sub.id === submission.id 
+                                              ? { ...sub, email: e.target.value } 
+                                              : sub
+                                          );
+                                          setSubmissions(updatedSubmissions);
+                                        }}
+                                        onBlur={(e) => {
+                                          handleUpdateSubmissionField(submission.id, 'email', e.target.value);
+                                        }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="contactNumber">رقم الاتصال</Label>
+                                      <Input
+                                        id="contactNumber"
+                                        value={submission.contactNumber}
+                                        onChange={(e) => {
+                                          const updatedSubmissions = submissions.map(sub => 
+                                            sub.id === submission.id 
+                                              ? { ...sub, contactNumber: e.target.value } 
+                                              : sub
+                                          );
+                                          setSubmissions(updatedSubmissions);
+                                        }}
+                                        onBlur={(e) => {
+                                          handleUpdateSubmissionField(submission.id, 'contactNumber', e.target.value);
+                                        }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="countryOfResidence">بلد الإقامة</Label>
+                                      <Input
+                                        id="countryOfResidence"
+                                        value={submission.countryOfResidence}
+                                        onChange={(e) => {
+                                          const updatedSubmissions = submissions.map(sub => 
+                                            sub.id === submission.id 
+                                              ? { ...sub, countryOfResidence: e.target.value } 
+                                              : sub
+                                          );
+                                          setSubmissions(updatedSubmissions);
+                                        }}
+                                        onBlur={(e) => {
+                                          handleUpdateSubmissionField(submission.id, 'countryOfResidence', e.target.value);
+                                        }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="cityOfResidence">مدينة الإقامة</Label>
+                                      <Input
+                                        id="cityOfResidence"
+                                        value={submission.cityOfResidence}
+                                        onChange={(e) => {
+                                          const updatedSubmissions = submissions.map(sub => 
+                                            sub.id === submission.id 
+                                              ? { ...sub, cityOfResidence: e.target.value } 
+                                              : sub
+                                          );
+                                          setSubmissions(updatedSubmissions);
+                                        }}
+                                        onBlur={(e) => {
+                                          handleUpdateSubmissionField(submission.id, 'cityOfResidence', e.target.value);
+                                        }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <Label htmlFor="preferredProgram">التخصص المفضل</Label>
+                                      <Input
+                                        id="preferredProgram"
+                                        value={submission.preferredProgram}
+                                        onChange={(e) => {
+                                          const updatedSubmissions = submissions.map(sub => 
+                                            sub.id === submission.id 
+                                              ? { ...sub, preferredProgram: e.target.value } 
+                                              : sub
+                                          );
+                                          setSubmissions(updatedSubmissions);
+                                        }}
+                                        onBlur={(e) => {
+                                          handleUpdateSubmissionField(submission.id, 'preferredProgram', e.target.value);
+                                        }}
+                                      />
+                                    </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        {submission.agent ? (
+                          <Badge className="bg-blue-100 text-blue-800">{submission.agent.name}</Badge>
+                        ) : (
+                          <Badge variant="outline">غير محدد</Badge>
+                        )}
+                      </td>
+                      <td className="p-3">
+                        <Badge 
+                          className={
+                            submission.orderStage === "Completed" ? "bg-green-100 text-green-800" :
+                            submission.orderStage === "In Progress" ? "bg-yellow-100 text-yellow-800" :
+                            submission.orderStage === "Cancelled" ? "bg-red-100 text-red-800" :
+                            "bg-gray-100 text-gray-800"
+                          }
+                        >
+                          {orderStages.find(s => s.value === submission.orderStage)?.label || submission.orderStage}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-sm text-[#111827]">{submission.preferredProgram}</td>
+                      <td className="p-3 text-sm text-[#111827]">{submission.contactNumber}</td>
+                      <td className="p-3 text-sm text-[#111827]">{submission.email}</td>
+                      <td className="p-3 text-sm font-medium text-[#111827]">{submission.fullName}</td>
+                      <td className="p-3 text-sm text-[#111827]">{submission.nationality}</td>
+                      <td className="p-3 text-sm text-[#111827]">{submission.countryOfResidence}</td>
+                      <td className="p-3 text-sm text-[#111827]">{submission.cityOfResidence}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={10} className="text-center py-8 text-gray-500">
+                      لا توجد نتائج
                     </td>
-                    <td className="p-3">
-                      {submission.agent ? (
-                        <Badge className="bg-blue-100 text-blue-800">{submission.agent.name}</Badge>
-                      ) : (
-                        <Badge variant="outline">غير محدد</Badge>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <Badge 
-                        className={
-                          submission.orderStage === "Completed" ? "bg-green-100 text-green-800" :
-                          submission.orderStage === "In Progress" ? "bg-yellow-100 text-yellow-800" :
-                          submission.orderStage === "Cancelled" ? "bg-red-100 text-red-800" :
-                          "bg-gray-100 text-gray-800"
-                        }
-                      >
-                        {orderStages.find(s => s.value === submission.orderStage)?.label || submission.orderStage}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-sm text-[#111827]">{submission.preferredProgram}</td>
-                    <td className="p-3 text-sm text-[#111827]">{submission.contactNumber}</td>
-                    <td className="p-3 text-sm text-[#111827]">{submission.email}</td>
-                    <td className="p-3 text-sm font-medium text-[#111827]">{submission.fullName}</td>
-                    <td className="p-3 text-sm text-[#111827]">{submission.nationality}</td>
-                    <td className="p-3 text-sm text-[#111827]">{submission.countryOfResidence}</td>
-                    <td className="p-3 text-sm text-[#111827]">{submission.cityOfResidence}</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>

@@ -22,22 +22,29 @@ export async function GET(request: NextRequest) {
 
     // Build where clause for filtering
     const where: any = {}
-    
+
+    // Debug: log search and where clause
+    console.log('Search param:', search)
+    console.log('Constructed where clause:', JSON.stringify(where))
+
     if (search) {
       where.OR = [
-        { fullName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { preferredProgram: { contains: search, mode: 'insensitive' } }
+        { fullName: { contains: search } },
+        { email: { contains: search } },
+        { preferredProgram: { contains: search } }
       ]
     }
-    
+
     if (agentId && agentId !== 'all') {
       where.agentId = parseInt(agentId)
     }
-    
+
     if (orderStage && orderStage !== 'all') {
       where.orderStage = orderStage
     }
+
+    // Debug: log final where clause after all filters
+    console.log('Final where clause:', JSON.stringify(where))
 
     // Fetch submissions with related data
     const submissions = await prisma.formSubmission.findMany({
