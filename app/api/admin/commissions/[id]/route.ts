@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
               }
             },
             price: true,
-            status: true,
+            adminStatus: true,
             paymentStatus: true,
             dateCreated: true
           }

@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     // }
 
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
+    const adminStatus = searchParams.get('adminStatus')
     const paymentStatus = searchParams.get('paymentStatus')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
 
     const where: any = {}
     
-    if (status && status !== 'all') {
-      where.status = status
+    if (adminStatus && adminStatus !== 'all') {
+      where.adminStatus = adminStatus
     }
     
     if (paymentStatus && paymentStatus !== 'all') {
@@ -89,11 +89,11 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     
-    const { userId, formSubmissionId, agentId, price, status, paymentStatus, receipt, notes } = body
+    const { userId, formSubmissionId, agentId } = body
 
     // Validate required fields
-    if (userId === undefined || userId === null || userId === 0 || price === undefined || price === null || price === 0) {
-      return NextResponse.json({ error: 'المعرف والسعر مطلوبان' }, { status: 400 })
+    if (userId === undefined || userId === null || userId === 0) {
+      return NextResponse.json({ error: 'المعرف مطلوب' }, { status: 400 })
     }
 
     const order = await prisma.order.create({
@@ -101,10 +101,9 @@ export async function POST(request: NextRequest) {
         userId,
         formSubmissionId: formSubmissionId || null,
         agentId: agentId || null,
-        price,
-        status: status || 'pending',
-        paymentStatus: paymentStatus || 'unpaid',
-        receipt: receipt || null,
+        agentStatus: 'Created by Agent',
+        adminStatus: 'Pending',
+        paymentStatus: 'unpaid',
         dateCreated: new Date()
       },
       include: {

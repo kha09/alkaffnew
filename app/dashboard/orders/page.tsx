@@ -36,13 +36,11 @@ type Order = {
   userId: number
   formSubmissionId: number | null
   agentId: number | null
-  price: number
-  status: string
-  paymentStatus: string
   agentStatus: string
   adminStatus: string
+  paymentStatus: string
+  invoice: string | null
   dateCreated: string
-  receipt: string | null
   agentNotes: string | null
   adminNotes: string | null
   createdAt: string
@@ -883,27 +881,37 @@ export default function OrdersPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="editPrice">السعر</Label>
-                  <Input
-                    id="editPrice"
-                    type="number"
-                    value={editingOrder.price || ''}
-                    onChange={(e) => setEditingOrder({...editingOrder, price: parseFloat(e.target.value) || 0})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="editStatus">الحالة</Label>
+                  <Label htmlFor="editAgentStatus">حالة الوكيل</Label>
                   <Select 
-                    value={editingOrder.status} 
-                    onValueChange={(value) => setEditingOrder({...editingOrder, status: value})}
+                    value={editingOrder.agentStatus} 
+                    onValueChange={(value) => setEditingOrder({...editingOrder, agentStatus: value})}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">قيد المعالجة</SelectItem>
-                      <SelectItem value="completed">مكتمل</SelectItem>
-                      <SelectItem value="cancelled">ملغي</SelectItem>
+                      <SelectItem value="Created by Agent">تم إنشاؤه بواسطة الوكيل</SelectItem>
+                      <SelectItem value="In Progress">قيد التنفيذ</SelectItem>
+                      <SelectItem value="Submitted">تم التقديم</SelectItem>
+                      <SelectItem value="Under Review">قيد المراجعة</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="editAdminStatus">حالة المشرف</Label>
+                  <Select 
+                    value={editingOrder.adminStatus} 
+                    onValueChange={(value) => setEditingOrder({...editingOrder, adminStatus: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Pending">قيد الانتظار</SelectItem>
+                      <SelectItem value="Approved">موافق عليه</SelectItem>
+                      <SelectItem value="Rejected">مرفوض</SelectItem>
+                      <SelectItem value="Sent to University">تم الإرسال إلى الجامعة</SelectItem>
+                      <SelectItem value="Accepted by University">تم القبول من الجامعة</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -919,17 +927,16 @@ export default function OrdersPage() {
                     <SelectContent>
                       <SelectItem value="unpaid">غير مدفوع</SelectItem>
                       <SelectItem value="paid">مدفوع</SelectItem>
-                      <SelectItem value="refunded">مرتجع</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="md:col-span-2">
-                  <Label htmlFor="editReceipt">رابط الإيصال</Label>
+                  <Label htmlFor="editInvoice">رابط الفاتورة</Label>
                   <Input
-                    id="editReceipt"
-                    value={editingOrder.receipt || ''}
-                    onChange={(e) => setEditingOrder({...editingOrder, receipt: e.target.value})}
-                    placeholder="https://example.com/receipt.pdf"
+                    id="editInvoice"
+                    value={editingOrder.invoice || ''}
+                    onChange={(e) => setEditingOrder({...editingOrder, invoice: e.target.value})}
+                    placeholder="https://example.com/invoice.pdf"
                   />
                 </div>
               </div>

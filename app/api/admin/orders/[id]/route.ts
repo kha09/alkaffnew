@@ -18,7 +18,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const body = await request.json()
     
-    const { userId, formSubmissionId, agentId, price, status, paymentStatus, receipt } = body
+    const { userId, formSubmissionId, agentId, agentStatus, adminStatus, paymentStatus, invoice, agentNotes, adminNotes } = body
 
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({
@@ -33,23 +33,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (userId !== undefined && (userId === null || userId === 0)) {
       return NextResponse.json({ error: 'معرف المستخدم مطلوب' }, { status: 400 })
     }
-    
-    if (price !== undefined && (price === null || price === 0)) {
-      return NextResponse.json({ error: 'السعر مطلوب' }, { status: 400 })
-    }
 
-    // Handle notes field if it exists in the database schema
-    // For now, we'll store notes in a separate field or as metadata
     const order = await prisma.order.update({
       where: { id: orderId },
       data: {
         userId: userId !== undefined ? userId : existingOrder.userId,
         formSubmissionId: formSubmissionId !== undefined ? formSubmissionId : existingOrder.formSubmissionId,
         agentId: agentId !== undefined ? agentId : existingOrder.agentId,
-        price: price !== undefined ? price : existingOrder.price,
-        status: status !== undefined ? status : existingOrder.status,
-        paymentStatus: paymentStatus !== undefined ? paymentStatus : existingOrder.paymentStatus,
-        receipt: receipt !== undefined ? receipt : existingOrder.receipt,
         updatedAt: new Date()
       },
       include: {

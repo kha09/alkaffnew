@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
               }
             },
             price: true,
-            status: true,
+            adminStatus: true,
             paymentStatus: true,
             dateCreated: true
           }
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 })
     }
 
-    if (order.status !== 'completed') {
+    if (order.adminStatus !== 'Accepted by University') {
       return NextResponse.json({ error: 'يمكن إنشاء عمولة فقط للطلبات المكتملة' }, { status: 400 })
     }
 

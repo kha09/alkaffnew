@@ -36,19 +36,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    const { userId, price } = body;
+    const { userId } = body;
 
     // Validate required fields
-    if (!userId || !price) {
-      return NextResponse.json({ error: 'المستخدم والسعر مطلوبان' }, { status: 400 });
+    if (!userId) {
+      return NextResponse.json({ error: 'المستخدم مطلوب' }, { status: 400 });
     }
 
     const order = await prisma.order.create({
       data: {
         userId,
         agentId,
-        price,
-        status: 'pending',
+        agentStatus: 'Created by Agent',
+        adminStatus: 'Pending',
         paymentStatus: 'unpaid',
         dateCreated: new Date()
       },

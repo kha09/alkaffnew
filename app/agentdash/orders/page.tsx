@@ -21,11 +21,10 @@ type Order = {
     fullName: string;
     email: string;
   };
-  price: number;
-  status: string;
-  paymentStatus: string;
   agentStatus: string;
   adminStatus: string;
+  paymentStatus: string;
+  invoice: string | null;
   dateCreated: string;
   agentNotes: string | null;
   adminNotes: string | null;
@@ -167,9 +166,8 @@ export default function AgentOrdersPage() {
         order.user.fullName.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
     
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+    // Remove status filter for now since we're using agentStatus and adminStatus
+    return matchesSearch;
   });
 
   return (
@@ -209,15 +207,6 @@ export default function AgentOrdersPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div>
-                <Label htmlFor="price">السعر</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  value={newOrder.price || ''}
-                  onChange={(e) => setNewOrder({...newOrder, price: parseFloat(e.target.value) || 0})}
-                />
               </div>
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
@@ -288,7 +277,6 @@ export default function AgentOrdersPage() {
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">حالة الدفع</th>
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">حالة الوكيل</th>
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">حالة المشرف</th>
-                    <th className="text-right p-3 text-sm font-medium text-[#4b5563]">المبلغ</th>
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">اسم الطالب</th>
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">رقم الطلب</th>
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">تاريخ التقديم</th>
@@ -325,7 +313,6 @@ export default function AgentOrdersPage() {
                           {order.adminStatus}
                         </Badge>
                       </td>
-                      <td className="p-3 text-sm font-medium text-[#111827]">${order.price}</td>
                       <td className="p-3 text-sm text-[#111827]">
                         {order.formSubmission?.fullName || order.user.fullName}
                       </td>
@@ -364,10 +351,6 @@ export default function AgentOrdersPage() {
                     <div className="flex justify-between">
                       <span className="text-gray-600">تاريخ الطلب:</span>
                       <span>{new Date(selectedOrder.dateCreated).toLocaleDateString('ar-SA')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">المبلغ:</span>
-                      <span className="font-medium">${selectedOrder.price}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">حالة الدفع:</span>
