@@ -11,8 +11,11 @@ class MockPrismaClient {
   $disconnect = async () => {}
 
   university = {
-    findMany: async () => mockDb.universities,
-    findUnique: async ({ where }: any) => mockDb.universities.find(u => u.id === where.id) || null
+    findMany: async () => mockDb.universities.map(u => ({ ...u, emailAddress: `admissions@${u.name.toLowerCase().replace(/\s+/g, '')}.edu` })),
+    findUnique: async ({ where }: any) => {
+      const university = mockDb.universities.find(u => u.id === where.id)
+      return university ? { ...university, emailAddress: `admissions@${university.name.toLowerCase().replace(/\s+/g, '')}.edu` } : null
+    }
   }
 
   program = {
@@ -63,8 +66,39 @@ class MockPrismaClient {
   }
 
   order = {
-    findMany: async () => mockDb.orders,
-    findUnique: async ({ where }: any) => mockDb.orders.find(o => o.id === where.id) || null,
+    findMany: async ({ where, include, orderBy }: any = {}) => {
+      let orders = mockDb.orders
+      
+      // Apply where filter
+      if (where) {
+        orders = orders.filter(order => {
+          if (where.userId && order.userId !== where.userId) return false
+          if (where.id && order.id !== where.id) return false
+          if (where.agentId && order.agentId !== where.agentId) return false
+          return true
+        })
+      }
+      
+      // Apply ordering
+      if (orderBy?.dateCreated === 'desc') {
+        orders = orders.sort((a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime())
+      }
+      
+      return orders
+    },
+    findUnique: async ({ where, include }: any) => {
+      const order = mockDb.orders.find(o => o.id === where.id)
+      return order || null
+    },
+    findFirst: async ({ where }: any) => {
+      const orders = mockDb.orders.filter(order => {
+        if (where.userId && order.userId !== where.userId) return false
+        if (where.id && order.id !== where.id) return false
+        if (where.agentId && order.agentId !== where.agentId) return false
+        return true
+      })
+      return orders[0] || null
+    },
     create: async (data: any) => {
       const newOrder = {
         id: mockDb.orders.length + 1,
@@ -117,8 +151,22 @@ class MockPrismaClient {
   }
 
   formSubmission = {
-    findMany: async () => mockDb.formSubmissions,
-    findUnique: async ({ where }: any) => mockDb.formSubmissions.find(fs => fs.id === where.id) || null,
+    findMany: async ({ include }: any = {}) => {
+      const submissions = mockDb.formSubmissions.map(fs => ({
+        ...fs,
+        uploadedFiles: include?.uploadedFiles ? [] : undefined
+      }))
+      return submissions
+    },
+    findUnique: async ({ where, include }: any) => {
+      const submission = mockDb.formSubmissions.find(fs => fs.id === where.id)
+      if (!submission) return null
+      
+      return {
+        ...submission,
+        uploadedFiles: include?.uploadedFiles ? [] : undefined
+      }
+    },
     create: async (data: any) => {
       const newFormSubmission = {
         id: mockDb.formSubmissions.length + 1,
@@ -182,6 +230,172 @@ class MockPrismaClient {
         id: 1,
         ...data.data,
         uploadedAt: new Date()
+      }
+    }
+  }
+
+  emailTemplate = {
+    findMany: async ({ orderBy, include }: any = {}) => {
+      // Mock email templates data
+      const mockTemplates = [
+        {
+          id: 1,
+          name: 'University Application Template',
+          subject: 'Student Application - {{fullName}}',
+          body: 'Dear University Admissions Team,\n\nWe are pleased to submit an application for {{fullName}} ({{email}}) from {{nationality}}.\n\nStudent Details:\n- Full Name: {{fullName}}\n- Email: {{email}}\n- Nationality: {{nationality}}\n- Preferred Program: {{preferredProgram}}\n\nPlease find the attached documents for review.\n\nBest regards,\nSM Alkaff Team',
+          templateType: 'standard',
+          description: 'Standard template for university applications',
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          _count: { sentEmails: 0 }
+        }
+      ]
+      
+      if (include?._count) {
+        return mockTemplates
+      }
+      
+      return mockTemplates.map(({ _count, ...template }) => template)
+    },
+    findUnique: async ({ where }: any) => {
+      const mockTemplates = [
+        {
+          id: 1,
+          name: 'University Application Template',
+          subject: 'Student Application - {{fullName}}',
+          body: 'Dear University Admissions Team,\n\nWe are pleased to submit an application for {{fullName}} ({{email}}) from {{nationality}}.\n\nStudent Details:\n- Full Name: {{fullName}}\n- Email: {{email}}\n- Nationality: {{nationality}}\n- Preferred Program: {{preferredProgram}}\n\nPlease find the attached documents for review.\n\nBest regards,\nSM Alkaff Team',
+          templateType: 'standard',
+          description: 'Standard template for university applications',
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ]
+      
+      if (where.id) {
+        return mockTemplates.find(t => t.id === where.id) || null
+      }
+      if (where.name) {
+        return mockTemplates.find(t => t.name === where.name) || null
+      }
+      return null
+    },
+    create: async ({ data }: any) => {
+      return {
+        id: Math.floor(Math.random() * 1000) + 1,
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    },
+    update: async ({ where, data }: any) => {
+      return {
+        id: where.id,
+        ...data,
+        updatedAt: new Date()
+      }
+    },
+    delete: async ({ where }: any) => {
+      return {
+        id: where.id,
+        name: 'Deleted Template'
+      }
+    }
+  }
+
+  sentEmail = {
+    findMany: async ({ where, include, orderBy, skip, take }: any = {}) => {
+      // Mock sent emails data
+      const mockSentEmails = [
+        {
+          id: 1,
+          fromEmail: 'no-reply@smalkaff.com',
+          toEmail: 'admissions@university.edu',
+          subject: 'Student Application - John Doe',
+          body: 'Dear University Admissions Team...',
+          templateId: 1,
+          formSubmissionId: 1,
+          universityId: 1,
+          attachmentPaths: null,
+          status: 'sent',
+          sentAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          template: include?.template ? {
+            id: 1,
+            name: 'University Application Template',
+            templateType: 'standard'
+          } : undefined,
+          formSubmission: include?.formSubmission ? {
+            id: 1,
+            fullName: 'John Doe',
+            email: 'john@example.com',
+            nationality: 'American',
+            preferredProgram: 'Computer Science'
+          } : undefined,
+          university: include?.university ? {
+            id: 1,
+            name: 'Harvard University',
+            country: 'United States'
+          } : undefined
+        }
+      ]
+      
+      return mockSentEmails
+    },
+    create: async ({ data }: any) => {
+      return {
+        id: Math.floor(Math.random() * 1000) + 1,
+        ...data,
+        sentAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    },
+    update: async ({ where, data }: any) => {
+      return {
+        id: where.id,
+        ...data,
+        updatedAt: new Date()
+      }
+    },
+    count: async ({ where }: any = {}) => {
+      return 1 // Mock count
+    }
+  }
+
+  smtpSettings = {
+    findFirst: async ({ where, orderBy }: any = {}) => {
+      // Mock SMTP settings - return null initially to simulate no settings configured
+      return null
+    },
+    findUnique: async ({ where }: any) => {
+      return null
+    },
+    create: async ({ data }: any) => {
+      return {
+        id: 1,
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    },
+    update: async ({ where, data }: any) => {
+      return {
+        id: where.id,
+        ...data,
+        updatedAt: new Date()
+      }
+    },
+    updateMany: async ({ where, data }: any) => {
+      return {
+        count: 1 // Mock update count
+      }
+    },
+    delete: async ({ where }: any) => {
+      return {
+        id: where.id
       }
     }
   }

@@ -93,6 +93,10 @@ export default function StudentsPage() {
   const [selectedSubmission, setSelectedSubmission] = useState<FormSubmission | null>(null)
   const [emailSubject, setEmailSubject] = useState("")
   const [emailMessage, setEmailMessage] = useState("")
+  const [emailTemplates, setEmailTemplates] = useState<any[]>([])
+  const [selectedTemplate, setSelectedTemplate] = useState("")
+  const [universityEmail, setUniversityEmail] = useState("")
+  const [includeAttachments, setIncludeAttachments] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalSubmissions, setTotalSubmissions] = useState(0)
@@ -325,44 +329,107 @@ export default function StudentsPage() {
     }
   }
 
+  const fetchEmailTemplates = async () => {
+    try {
+      const response = await fetch('/api/admin/email-templates')
+      if (response.ok) {
+        const data = await response.json()
+        setEmailTemplates(data)
+      }
+    } catch (error) {
+      console.error('Error fetching email templates:', error)
+    }
+  }
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplate(templateId)
+    if (templateId && templateId !== "custom") {
+      const template = emailTemplates.find(t => t.id.toString() === templateId)
+      if (template) {
+        setEmailSubject(template.subject)
+        setEmailMessage(template.body)
+      }
+    } else {
+      setEmailSubject("")
+      setEmailMessage("")
+    }
+  }
+
   const handleSendEmail = async () => {
-    if (!selectedSubmission || !emailSubject || !emailMessage) return
+    if (!selectedSubmission) return
+    
+    // Check if using template or custom message
+    if (selectedTemplate && selectedTemplate !== "custom") {
+      // Send with template - template validation is handled by the template selection
+    } else {
+      // Send with custom message
+      if (!emailSubject || !emailMessage) {
+        toast({
+          title: "خطأ",
+          description: "يرجى إدخال الموضوع والرسالة",
+          variant: "destructive",
+        })
+        return
+      }
+    }
 
     try {
+      const requestBody: any = {
+        submissionId: selectedSubmission.id,
+        includeAttachments
+      }
+
+      if (selectedTemplate && selectedTemplate !== "custom") {
+        requestBody.templateId = parseInt(selectedTemplate)
+      } else {
+        requestBody.customSubject = emailSubject
+        requestBody.customMessage = emailMessage
+      }
+
+      if (universityEmail) {
+        requestBody.universityEmail = universityEmail
+      }
+
       const response = await fetch('/api/admin/form-submissions/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          submissionId: selectedSubmission.id,
-          subject: emailSubject,
-          message: emailMessage
-        })
+        body: JSON.stringify(requestBody)
       })
       
       if (response.ok) {
+        const data = await response.json()
         setIsEmailDialogOpen(false)
-        setEmailSubject("")
-        setEmailMessage("")
-        setSelectedSubmission(null)
+        resetEmailForm()
         toast({
           title: "نجاح",
-          description: "تم إرسال البريد الإلكتروني بنجاح",
+          description: `تم إرسال البريد الإلكتروني بنجاح إلى ${data.recipientEmail}`,
         })
       } else {
-        throw new Error('Failed to send email')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to send email')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending email:', error)
       toast({
         title: "خطأ",
-        description: "حدث خطأ أثناء إرسال البريد الإلكتروني",
+        description: error.message || "حدث خطأ أثناء إرسال البريد الإلكتروني",
         variant: "destructive",
       })
     }
   }
 
+  const resetEmailForm = () => {
+    setEmailSubject("")
+    setEmailMessage("")
+    setSelectedTemplate("")
+    setUniversityEmail("")
+    setIncludeAttachments(true)
+    setSelectedSubmission(null)
+  }
+
   const openEmailDialog = (submission: FormSubmission) => {
     setSelectedSubmission(submission)
+    fetchEmailTemplates()
     setIsEmailDialogOpen(true)
   }
 
@@ -916,40 +983,115 @@ export default function StudentsPage() {
       </Card>
 
       {/* Email Dialog */}
-      <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
-        <DialogContent>
+      <Dialog open={isEmailDialogOpen} onOpenChange={(open) => {
+        setIsEmailDialogOpen(open)
+        if (!open) resetEmailForm()
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>إرسال بريد إلكتروني</DialogTitle>
+            <DialogTitle>إرسال بريد إلكتروني للجامعة</DialogTitle>
           </DialogHeader>
           {selectedSubmission && (
             <div className="space-y-4">
-              <div>
-                <Label>إلى</Label>
-                <Input value={selectedSubmission.email} disabled />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>الطالب</Label>
+                  <Input value={selectedSubmission.fullName} disabled />
+                </div>
+                <div>
+                  <Label>بريد الطالب</Label>
+                  <Input value={selectedSubmission.email} disabled />
+                </div>
               </div>
+
               <div>
-                <Label>الموضوع</Label>
+                <Label>بريد الجامعة (اختياري)</Label>
                 <Input 
-                  value={emailSubject} 
-                  onChange={(e) => setEmailSubject(e.target.value)} 
-                  placeholder="موضوع البريد الإلكتروني"
+                  value={universityEmail} 
+                  onChange={(e) => setUniversityEmail(e.target.value)} 
+                  placeholder="university@example.edu"
                 />
+                <p className="text-sm text-muted-foreground mt-1">
+                  إذا تُرك فارغاً، سيتم استخدام بريد الجامعة المحفوظ في النظام
+                </p>
               </div>
+
               <div>
-                <Label>الرسالة</Label>
-                <Textarea 
-                  value={emailMessage} 
-                  onChange={(e) => setEmailMessage(e.target.value)} 
-                  placeholder="محتوى البريد الإلكتروني"
-                  rows={5}
-                />
+                <Label>اختيار القالب</Label>
+                <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر قالب أو اكتب رسالة مخصصة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="custom">رسالة مخصصة</SelectItem>
+                    {emailTemplates.map((template) => (
+                      <SelectItem key={template.id} value={template.id.toString()}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
+              {!selectedTemplate && (
+                <>
+                  <div>
+                    <Label>الموضوع</Label>
+                    <Input 
+                      value={emailSubject} 
+                      onChange={(e) => setEmailSubject(e.target.value)} 
+                      placeholder="موضوع البريد الإلكتروني"
+                    />
+                  </div>
+                  <div>
+                    <Label>الرسالة</Label>
+                    <Textarea 
+                      value={emailMessage} 
+                      onChange={(e) => setEmailMessage(e.target.value)} 
+                      placeholder="محتوى البريد الإلكتروني"
+                      rows={8}
+                    />
+                  </div>
+                </>
+              )}
+
+              {selectedTemplate && (
+                <div className="space-y-3">
+                  <div>
+                    <Label>معاينة الموضوع</Label>
+                    <div className="p-3 bg-muted rounded border">
+                      {emailSubject}
+                    </div>
+                  </div>
+                  <div>
+                    <Label>معاينة الرسالة</Label>
+                    <div className="p-3 bg-muted rounded border max-h-40 overflow-y-auto">
+                      <div className="whitespace-pre-wrap text-sm">
+                        {emailMessage}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="includeAttachments"
+                  checked={includeAttachments}
+                  onChange={(e) => setIncludeAttachments(e.target.checked)}
+                  className="rounded"
+                />
+                <Label htmlFor="includeAttachments">إرفاق ملفات الطالب</Label>
+              </div>
+
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setIsEmailDialogOpen(false)}>
                   إلغاء
                 </Button>
                 <Button onClick={handleSendEmail}>
-                  إرسال
+                  <Send className="w-4 h-4 mr-2" />
+                  إرسال للجامعة
                 </Button>
               </div>
             </div>

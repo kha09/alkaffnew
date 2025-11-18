@@ -24,12 +24,13 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="profile">الملف الشخصي</TabsTrigger>
           <TabsTrigger value="notifications">الإشعارات</TabsTrigger>
           <TabsTrigger value="security">الأمان</TabsTrigger>
           <TabsTrigger value="appearance">المظهر</TabsTrigger>
           <TabsTrigger value="system">النظام</TabsTrigger>
+          <TabsTrigger value="email">البريد الإلكتروني</TabsTrigger>
           <TabsTrigger value="integrations">التكاملات</TabsTrigger>
         </TabsList>
 
@@ -279,6 +280,105 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="email" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="w-5 h-5" />
+                  إعدادات SMTP
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="smtpHost">خادم SMTP</Label>
+                  <Input id="smtpHost" placeholder="smtp.gmail.com" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="smtpPort">المنفذ</Label>
+                    <Input id="smtpPort" type="number" placeholder="587" />
+                  </div>
+                  <div>
+                    <Label htmlFor="smtpEncryption">التشفير</Label>
+                    <Select defaultValue="tls">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="tls">TLS</SelectItem>
+                        <SelectItem value="ssl">SSL</SelectItem>
+                        <SelectItem value="none">بدون تشفير</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="smtpUsername">اسم المستخدم</Label>
+                  <Input id="smtpUsername" placeholder="your-email@gmail.com" />
+                </div>
+                <div>
+                  <Label htmlFor="smtpPassword">كلمة المرور</Label>
+                  <Input id="smtpPassword" type="password" placeholder="كلمة مرور التطبيق" />
+                </div>
+                <div>
+                  <Label htmlFor="fromEmail">البريد المرسل</Label>
+                  <Input id="fromEmail" placeholder="no-reply@smalkaff.com" />
+                </div>
+                <div>
+                  <Label htmlFor="fromName">اسم المرسل</Label>
+                  <Input id="fromName" defaultValue="SM Alkaff" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-medium text-[#111827]">تفعيل SMTP</h4>
+                    <p className="text-sm text-[#4b5563]">تمكين إرسال البريد الإلكتروني</p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                <Button className="w-full">حفظ إعدادات SMTP</Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>اختبار البريد الإلكتروني</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="testEmail">البريد الإلكتروني للاختبار</Label>
+                  <Input id="testEmail" type="email" placeholder="test@example.com" />
+                </div>
+                <Button variant="outline" className="w-full">إرسال بريد تجريبي</Button>
+                
+                <div className="mt-6 p-4 bg-[#f3f4f6] rounded-lg">
+                  <h4 className="font-medium text-[#111827] mb-2">حالة الاتصال</h4>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span className="text-sm text-[#4b5563]">غير متصل</span>
+                  </div>
+                  <p className="text-xs text-[#4b5563] mt-1">لم يتم اختبار الإعدادات بعد</p>
+                </div>
+
+                <div className="mt-4">
+                  <h4 className="font-medium text-[#111827] mb-2">إعدادات شائعة</h4>
+                  <div className="space-y-2 text-sm text-[#4b5563]">
+                    <div>
+                      <strong>Gmail:</strong> smtp.gmail.com:587 (TLS)
+                    </div>
+                    <div>
+                      <strong>Outlook:</strong> smtp-mail.outlook.com:587 (TLS)
+                    </div>
+                    <div>
+                      <strong>Yahoo:</strong> smtp.mail.yahoo.com:587 (TLS)
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="integrations" className="mt-6">

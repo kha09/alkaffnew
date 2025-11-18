@@ -37,7 +37,9 @@ model University {
   flag           String
   order          Int    @default(0)
   freeOfferLetter Boolean @default(false)
+  emailAddress   String? // University contact email for applications
   departments    Department[]
+  sentEmails     SentEmail[]
 }
 
 model Department {
@@ -125,6 +127,7 @@ model FormSubmission {
   userId            Int?          @unique // For user account linking (one-to-one)
   user              User?         @relation(fields: [userId], references: [id])
   orders            Order[]
+  sentEmails        SentEmail[]   // Track emails sent for this submission
 }
 
 model Agent {
@@ -198,6 +201,61 @@ model Commission {
   approvedAt      DateTime?  // When admin approves
   paidAt          DateTime?  // When commission is paid
   notes           String?    // Admin notes
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model EmailTemplate {
+  id              Int        @id @default(autoincrement())
+  name            String     @unique
+  subject         String
+  body            String     // Email body with placeholders like {{fullName}}, {{email}}, etc.
+  templateType    String     @default("standard") // "standard", "optional_info"
+  description     String?    // Description of when to use this template
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  sentEmails      SentEmail[]
+}
+
+model SentEmail {
+  id              Int        @id @default(autoincrement())
+  fromEmail       String     // Admin/system email
+  toEmail         String     // University email
+  subject         String
+  body            String     // Final rendered email body
+  templateId      Int?       // Reference to template used
+  template        EmailTemplate? @relation(fields: [templateId], references: [id])
+  formSubmissionId Int       // Reference to the form submission
+  formSubmission  FormSubmission @relation(fields: [formSubmissionId], references: [id])
+  universityId    Int?       // Reference to university
+  university      University? @relation(fields: [universityId], references: [id])
+  attachmentPaths String?    // JSON array of file paths attached
+  status          String     @default("sent") // sent, delivered, failed, replied
+  sentAt          DateTime   @default(now())
+  deliveredAt     DateTime?
+  replyReceived   Boolean    @default(false)
+  replyContent    String?    // Content of university reply
+  replyReceivedAt DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model SmtpSettings {
+  id              Int        @id @default(autoincrement())
+  host            String     // SMTP server host
+  port            Int        // SMTP server port
+  username        String     // SMTP username
+  password        String     // SMTP password (encrypted)
+  encryption      String     @default("tls") // "ssl", "tls", "none"
+  fromEmail       String     // Default from email address
+  fromName        String     @default("SM Alkaff") // Default from name
+  isEnabled       Boolean    @default(true) // Whether SMTP is enabled
+  isDefault       Boolean    @default(false) // Whether this is the default configuration
+  testEmail       String?    // Email address for testing
+  lastTested      DateTime?  // Last time settings were tested
+  testStatus      String?    // "success", "failed", "pending"
+  testError       String?    // Last test error message
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }

@@ -1,0 +1,55 @@
+"use client"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { Home, FileText, CreditCard, HelpCircle, User, Bell } from "lucide-react"
+
+const studentNavigation = [
+  { name: "الرئيسية", href: "/student", icon: Home },
+  { name: "إدارة الطلبات", href: "/student/orders", icon: FileText },
+  { name: "الدفع والمالية", href: "/student/payments", icon: CreditCard },
+  { name: "مركز الدعم", href: "/student/support", icon: HelpCircle },
+  { name: "الملف الشخصي", href: "/student/profile", icon: User },
+]
+
+export function StudentSidebar() {
+  const pathname = usePathname()
+
+  return (
+    <div className="w-64 bg-[#374151] text-white p-4 flex flex-col">
+      <div className="flex items-center gap-2 mb-8">
+        <div className="w-8 h-8 bg-white rounded text-[#374151] flex items-center justify-center text-sm font-bold">
+          ST
+        </div>
+        <span className="font-semibold">لوحة الطالب</span>
+      </div>
+
+      <nav className="space-y-2 flex-1">
+        {studentNavigation.map((item) => {
+          const isActive = pathname === item.href
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 p-3 rounded-lg transition-colors",
+                isActive ? "bg-[#4b5563] text-white" : "hover:bg-[#4b5563] cursor-pointer",
+              )}
+            >
+              <item.icon className="w-4 h-4" />
+              <span>{item.name}</span>
+            </Link>
+          )
+        })}
+      </nav>
+
+      <div className="mt-auto pt-4 border-t border-[#4b5563]">
+        <div className="flex items-center gap-2 text-sm">
+          <Bell className="w-4 h-4" />
+          <span>الإشعارات</span>
+        </div>
+      </div>
+    </div>
+  )
+}
