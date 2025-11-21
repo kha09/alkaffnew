@@ -2,8 +2,10 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession, signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
-import { Home, FileText, BarChart3, Users, Bell, FileEdit, University, Building, BookOpen, DollarSign, Mail, Send, Settings } from "lucide-react"
+import { Home, FileText, BarChart3, Users, Bell, FileEdit, University, Building, BookOpen, DollarSign, Mail, Send, Settings, LogOut, User } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 const navigation = [
   { name: "لوحة التحكم", href: "/dashboard", icon: Home },
@@ -23,6 +25,11 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { data: session } = useSession()
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" })
+  }
 
   return (
     <div className="w-64 bg-[#374151] text-white p-4 flex flex-col">
@@ -52,11 +59,31 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto pt-4 border-t border-[#4b5563]">
+      <div className="mt-auto pt-4 border-t border-[#4b5563] space-y-3">
+        {session?.user && (
+          <div className="flex items-center gap-2 text-sm">
+            <User className="w-4 h-4" />
+            <div className="flex flex-col">
+              <span className="font-medium">{session.user.name}</span>
+              <span className="text-xs text-gray-300">{session.user.role === 'admin' ? 'مدير' : session.user.role}</span>
+            </div>
+          </div>
+        )}
+        
         <div className="flex items-center gap-2 text-sm">
           <Bell className="w-4 h-4" />
           <span>الإشعارات</span>
         </div>
+        
+        <Button
+          onClick={handleLogout}
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-white hover:bg-[#4b5563] hover:text-white"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>تسجيل الخروج</span>
+        </Button>
       </div>
     </div>
   )

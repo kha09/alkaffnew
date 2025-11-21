@@ -2,32 +2,39 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useSession, signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
-import { Home, Users, FileText, Settings, DollarSign, Bell } from "lucide-react"
+import { Home, FileText, Users, Bell, DollarSign, MessageSquare, LogOut, User } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
-const agentNavigation = [
-  { name: "لوحة الوكيل", href: "/agentdash", icon: Home },
-  { name: "إدارة الطلاب", href: "/agentdash/students", icon: Users },
-  { name: "متابعة الطلبات", href: "/agentdash/orders", icon: FileText },
-  { name: "الأدمن", href: "/agentdash/admin", icon: Settings },
-  { name: "العمولات والمدفوعات", href: "/agentdash/payments", icon: DollarSign },
+const navigation = [
+  { name: "لوحة التحكم", href: "/agentdash", icon: Home },
+  { name: "الطلبات", href: "/agentdash/orders", icon: FileText },
+  { name: "الطلاب", href: "/agentdash/students", icon: Users },
+  { name: "المدفوعات", href: "/agentdash/payments", icon: DollarSign },
+  { name: "التواصل مع الإدارة", href: "/agentdash/admin", icon: MessageSquare },
   { name: "الإشعارات", href: "/agentdash/notifications", icon: Bell },
 ]
 
 export function AgentSidebar() {
   const pathname = usePathname()
+  const { data: session } = useSession()
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" })
+  }
 
   return (
     <div className="w-64 bg-[#374151] text-white p-4 flex flex-col">
       <div className="flex items-center gap-2 mb-8">
         <div className="w-8 h-8 bg-white rounded text-[#374151] flex items-center justify-center text-sm font-bold">
-          AG
+          SM
         </div>
-        <span className="font-semibold">لوحة الوكيل</span>
+        <span className="font-semibold">لوحة تحكم الوكيل</span>
       </div>
 
       <nav className="space-y-2 flex-1">
-        {agentNavigation.map((item) => {
+        {navigation.map((item) => {
           const isActive = pathname === item.href
           return (
             <Link
@@ -45,11 +52,31 @@ export function AgentSidebar() {
         })}
       </nav>
 
-      <div className="mt-auto pt-4 border-t border-[#4b5563]">
+      <div className="mt-auto pt-4 border-t border-[#4b5563] space-y-3">
+        {session?.user && (
+          <div className="flex items-center gap-2 text-sm">
+            <User className="w-4 h-4" />
+            <div className="flex flex-col">
+              <span className="font-medium">{session.user.name}</span>
+              <span className="text-xs text-gray-300">{session.user.role === 'agent' ? 'وكيل' : session.user.role}</span>
+            </div>
+          </div>
+        )}
+        
         <div className="flex items-center gap-2 text-sm">
           <Bell className="w-4 h-4" />
           <span>الإشعارات</span>
         </div>
+        
+        <Button
+          onClick={handleLogout}
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-white hover:bg-[#4b5563] hover:text-white"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>تسجيل الخروج</span>
+        </Button>
       </div>
     </div>
   )

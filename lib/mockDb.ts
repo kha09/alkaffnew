@@ -206,13 +206,55 @@ export const mockDb = {
   users: [
     {
       id: 1,
-      fullName: "Ali Hassan",
-      email: "ali@example.com"
+      username: "admin",
+      password: "$2b$10$3aKlDCw.IXNJYVm.fh604eWWygibEq6fONgxIdYHe07A9BaZ78Eoe", // password: admin123
+      email: "admin@smalkaff.com",
+      fullName: "Admin User",
+      role: "admin",
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       id: 2,
+      username: "agent",
+      password: "$2b$10$ZJo2UgHBGf59DxCJNm.hj.AoDvHFx4XNY7weNI2/jRX2l9mfcKOq.", // password: agent123
+      email: "agent@smalkaff.com",
+      fullName: "Agent User",
+      role: "agent",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 3,
+      username: "student",
+      password: "$2b$10$C4lK3pFknnSKIyWgwHb4Z.mduu6ILJdiPAored2cINNICk3Kxa2LK", // password: student123
+      email: "student@smalkaff.com",
+      fullName: "Student User",
+      role: "student",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 4,
+      username: "ali",
+      password: "$2b$10$5ZoJEuf3.h7CyfXGuAswxee7i3/dsyMke0Qieki.w1Hv5dVmJPPEe", // password: password123
+      email: "ali@example.com",
+      fullName: "Ali Hassan",
+      role: "student",
+      formSubmissionId: 1,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: 5,
+      username: "layla",
+      password: "$2b$10$5ZoJEuf3.h7CyfXGuAswxee7i3/dsyMke0Qieki.w1Hv5dVmJPPEe", // password: password123
+      email: "layla@example.com",
       fullName: "Layla Mahmoud",
-      email: "layla@example.com"
+      role: "student",
+      formSubmissionId: 2,
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   ],
 
