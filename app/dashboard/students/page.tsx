@@ -63,13 +63,17 @@ type FormSubmission = {
   uploadedFiles: UploadedFile[]
 }
 
-// Mock data for order stages
-const orderStages = [
-  { value: "New", label: "جديد" },
-  { value: "In Progress", label: "قيد المعالجة" },
-  { value: "Completed", label: "مكتمل" },
-  { value: "Cancelled", label: "ملغي" },
-  { value: "Rejected", label: "مرفوض" },
+// Status options that match the student dashboard
+const submissionStatuses = [
+  { value: "submitted", label: "تم التقديم" },
+  { value: "approved_by_admin", label: "موافقة الإدارة" },
+  { value: "sent_to_university", label: "مرسل للجامعة" },
+  { value: "accepted_by_university", label: "مقبول من الجامعة" },
+  { value: "rejected_by_university", label: "رفض الجامعة" },
+  { value: "university_response", label: "رد الجامعة" },
+  { value: "submitted_visa_info", label: "تقديم معلومات التأشيرة" },
+  { value: "submitted_payment", label: "تقديم الدفع" },
+  { value: "completed", label: "مكتمل" }
 ]
 
 import {
@@ -587,7 +591,7 @@ export default function StudentsPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">جميع الحالات</SelectItem>
-                {orderStages.map(stage => (
+                {submissionStatuses.map(stage => (
                   <SelectItem key={stage.value} value={stage.value}>{stage.label}</SelectItem>
                 ))}
               </SelectContent>
@@ -732,7 +736,7 @@ export default function StudentsPage() {
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      {orderStages.map(stage => (
+                                      {submissionStatuses.map(stage => (
                                         <SelectItem key={stage.value} value={stage.value}>{stage.label}</SelectItem>
                                       ))}
                                     </SelectContent>
@@ -905,13 +909,15 @@ export default function StudentsPage() {
                       <td className="p-3">
                         <Badge 
                           className={
-                            submission.orderStage === "Completed" ? "bg-green-100 text-green-800" :
-                            submission.orderStage === "In Progress" ? "bg-yellow-100 text-yellow-800" :
-                            submission.orderStage === "Cancelled" ? "bg-red-100 text-red-800" :
-                            "bg-gray-100 text-gray-800"
+                            submission.orderStage === "completed" ? "bg-green-100 text-green-800" :
+                            submission.orderStage === "approved_by_admin" ? "bg-blue-100 text-blue-800" :
+                            submission.orderStage === "sent_to_university" ? "bg-purple-100 text-purple-800" :
+                            submission.orderStage === "accepted_by_university" ? "bg-green-100 text-green-800" :
+                            submission.orderStage === "rejected_by_university" ? "bg-red-100 text-red-800" :
+                            "bg-yellow-100 text-yellow-800"
                           }
                         >
-                          {orderStages.find(s => s.value === submission.orderStage)?.label || submission.orderStage}
+                          {submissionStatuses.find(s => s.value === submission.orderStage)?.label || submission.orderStage}
                         </Badge>
                       </td>
                       <td className="p-3 text-sm text-[#111827]">{submission.preferredProgram}</td>

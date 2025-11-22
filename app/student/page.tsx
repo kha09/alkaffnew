@@ -66,7 +66,7 @@ export default function StudentDashboard() {
     { key: "submitted", label: "تم التقديم", icon: FileText },
     { key: "approved_by_admin", label: "موافقة الإدارة", icon: CheckCircle },
     { key: "sent_to_university", label: "مرسل للجامعة", icon: FileText },
-    { key: "university_response", label: "رد الجامعة", icon: CheckCircle },
+    { key: "accepted_by_university", label: "مقبول من الجامعة", icon: CheckCircle },
     { key: "submitted_visa_info", label: "تقديم معلومات التأشيرة", icon: FileText },
     { key: "submitted_payment", label: "تقديم الدفع", icon: CreditCard },
     { key: "completed", label: "مكتمل", icon: CheckCircle }

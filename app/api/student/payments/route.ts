@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-
-// TODO: Add authentication middleware to get student's user ID from session/token
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    // For now, mock userId. In production, extract from session/token.
-    const userId = 1;
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
+    const userId = parseInt(session.user.id);
 
     const body = await request.json();
     const { orderId, invoicePath, fileName } = body;
@@ -54,8 +59,13 @@ export async function POST(request: NextRequest) {
 // GET /api/student/payments - Get payment history for student
 export async function GET(request: NextRequest) {
   try {
-    // For now, mock userId. In production, extract from session/token.
-    const userId = 1;
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
+    const userId = parseInt(session.user.id);
 
     // Fetch orders with payment information for this student
     const orders = await prisma.order.findMany({
@@ -79,8 +89,8 @@ export async function GET(request: NextRequest) {
 
     // Calculate payment statistics
     const totalOrders = orders.length;
-    const paidOrders = orders.filter(order => order.paymentStatus === "paid").length;
-    const unpaidOrders = orders.filter(order => order.paymentStatus === "unpaid").length;
+    const paidOrders = orders.filter((order: any) => order.paymentStatus === "paid").length;
+    const unpaidOrders = orders.filter((order: any) => order.paymentStatus === "unpaid").length;
 
     return NextResponse.json({ 
       orders,

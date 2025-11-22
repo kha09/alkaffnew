@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-
-// TODO: Add authentication middleware to get student's user ID from session/token
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   try {
-    // For now, mock userId. In production, extract from session/token.
-    const userId = 1;
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
+    const userId = parseInt(session.user.id);
 
     // Fetch orders for this student
     const orders = await prisma.order.findMany({

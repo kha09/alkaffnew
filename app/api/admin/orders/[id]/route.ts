@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
+// Function to map adminStatus to submissionStatus
+function mapAdminStatusToSubmissionStatus(adminStatus: string): string {
+  const statusMapping: { [key: string]: string } = {
+    'Pending': 'submitted',
+    'Approved': 'approved_by_admin',
+    'Rejected': 'rejected_by_university',
+    'Sent to University': 'sent_to_university',
+    'Accepted by University': 'accepted_by_university',
+    'Under Review': 'submitted'
+  }
+  
+  return statusMapping[adminStatus] || 'submitted'
+}
+
 // PUT /api/admin/orders/[id] - Update an order
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -34,6 +48,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'معرف المستخدم مطلوب' }, { status: 400 })
     }
 
+    // Determine the final submissionStatus
+    let finalSubmissionStatus = submissionStatus !== undefined ? submissionStatus : existingOrder.submissionStatus
+    
+    // If adminStatus is being updated, automatically sync submissionStatus
+    if (adminStatus !== undefined && adminStatus !== existingOrder.adminStatus) {
+      finalSubmissionStatus = mapAdminStatusToSubmissionStatus(adminStatus)
+    }
+
     const order = await prisma.order.update({
       where: { id: orderId },
       data: {
@@ -43,7 +65,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         agentStatus: agentStatus !== undefined ? agentStatus : existingOrder.agentStatus,
         adminStatus: adminStatus !== undefined ? adminStatus : existingOrder.adminStatus,
         paymentStatus: paymentStatus !== undefined ? paymentStatus : existingOrder.paymentStatus,
-        submissionStatus: submissionStatus !== undefined ? submissionStatus : existingOrder.submissionStatus,
+        submissionStatus: finalSubmissionStatus,
         invoice: invoice !== undefined ? invoice : existingOrder.invoice,
         agentNotes: agentNotes !== undefined ? agentNotes : existingOrder.agentNotes,
         adminNotes: adminNotes !== undefined ? adminNotes : existingOrder.adminNotes,

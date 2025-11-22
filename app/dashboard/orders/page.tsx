@@ -39,6 +39,7 @@ type Order = {
   agentStatus: string
   adminStatus: string
   paymentStatus: string
+  submissionStatus: string
   invoice: string | null
   dateCreated: string
   agentNotes: string | null
@@ -181,10 +182,12 @@ export default function OrdersPage() {
           userId: editingOrder.userId,
           formSubmissionId: editingOrder.formSubmissionId,
           agentId: editingOrder.agentId,
-          price: editingOrder.price,
-          status: editingOrder.status,
+          agentStatus: editingOrder.agentStatus,
+          adminStatus: editingOrder.adminStatus,
           paymentStatus: editingOrder.paymentStatus,
-          receipt: editingOrder.receipt,
+          invoice: editingOrder.invoice,
+          agentNotes: editingOrder.agentNotes,
+          adminNotes: editingOrder.adminNotes,
         })
       })
       
@@ -220,9 +223,9 @@ export default function OrdersPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          status: selectedOrder.status,
+          adminStatus: selectedOrder.adminStatus,
           paymentStatus: selectedOrder.paymentStatus,
-          notes: orderNotes
+          adminNotes: orderNotes
         })
       })
       
@@ -280,7 +283,7 @@ export default function OrdersPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           paymentStatus: "paid",
-          status: selectedOrder.status === "pending" ? "completed" : selectedOrder.status
+          adminStatus: selectedOrder.adminStatus === "Pending" ? "Approved" : selectedOrder.adminStatus
         })
       })
       
@@ -417,7 +420,7 @@ export default function OrdersPage() {
     const matchesSearch = order.user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.formSubmission?.fullName && order.formSubmission.fullName.toLowerCase().includes(searchTerm.toLowerCase()))
     
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter
+    const matchesStatus = statusFilter === "all" || order.adminStatus === statusFilter
     const matchesPaymentStatus = paymentStatusFilter === "all" || order.paymentStatus === paymentStatusFilter
     const matchesUniversity = universityFilter === "all" || 
       (order.formSubmission?.universityId && order.formSubmission.universityId.toString() === universityFilter)
@@ -554,7 +557,7 @@ export default function OrdersPage() {
               <div>
                 <p className="text-sm text-[#4b5563]">قيد المعالجة</p>
                 <p className="text-2xl font-bold text-[#f59e0b]">
-                  {orders.filter(o => o.status === 'pending').length}
+                  {orders.filter(o => o.adminStatus === 'Pending').length}
                 </p>
               </div>
               <Clock className="w-8 h-8 text-[#f59e0b]" />
@@ -567,7 +570,7 @@ export default function OrdersPage() {
               <div>
                 <p className="text-sm text-[#4b5563]">مكتملة</p>
                 <p className="text-2xl font-bold text-[#10b981]">
-                  {orders.filter(o => o.status === 'completed').length}
+                  {orders.filter(o => o.adminStatus === 'Approved' || o.adminStatus === 'Accepted by University').length}
                 </p>
               </div>
               <CheckCircle className="w-8 h-8 text-[#10b981]" />
@@ -580,7 +583,7 @@ export default function OrdersPage() {
               <div>
                 <p className="text-sm text-[#4b5563]">ملغية</p>
                 <p className="text-2xl font-bold text-[#ef4444]">
-                  {orders.filter(o => o.status === 'cancelled').length}
+                  {orders.filter(o => o.adminStatus === 'Rejected').length}
                 </p>
               </div>
               <XCircle className="w-8 h-8 text-[#ef4444]" />
@@ -712,11 +715,11 @@ export default function OrdersPage() {
                       </Badge>
                     </td>
                     <td className="p-3">
-                      <Badge className={getStatusBadgeClass(order.status)}>
-                        {getStatusLabel(order.status)}
+                      <Badge className={getStatusBadgeClass(order.adminStatus)}>
+                        {getStatusLabel(order.adminStatus)}
                       </Badge>
                     </td>
-                    <td className="p-3 text-sm font-medium text-[#111827]">${order.price}</td>
+                    <td className="p-3 text-sm font-medium text-[#111827]">—</td>
                     <td className="p-3 text-sm text-[#4b5563]">
                       {new Date(order.dateCreated).toLocaleDateString('ar-SA')}
                     </td>
@@ -757,12 +760,12 @@ export default function OrdersPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">المبلغ:</span>
-                      <span className="font-medium">${selectedOrder.price}</span>
+                      <span className="font-medium">—</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">الحالة:</span>
-                      <Badge className={getStatusBadgeClass(selectedOrder.status)}>
-                        {getStatusLabel(selectedOrder.status)}
+                      <Badge className={getStatusBadgeClass(selectedOrder.adminStatus)}>
+                        {getStatusLabel(selectedOrder.adminStatus)}
                       </Badge>
                     </div>
                     <div className="flex justify-between">

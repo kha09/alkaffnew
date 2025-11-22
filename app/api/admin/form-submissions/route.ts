@@ -142,6 +142,12 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    // Update any existing orders that are linked to this form submission to use the new user ID
+    await prisma.order.updateMany({
+      where: { formSubmissionId: submissionId },
+      data: { userId: user.id }
+    })
+
     return NextResponse.json({
       message: 'User created successfully',
       username,
