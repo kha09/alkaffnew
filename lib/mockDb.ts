@@ -150,6 +150,7 @@ export const mockDb = {
       agentStatus: "Created by Agent",
       adminStatus: "Pending",
       paymentStatus: "unpaid",
+      submissionStatus: "submitted",
       invoice: null,
       dateCreated: new Date(),
       agentNotes: "Student is interested in engineering programs",
@@ -164,11 +165,14 @@ export const mockDb = {
       formSubmission: {
         id: 1,
         fullName: "Ali Hassan",
-        preferredProgram: "Computer Engineering"
+        preferredProgram: "Computer Engineering",
+        email: "ali@example.com",
+        contactNumber: "+966 50 000 0000"
       },
       agent: {
         id: 1,
-        name: "Mohammed Al-Saud"
+        name: "Mohammed Al-Saud",
+        email: "mohammed@alkaff.com"
       }
     },
     {
@@ -179,6 +183,7 @@ export const mockDb = {
       agentStatus: "Submitted",
       adminStatus: "Approved",
       paymentStatus: "paid",
+      submissionStatus: "university_response",
       invoice: "/invoices/invoice-2.pdf",
       dateCreated: new Date(),
       agentNotes: "Student has submitted all required documents",
@@ -193,11 +198,14 @@ export const mockDb = {
       formSubmission: {
         id: 2,
         fullName: "Layla Mahmoud",
-        preferredProgram: "Medicine"
+        preferredProgram: "Medicine",
+        email: "layla@example.com",
+        contactNumber: "+20 100 000 0000"
       },
       agent: {
         id: 2,
-        name: "Sarah Ahmed"
+        name: "Sarah Ahmed",
+        email: "sarah@alkaff.com"
       }
     }
   ],

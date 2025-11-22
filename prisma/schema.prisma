@@ -180,6 +180,8 @@ model Order {
   agentStatus     String     @default("Created by Agent")   // Created by Agent, In Progress, Submitted, Under Review (editable by agent)
   adminStatus     String     @default("Pending")  // Pending, Approved, Rejected, Sent to University, Accepted by University (editable by admin)
   paymentStatus   String     @default("unpaid")  // paid, unpaid (whether student has paid)
+  // New submission status field for student progress tracking
+  submissionStatus String    @default("submitted") // submitted, approved_by_admin, sent_to_university, accepted_by_university, rejected_by_university, submitted_visa_info, submitted_payment, completed
   invoice         String?    // URL or path to uploaded invoice file
   dateCreated     DateTime   @default(now())
   agentNotes      String?    // Private notes from agent to admin

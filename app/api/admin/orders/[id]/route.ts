@@ -18,7 +18,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const body = await request.json()
     
-    const { userId, formSubmissionId, agentId, agentStatus, adminStatus, paymentStatus, invoice, agentNotes, adminNotes } = body
+    const { userId, formSubmissionId, agentId, agentStatus, adminStatus, paymentStatus, submissionStatus, invoice, agentNotes, adminNotes } = body
 
     // Check if order exists
     const existingOrder = await prisma.order.findUnique({
@@ -40,6 +40,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         userId: userId !== undefined ? userId : existingOrder.userId,
         formSubmissionId: formSubmissionId !== undefined ? formSubmissionId : existingOrder.formSubmissionId,
         agentId: agentId !== undefined ? agentId : existingOrder.agentId,
+        agentStatus: agentStatus !== undefined ? agentStatus : existingOrder.agentStatus,
+        adminStatus: adminStatus !== undefined ? adminStatus : existingOrder.adminStatus,
+        paymentStatus: paymentStatus !== undefined ? paymentStatus : existingOrder.paymentStatus,
+        submissionStatus: submissionStatus !== undefined ? submissionStatus : existingOrder.submissionStatus,
+        invoice: invoice !== undefined ? invoice : existingOrder.invoice,
+        agentNotes: agentNotes !== undefined ? agentNotes : existingOrder.agentNotes,
+        adminNotes: adminNotes !== undefined ? adminNotes : existingOrder.adminNotes,
         updatedAt: new Date()
       },
       include: {

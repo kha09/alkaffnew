@@ -24,6 +24,7 @@ type StudentOrder = {
   agentStatus: string;
   adminStatus: string;
   paymentStatus: string;
+  submissionStatus: string;
   dateCreated: string;
   agentNotes?: string;
   adminNotes?: string;
@@ -32,6 +33,11 @@ type StudentOrder = {
     preferredProgram: string;
     email: string;
     contactNumber: string;
+    nationality: string;
+    countryOfResidence: string;
+    cityOfResidence: string;
+    universityId?: number;
+    programId?: number;
   };
   agent?: {
     name: string;
@@ -94,6 +100,31 @@ export default function StudentOrders() {
         return "مقبول من الجامعة";
       case "Under Review":
         return "تحت المراجعة";
+      default:
+        return status;
+    }
+  };
+
+  const getSubmissionStatusText = (status: string) => {
+    switch (status) {
+      case "submitted":
+        return "تم التقديم";
+      case "approved_by_admin":
+        return "موافقة الإدارة";
+      case "sent_to_university":
+        return "مرسل للجامعة";
+      case "accepted_by_university":
+        return "قبول الجامعة";
+      case "rejected_by_university":
+        return "رفض الجامعة";
+      case "university_response":
+        return "رد الجامعة";
+      case "submitted_visa_info":
+        return "تقديم معلومات التأشيرة";
+      case "submitted_payment":
+        return "تقديم الدفع";
+      case "completed":
+        return "مكتمل";
       default:
         return status;
     }
@@ -173,6 +204,17 @@ export default function StudentOrders() {
                     </div>
                   </div>
 
+                  {/* Submission Status Progress */}
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <h4 className="font-medium text-gray-800 mb-2">حالة التقديم:</h4>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-blue-100 text-blue-800">
+                        {getSubmissionStatusText(order.submissionStatus)}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Real Submission Information */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="font-medium">الاسم الكامل:</span> {order.formSubmission?.fullName}
@@ -182,6 +224,15 @@ export default function StudentOrders() {
                     </div>
                     <div>
                       <span className="font-medium">رقم الهاتف:</span> {order.formSubmission?.contactNumber}
+                    </div>
+                    <div>
+                      <span className="font-medium">الجنسية:</span> {order.formSubmission?.nationality}
+                    </div>
+                    <div>
+                      <span className="font-medium">بلد الإقامة:</span> {order.formSubmission?.countryOfResidence}
+                    </div>
+                    <div>
+                      <span className="font-medium">مدينة الإقامة:</span> {order.formSubmission?.cityOfResidence}
                     </div>
                     {order.agent && (
                       <div>

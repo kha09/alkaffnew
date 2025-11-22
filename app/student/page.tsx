@@ -21,10 +21,17 @@ type StudentOrder = {
   agentStatus: string;
   adminStatus: string;
   paymentStatus: string;
+  submissionStatus: string;
   dateCreated: string;
   formSubmission?: {
     fullName: string;
     preferredProgram: string;
+    email: string;
+    contactNumber: string;
+  };
+  agent?: {
+    name: string;
+    email: string;
   };
 };
 
@@ -51,14 +58,30 @@ export default function StudentDashboard() {
     fetchOrders();
   }, []);
 
-  // Calculate progress based on orders
-  const totalOrders = orders.length;
-  const completedOrders = orders.filter(order => 
-    order.adminStatus === "Accepted by University"
-  ).length;
-  const progressPercentage = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
+  // Get the current submission (assuming one submission per student)
+  const currentSubmission = orders.length > 0 ? orders[0] : null;
+  
+  // Define submission status stages
+  const submissionStages = [
+    { key: "submitted", label: "تم التقديم", icon: FileText },
+    { key: "approved_by_admin", label: "موافقة الإدارة", icon: CheckCircle },
+    { key: "sent_to_university", label: "مرسل للجامعة", icon: FileText },
+    { key: "university_response", label: "رد الجامعة", icon: CheckCircle },
+    { key: "submitted_visa_info", label: "تقديم معلومات التأشيرة", icon: FileText },
+    { key: "submitted_payment", label: "تقديم الدفع", icon: CreditCard },
+    { key: "completed", label: "مكتمل", icon: CheckCircle }
+  ];
 
-  // Count orders by status
+  // Calculate progress based on current submission status
+  const getCurrentStageIndex = (status: string) => {
+    const stageIndex = submissionStages.findIndex(stage => stage.key === status);
+    return stageIndex >= 0 ? stageIndex : 0;
+  };
+
+  const currentStageIndex = currentSubmission ? getCurrentStageIndex(currentSubmission.submissionStatus) : 0;
+  const progressPercentage = currentSubmission ? ((currentStageIndex + 1) / submissionStages.length) * 100 : 0;
+
+  // Count orders by status for stats
   const pendingOrders = orders.filter(order => 
     order.adminStatus === "Pending" || order.adminStatus === "Under Review"
   ).length;
@@ -95,9 +118,65 @@ export default function StudentDashboard() {
               <span className="text-sm font-medium">{Math.round(progressPercentage)}%</span>
             </div>
             <Progress value={progressPercentage} className="h-3" />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            {/* Submission Status Progress Steps */}
+            {currentSubmission && (
+              <div className="space-y-4">
+                <h4 className="font-medium text-[#111827]">مراحل التقديم</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {submissionStages.map((stage, index) => {
+                    const Icon = stage.icon;
+                    const isCompleted = index <= currentStageIndex;
+                    const isCurrent = index === currentStageIndex;
+                    const isRejected = stage.key === "rejected_by_university" && currentSubmission.submissionStatus === "rejected_by_university";
+                    
+                    return (
+                      <div
+                        key={stage.key}
+                        className={`flex items-center gap-2 p-2 rounded-lg border ${
+                          isRejected
+                            ? "bg-red-50 border-red-200"
+                            : isCompleted
+                            ? "bg-green-50 border-green-200"
+                            : isCurrent
+                            ? "bg-blue-50 border-blue-200"
+                            : "bg-gray-50 border-gray-200"
+                        }`}
+                      >
+                        <Icon
+                          className={`w-4 h-4 ${
+                            isRejected
+                              ? "text-red-600"
+                              : isCompleted
+                              ? "text-green-600"
+                              : isCurrent
+                              ? "text-blue-600"
+                              : "text-gray-400"
+                          }`}
+                        />
+                        <span
+                          className={`text-xs font-medium ${
+                            isRejected
+                              ? "text-red-800"
+                              : isCompleted
+                              ? "text-green-800"
+                              : isCurrent
+                              ? "text-blue-800"
+                              : "text-gray-600"
+                          }`}
+                        >
+                          {stage.label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* Stats Summary */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pt-4 border-t">
               <div>
-                <div className="text-2xl font-bold text-[#111827]">{totalOrders}</div>
+                <div className="text-2xl font-bold text-[#111827]">{orders.length}</div>
                 <div className="text-xs text-[#4b5563]">إجمالي الطلبات</div>
               </div>
               <div>
