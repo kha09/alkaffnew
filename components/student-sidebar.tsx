@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 
 const navigation = [
   { name: "لوحة التحكم", href: "/student", icon: Home },
-  { name: "طلباتي", href: "/student/orders", icon: FileText },
   { name: "المدفوعات", href: "/student/payments", icon: CreditCard },
   { name: "الدعم الفني", href: "/student/support", icon: HelpCircle },
   { name: "الملف الشخصي", href: "/student/profile", icon: User },

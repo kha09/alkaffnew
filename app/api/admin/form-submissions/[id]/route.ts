@@ -27,6 +27,8 @@ export async function PUT(request: NextRequest) {
     
     if (data.orderStage !== undefined) {
       updateData.orderStage = data.orderStage
+      // Also update submissionStatus to match orderStage for consistency
+      updateData.submissionStatus = data.orderStage
       
       // Also update the related Order's submissionStatus to keep them in sync
       // Find orders related to this form submission
@@ -39,6 +41,26 @@ export async function PUT(request: NextRequest) {
         await prisma.order.update({
           where: { id: order.id },
           data: { submissionStatus: data.orderStage }
+        })
+      }
+    }
+    
+    if (data.submissionStatus !== undefined) {
+      updateData.submissionStatus = data.submissionStatus
+      // Also update orderStage to match submissionStatus for consistency
+      updateData.orderStage = data.submissionStatus
+      
+      // Also update the related Order's submissionStatus to keep them in sync
+      // Find orders related to this form submission
+      const relatedOrders = await prisma.order.findMany({
+        where: { formSubmissionId: id }
+      })
+      
+      // Update each related order's submissionStatus
+      for (const order of relatedOrders) {
+        await prisma.order.update({
+          where: { id: order.id },
+          data: { submissionStatus: data.submissionStatus }
         })
       }
     }

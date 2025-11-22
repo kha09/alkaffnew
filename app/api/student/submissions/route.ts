@@ -13,19 +13,11 @@ export async function GET(request: NextRequest) {
 
     const userId = parseInt(session.user.id);
 
-    // Fetch orders for this student
-    const orders = await prisma.order.findMany({
+    // Fetch submissions for this student
+    const submissions = await prisma.formSubmission.findMany({
       where: { userId },
       include: {
-        user: true,
-        formSubmission: {
-          select: {
-            fullName: true,
-            preferredProgram: true,
-            email: true,
-            contactNumber: true,
-          }
-        },
+        uploadedFiles: true,
         agent: {
           select: {
             name: true,
@@ -33,12 +25,12 @@ export async function GET(request: NextRequest) {
           }
         }
       },
-      orderBy: { dateCreated: "desc" },
+      orderBy: { submittedAt: "desc" },
     });
 
-    return NextResponse.json({ orders });
+    return NextResponse.json({ submissions });
   } catch (error) {
-    console.error("Error fetching student orders:", error);
+    console.error("Error fetching student submissions:", error);
     return NextResponse.json(
       { error: "حدث خطأ أثناء جلب الطلبات" },
       { status: 500 }
@@ -46,51 +38,47 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/student/orders - Update order information (for student profile updates)
+// POST /api/student/submissions - Update submission information (for student profile updates)
 export async function POST(request: NextRequest) {
   try {
-    // For now, mock userId. In production, extract from session/token.
-    const userId = 1;
+    // Get user session
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
 
+    const userId = parseInt(session.user.id);
     const body = await request.json();
-    const { orderId, updatedInfo } = body;
+    const { submissionId, updatedInfo } = body;
 
     // Validate required fields
-    if (!orderId) {
+    if (!submissionId) {
       return NextResponse.json({ error: 'رقم الطلب مطلوب' }, { status: 400 });
     }
 
-    // Check if the order belongs to this student
-    const existingOrder = await prisma.order.findFirst({
+    // Check if the submission belongs to this student
+    const existingSubmission = await prisma.formSubmission.findFirst({
       where: { 
-        id: orderId,
+        id: submissionId,
         userId: userId 
       }
     });
 
-    if (!existingOrder) {
+    if (!existingSubmission) {
       return NextResponse.json({ error: 'الطلب غير موجود أو غير مصرح لك بالوصول إليه' }, { status: 404 });
     }
 
-    // Only allow updates if the order is still pending or under review
-    if (existingOrder.adminStatus !== "Pending" && existingOrder.adminStatus !== "Under Review") {
+    // Only allow updates if the submission is still pending or under review
+    if (existingSubmission.submissionStatus !== "submitted" && existingSubmission.submissionStatus !== "approved_by_admin") {
       return NextResponse.json({ error: 'لا يمكن تعديل هذا الطلب في الوقت الحالي' }, { status: 400 });
     }
 
-    // Update the form submission associated with this order
-    if (existingOrder.formSubmissionId && updatedInfo) {
-      await prisma.formSubmission.update({
-        where: { id: existingOrder.formSubmissionId },
-        data: updatedInfo
-      });
-    }
-
-    // Fetch the updated order
-    const updatedOrder = await prisma.order.findUnique({
-      where: { id: orderId },
+    // Update the submission
+    const updatedSubmission = await prisma.formSubmission.update({
+      where: { id: submissionId },
+      data: updatedInfo,
       include: {
-        user: true,
-        formSubmission: true,
+        uploadedFiles: true,
         agent: {
           select: {
             name: true,
@@ -100,9 +88,9 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json(updatedOrder);
+    return NextResponse.json(updatedSubmission);
   } catch (error) {
-    console.error('Error updating order:', error);
+    console.error('Error updating submission:', error);
     return NextResponse.json(
       { error: 'حدث خطأ أثناء تحديث الطلب' },
       { status: 500 }

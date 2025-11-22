@@ -124,6 +124,7 @@ model FormSubmission {
   agentId           Int?          // For agent assignment
   agent             Agent?        @relation(fields: [agentId], references: [id])
   orderStage        String        @default("New") // For order stage management
+  submissionStatus  String        @default("submitted") // submitted, approved_by_admin, sent_to_university, accepted_by_university, rejected_by_university, submitted_visa_info, submitted_payment, completed
   userId            Int?          @unique // For user account linking (one-to-one)
   user              User?         @relation(fields: [userId], references: [id])
   orders            Order[]

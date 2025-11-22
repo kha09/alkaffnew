@@ -16,50 +16,49 @@ import {
 
 import { useEffect, useState } from "react";
 
-type StudentOrder = {
+type StudentSubmission = {
   id: number;
-  agentStatus: string;
-  adminStatus: string;
-  paymentStatus: string;
+  fullName: string;
+  preferredProgram: string;
+  email: string;
+  contactNumber: string;
+  nationality: string;
+  countryOfResidence: string;
+  cityOfResidence: string;
   submissionStatus: string;
-  dateCreated: string;
-  formSubmission?: {
-    fullName: string;
-    preferredProgram: string;
-    email: string;
-    contactNumber: string;
-  };
+  submittedAt: string;
   agent?: {
     name: string;
     email: string;
   };
+  uploadedFiles?: any[];
 };
 
 export default function StudentDashboard() {
-  const [orders, setOrders] = useState<StudentOrder[]>([]);
+  const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchOrders() {
+    async function fetchSubmissions() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/student/orders");
+        const res = await fetch("/api/student/submissions");
         if (!res.ok) throw new Error("فشل في جلب بيانات الطلبات");
         const data = await res.json();
-        setOrders(data.orders || []);
+        setSubmissions(data.submissions || []);
       } catch (err: any) {
         setError(err.message || "حدث خطأ");
       } finally {
         setLoading(false);
       }
     }
-    fetchOrders();
+    fetchSubmissions();
   }, []);
 
   // Get the current submission (assuming one submission per student)
-  const currentSubmission = orders.length > 0 ? orders[0] : null;
+  const currentSubmission = submissions.length > 0 ? submissions[0] : null;
   
   // Define submission status stages
   const submissionStages = [
@@ -81,18 +80,18 @@ export default function StudentDashboard() {
   const currentStageIndex = currentSubmission ? getCurrentStageIndex(currentSubmission.submissionStatus) : 0;
   const progressPercentage = currentSubmission ? ((currentStageIndex + 1) / submissionStages.length) * 100 : 0;
 
-  // Count orders by status for stats
-  const pendingOrders = orders.filter(order => 
-    order.adminStatus === "Pending" || order.adminStatus === "Under Review"
+  // Count submissions by status for stats
+  const pendingSubmissions = submissions.filter(submission => 
+    submission.submissionStatus === "submitted" || submission.submissionStatus === "approved_by_admin"
   ).length;
-  const acceptedOrders = orders.filter(order => 
-    order.adminStatus === "Approved" || order.adminStatus === "Accepted by University"
+  const acceptedSubmissions = submissions.filter(submission => 
+    submission.submissionStatus === "accepted_by_university" || submission.submissionStatus === "completed"
   ).length;
-  const rejectedOrders = orders.filter(order => 
-    order.adminStatus === "Rejected"
+  const rejectedSubmissions = submissions.filter(submission => 
+    submission.submissionStatus === "rejected_by_university"
   ).length;
-  const unpaidOrders = orders.filter(order => 
-    order.paymentStatus === "unpaid"
+  const inProgressSubmissions = submissions.filter(submission => 
+    submission.submissionStatus === "sent_to_university" || submission.submissionStatus === "submitted_visa_info"
   ).length;
 
   return (
@@ -176,19 +175,19 @@ export default function StudentDashboard() {
             {/* Stats Summary */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center pt-4 border-t">
               <div>
-                <div className="text-2xl font-bold text-[#111827]">{orders.length}</div>
+                <div className="text-2xl font-bold text-[#111827]">{submissions.length}</div>
                 <div className="text-xs text-[#4b5563]">إجمالي الطلبات</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-[#f59e0b]">{pendingOrders}</div>
+                <div className="text-2xl font-bold text-[#f59e0b]">{pendingSubmissions}</div>
                 <div className="text-xs text-[#4b5563]">قيد المراجعة</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-[#10b981]">{acceptedOrders}</div>
+                <div className="text-2xl font-bold text-[#10b981]">{acceptedSubmissions}</div>
                 <div className="text-xs text-[#4b5563]">مقبولة</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-[#ef4444]">{rejectedOrders}</div>
+                <div className="text-2xl font-bold text-[#ef4444]">{rejectedSubmissions}</div>
                 <div className="text-xs text-[#4b5563]">مرفوضة</div>
               </div>
             </div>
@@ -203,7 +202,7 @@ export default function StudentDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#4b5563]">الطلبات النشطة</p>
-                <p className="text-2xl font-bold text-[#f59e0b]">{pendingOrders}</p>
+                <p className="text-2xl font-bold text-[#f59e0b]">{pendingSubmissions}</p>
               </div>
               <Clock className="w-8 h-8 text-[#f59e0b]" />
             </div>
@@ -214,7 +213,7 @@ export default function StudentDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[#4b5563]">الطلبات المقبولة</p>
-                <p className="text-2xl font-bold text-[#10b981]">{acceptedOrders}</p>
+                <p className="text-2xl font-bold text-[#10b981]">{acceptedSubmissions}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-[#10b981]" />
             </div>
@@ -224,8 +223,8 @@ export default function StudentDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-[#4b5563]">المدفوعات المعلقة</p>
-                <p className="text-2xl font-bold text-[#ef4444]">{unpaidOrders}</p>
+                <p className="text-sm text-[#4b5563]">الطلبات قيد المعالجة</p>
+                <p className="text-2xl font-bold text-[#ef4444]">{inProgressSubmissions}</p>
               </div>
               <CreditCard className="w-8 h-8 text-[#ef4444]" />
             </div>
@@ -247,7 +246,7 @@ export default function StudentDashboard() {
               <div className="p-6 text-center text-gray-500">جاري التحميل...</div>
             ) : error ? (
               <div className="p-6 text-center text-red-600">{error}</div>
-            ) : orders.length === 0 ? (
+            ) : submissions.length === 0 ? (
               <div className="p-6 text-center text-gray-500">لا توجد طلبات بعد.</div>
             ) : (
               <table className="w-full">
@@ -255,46 +254,40 @@ export default function StudentDashboard() {
                   <tr className="border-b">
                     <th className="text-right p-3 font-medium">التخصص</th>
                     <th className="text-right p-3 font-medium">حالة الطلب</th>
-                    <th className="text-right p-3 font-medium">حالة الدفع</th>
+                    <th className="text-right p-3 font-medium">الوكيل</th>
                     <th className="text-right p-3 font-medium">تاريخ التقديم</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.slice(0, 5).map((order) => (
-                    <tr className="border-b" key={order.id}>
+                  {submissions.slice(0, 5).map((submission) => (
+                    <tr className="border-b" key={submission.id}>
                       <td className="p-3">
-                        {order.formSubmission?.preferredProgram || "غير محدد"}
+                        {submission.preferredProgram || "غير محدد"}
                       </td>
                       <td className="p-3">
                         <Badge 
                           className={
-                            order.adminStatus === "Accepted by University" 
+                            submission.submissionStatus === "accepted_by_university" || submission.submissionStatus === "completed"
                               ? "bg-green-100 text-green-800"
-                              : order.adminStatus === "Rejected"
+                              : submission.submissionStatus === "rejected_by_university"
                               ? "bg-red-100 text-red-800"
                               : "bg-yellow-100 text-yellow-800"
                           }
                         >
-                          {order.adminStatus === "Pending" && "قيد المراجعة"}
-                          {order.adminStatus === "Approved" && "مقبول"}
-                          {order.adminStatus === "Rejected" && "مرفوض"}
-                          {order.adminStatus === "Sent to University" && "مرسل للجامعة"}
-                          {order.adminStatus === "Accepted by University" && "مقبول من الجامعة"}
-                          {order.adminStatus === "Under Review" && "تحت المراجعة"}
+                          {submission.submissionStatus === "submitted" && "تم التقديم"}
+                          {submission.submissionStatus === "approved_by_admin" && "موافقة الإدارة"}
+                          {submission.submissionStatus === "sent_to_university" && "مرسل للجامعة"}
+                          {submission.submissionStatus === "accepted_by_university" && "مقبول من الجامعة"}
+                          {submission.submissionStatus === "rejected_by_university" && "مرفوض من الجامعة"}
+                          {submission.submissionStatus === "submitted_visa_info" && "تقديم معلومات التأشيرة"}
+                          {submission.submissionStatus === "submitted_payment" && "تقديم الدفع"}
+                          {submission.submissionStatus === "completed" && "مكتمل"}
                         </Badge>
                       </td>
                       <td className="p-3">
-                        <Badge 
-                          className={
-                            order.paymentStatus === "paid" 
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }
-                        >
-                          {order.paymentStatus === "paid" ? "مدفوع" : "غير مدفوع"}
-                        </Badge>
+                        {submission.agent?.name || "غير محدد"}
                       </td>
-                      <td className="p-3">{order.dateCreated?.slice(0, 10)}</td>
+                      <td className="p-3">{new Date(submission.submittedAt).toLocaleDateString('ar-SA')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -313,25 +306,31 @@ export default function StudentDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {unpaidOrders > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-              <CreditCard className="w-5 h-5 text-red-600" />
-              <span className="text-sm">لديك {unpaidOrders} طلب يتطلب دفع الرسوم</span>
+          {inProgressSubmissions > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+              <CreditCard className="w-5 h-5 text-blue-600" />
+              <span className="text-sm">لديك {inProgressSubmissions} طلب قيد المعالجة</span>
             </div>
           )}
-          {pendingOrders > 0 && (
+          {pendingSubmissions > 0 && (
             <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
               <Clock className="w-5 h-5 text-yellow-600" />
-              <span className="text-sm">لديك {pendingOrders} طلب قيد المراجعة</span>
+              <span className="text-sm">لديك {pendingSubmissions} طلب قيد المراجعة</span>
             </div>
           )}
-          {acceptedOrders > 0 && (
+          {acceptedSubmissions > 0 && (
             <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
               <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="text-sm">تهانينا! لديك {acceptedOrders} طلب مقبول</span>
+              <span className="text-sm">تهانينا! لديك {acceptedSubmissions} طلب مقبول</span>
             </div>
           )}
-          {orders.length === 0 && (
+          {rejectedSubmissions > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
+              <XCircle className="w-5 h-5 text-red-600" />
+              <span className="text-sm">لديك {rejectedSubmissions} طلب مرفوض - يرجى مراجعة الدعم الفني</span>
+            </div>
+          )}
+          {submissions.length === 0 && (
             <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
               <User className="w-5 h-5 text-blue-600" />
               <span className="text-sm">مرحباً بك! يمكنك البدء بتقديم طلب جديد من الموقع الرئيسي</span>

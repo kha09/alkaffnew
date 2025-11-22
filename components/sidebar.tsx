@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 
 const navigation = [
   { name: "لوحة التحكم", href: "/dashboard", icon: Home },
-  { name: "الطلبات", href: "/dashboard/orders", icon: FileText },
   { name: "التقارير والمعلومات", href: "/dashboard/reports", icon: BarChart3 },
   { name: "الوكلاء", href: "/dashboard/agents", icon: Users },
   { name: "الطلاب", href: "/dashboard/students", icon: Users },

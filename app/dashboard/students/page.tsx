@@ -221,7 +221,7 @@ export default function StudentsPage() {
       const response = await fetch(`/api/admin/form-submissions/${submissionId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderStage: stage })
+        body: JSON.stringify({ submissionStatus: stage })
       })
       
       if (response.ok) {
