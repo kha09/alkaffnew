@@ -16,17 +16,26 @@ import {
   AlertCircle,
   Clock,
   DollarSign,
+  TrendingUp,
+  RefreshCw,
 } from "lucide-react"
 
 import { useEffect, useState } from "react";
+import { ProgressTracker } from "@/components/progress-tracker";
 
 type Submission = {
   id: number;
   fullName: string;
   submittedAt: string;
   orderStage: string;
+  submissionStatus: string;
   uploadedFiles: any[];
   orders: any[];
+  user?: {
+    id: number;
+    fullName: string;
+    email: string;
+  };
 };
 
 export default function AgentDashboard() {
@@ -55,10 +64,39 @@ export default function AgentDashboard() {
   return (
     <div className="p-6 space-y-6" dir="rtl">
         {/* Dashboard Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-[#111827]">لوحة وكيل المبيعات</h1>
-          <p className="text-[#4b5563] mt-1">مرحباً بك في لوحة التحكم الخاصة بك</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-[#111827]">لوحة وكيل المبيعات</h1>
+            <p className="text-[#4b5563] mt-1">مرحباً بك في لوحة التحكم الخاصة بك</p>
+          </div>
+          <Button 
+            onClick={() => window.location.reload()} 
+            variant="outline" 
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            تحديث
+          </Button>
         </div>
+
+        {/* Progress Section */}
+        {submissions.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                تقدم طلبات الطلاب
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProgressTracker 
+                submissionStatus={submissions[0]?.submissionStatus || "submitted"} 
+                showFullProgress={true} 
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -79,7 +117,7 @@ export default function AgentDashboard() {
                 <div>
                   <p className="text-sm text-[#4b5563]">الطلبات النشطة</p>
                   <p className="text-2xl font-bold text-[#f59e0b]">
-                    {submissions.filter(s => s.orderStage !== "Completed").length}
+                    {submissions.filter(s => s.submissionStatus !== "completed").length}
                   </p>
                 </div>
                 <FileText className="w-8 h-8 text-[#f59e0b]" />
@@ -125,7 +163,7 @@ export default function AgentDashboard() {
                     <tr className="border-b">
                       <th className="text-right p-3 font-medium">الصورة</th>
                       <th className="text-right p-3 font-medium">اسم الطالب</th>
-                      <th className="text-right p-3 font-medium">الحالة</th>
+                      <th className="text-right p-3 font-medium">حالة التقدم</th>
                       <th className="text-right p-3 font-medium">تاريخ التسجيل</th>
                       <th className="text-right p-3 font-medium">إجراءات</th>
                     </tr>
@@ -137,10 +175,13 @@ export default function AgentDashboard() {
                           <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
                         </td>
                         <td className="p-3">{submission.fullName}</td>
-                        <td className="p-3">
-                          <Badge className="bg-green-100 text-green-800">{submission.orderStage || "قيد المتابعة"}</Badge>
+                        <td className="p-3 min-w-[200px]">
+                          <ProgressTracker 
+                            submissionStatus={submission.submissionStatus || "submitted"} 
+                            compact={true} 
+                          />
                         </td>
-                        <td className="p-3">{submission.submittedAt?.slice(0, 10)}</td>
+                        <td className="p-3">{new Date(submission.submittedAt).toLocaleDateString('ar-SA')}</td>
                         <td className="p-3">
                           <Button size="sm" variant="outline">
                             تفاصيل

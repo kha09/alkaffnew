@@ -5,20 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Users, Search, Plus } from "lucide-react"
+import { Users, Search, Plus, RefreshCw } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { ApplicationForm } from "@/components/application-form"
 import { toast } from "@/hooks/use-toast"
+import { ProgressTracker } from "@/components/progress-tracker"
 
 type Submission = {
   id: number;
   fullName: string;
   submittedAt: string;
   orderStage: string;
+  submissionStatus: string;
   email: string;
   contactNumber: string;
   countryOfResidence: string;
   cityOfResidence: string;
+  user?: {
+    id: number;
+    fullName: string;
+    email: string;
+  };
 };
 
 export default function AgentStudentsPage() {
@@ -81,9 +88,20 @@ export default function AgentStudentsPage() {
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلاب</h1>
-        <p className="text-[#4b5563] mt-1">عرض وتنظيم الطلاب المسجلين عبرك</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-[#111827]">إدارة الطلاب</h1>
+          <p className="text-[#4b5563] mt-1">عرض وتنظيم الطلاب المسجلين عبرك</p>
+        </div>
+        <Button 
+          onClick={() => window.location.reload()} 
+          variant="outline" 
+          size="sm"
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="w-4 h-4" />
+          تحديث
+        </Button>
       </div>
 
       {/* Students Registration Section */}
@@ -140,7 +158,7 @@ export default function AgentStudentsPage() {
                 <thead>
                   <tr className="border-b border-[#e5e7eb]">
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">إجراءات</th>
-                    <th className="text-right p-3 text-sm font-medium text-[#4b5563]">الحالة</th>
+                    <th className="text-right p-3 text-sm font-medium text-[#4b5563]">حالة التقدم</th>
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">رقم الاتصال</th>
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">البريد الإلكتروني</th>
                     <th className="text-right p-3 text-sm font-medium text-[#4b5563]">المدينة</th>
@@ -157,10 +175,11 @@ export default function AgentStudentsPage() {
                           تفاصيل
                         </Button>
                       </td>
-                      <td className="p-3">
-                        <Badge className="bg-green-100 text-green-800">
-                          {submission.orderStage || "قيد المتابعة"}
-                        </Badge>
+                      <td className="p-3 min-w-[200px]">
+                        <ProgressTracker 
+                          submissionStatus={submission.submissionStatus || "submitted"} 
+                          compact={true} 
+                        />
                       </td>
                       <td className="p-3 text-sm text-[#111827]">{submission.contactNumber}</td>
                       <td className="p-3 text-sm text-[#111827]">{submission.email}</td>
