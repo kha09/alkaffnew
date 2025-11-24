@@ -70,7 +70,6 @@ const submissionStatuses = [
   { value: "sent_to_university", label: "مرسل للجامعة" },
   { value: "accepted_by_university", label: "مقبول من الجامعة" },
   { value: "rejected_by_university", label: "رفض الجامعة" },
-  { value: "university_response", label: "رد الجامعة" },
   { value: "submitted_visa_info", label: "تقديم معلومات التأشيرة" },
   { value: "submitted_payment", label: "تقديم الدفع" },
   { value: "completed", label: "مكتمل" }
