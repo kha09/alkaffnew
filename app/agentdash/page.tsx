@@ -22,6 +22,7 @@ import {
 
 import { useEffect, useState } from "react";
 import { ProgressTracker } from "@/components/progress-tracker";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Submission = {
   id: number;
@@ -42,6 +43,8 @@ export default function AgentDashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<Submission | null>(null);
+  const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchSubmissions() {
@@ -80,23 +83,6 @@ export default function AgentDashboard() {
           </Button>
         </div>
 
-        {/* Progress Section */}
-        {submissions.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="w-5 h-5" />
-                تقدم طلبات الطلاب
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ProgressTracker 
-                submissionStatus={submissions[0]?.submissionStatus || "submitted"} 
-                showFullProgress={true} 
-              />
-            </CardContent>
-          </Card>
-        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -183,8 +169,15 @@ export default function AgentDashboard() {
                         </td>
                         <td className="p-3">{new Date(submission.submittedAt).toLocaleDateString('ar-SA')}</td>
                         <td className="p-3">
-                          <Button size="sm" variant="outline">
-                            تفاصيل
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedStudent(submission);
+                              setIsProgressModalOpen(true);
+                            }}
+                          >
+                            عرض التقدم
                           </Button>
                         </td>
                       </tr>
@@ -247,6 +240,81 @@ export default function AgentDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Student Progress Modal */}
+        <Dialog open={isProgressModalOpen} onOpenChange={setIsProgressModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                تقدم الطالب: {selectedStudent?.fullName}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedStudent && (
+              <div className="space-y-6 p-4">
+                {/* Student Info */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">معلومات الطالب</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">الاسم الكامل</p>
+                        <p className="font-medium">{selectedStudent.fullName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">تاريخ التسجيل</p>
+                        <p className="font-medium">{new Date(selectedStudent.submittedAt).toLocaleDateString('ar-SA')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">عدد الملفات المرفوعة</p>
+                        <p className="font-medium">{selectedStudent.uploadedFiles?.length || 0}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">عدد الطلبات</p>
+                        <p className="font-medium">{selectedStudent.orders?.length || 0}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Progress Tracking */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">تتبع التقدم</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ProgressTracker 
+                      submissionStatus={selectedStudent.submissionStatus || "submitted"} 
+                      showFullProgress={true} 
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsProgressModalOpen(false)}
+                  >
+                    إغلاق
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      // Refresh data for this specific student
+                      window.location.reload();
+                    }}
+                    className="bg-[#1f2937] hover:bg-[#374151]"
+                  >
+                    <RefreshCw className="w-4 h-4 ml-2" />
+                    تحديث البيانات
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
     </div>
   )
 }

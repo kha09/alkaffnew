@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Users, Search, Plus, RefreshCw } from "lucide-react"
+import { Users, Search, Plus, RefreshCw, TrendingUp } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { ApplicationForm } from "@/components/application-form"
 import { toast } from "@/hooks/use-toast"
@@ -33,6 +33,8 @@ export default function AgentStudentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState<Submission | null>(null);
+  const [isProgressModalOpen, setIsProgressModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchSubmissions() {
@@ -171,8 +173,15 @@ export default function AgentStudentsPage() {
                   {filteredSubmissions.map((submission) => (
                     <tr key={submission.id} className="border-b border-[#f3f4f6] hover:bg-[#f9fafb]">
                       <td className="p-3">
-                        <Button size="sm" variant="outline">
-                          تفاصيل
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedStudent(submission);
+                            setIsProgressModalOpen(true);
+                          }}
+                        >
+                          عرض التقدم
                         </Button>
                       </td>
                       <td className="p-3 min-w-[200px]">
@@ -195,8 +204,91 @@ export default function AgentStudentsPage() {
               </table>
             )}
           </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Student Progress Modal */}
+        <Dialog open={isProgressModalOpen} onOpenChange={setIsProgressModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" dir="rtl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5" />
+                تقدم الطالب: {selectedStudent?.fullName}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedStudent && (
+              <div className="space-y-6 p-4">
+                {/* Student Info */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">معلومات الطالب</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-600">الاسم الكامل</p>
+                        <p className="font-medium">{selectedStudent.fullName}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">البريد الإلكتروني</p>
+                        <p className="font-medium">{selectedStudent.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">رقم الاتصال</p>
+                        <p className="font-medium">{selectedStudent.contactNumber}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">تاريخ التسجيل</p>
+                        <p className="font-medium">{new Date(selectedStudent.submittedAt).toLocaleDateString('ar-SA')}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">البلد</p>
+                        <p className="font-medium">{selectedStudent.countryOfResidence}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">المدينة</p>
+                        <p className="font-medium">{selectedStudent.cityOfResidence}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Progress Tracking */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">تتبع التقدم</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ProgressTracker 
+                      submissionStatus={selectedStudent.submissionStatus || "submitted"} 
+                      showFullProgress={true} 
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Action Buttons */}
+                <div className="flex gap-4 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsProgressModalOpen(false)}
+                  >
+                    إغلاق
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      // Refresh data for this specific student
+                      window.location.reload();
+                    }}
+                    className="bg-[#1f2937] hover:bg-[#374151]"
+                  >
+                    <RefreshCw className="w-4 h-4 ml-2" />
+                    تحديث البيانات
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
     </div>
   )
 }
