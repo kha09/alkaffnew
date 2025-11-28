@@ -136,6 +136,7 @@ model Agent {
   name       String
   email      String         @unique
   phone      String?
+  password   String?        // Hashed password for agent login
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
   submissions FormSubmission[]

@@ -49,6 +49,7 @@ export default function AgentsPage() {
   const [agentName, setAgentName] = useState("")
   const [agentEmail, setAgentEmail] = useState("")
   const [agentPhone, setAgentPhone] = useState("")
+  const [agentPassword, setAgentPassword] = useState("")
   const [dialogMode, setDialogMode] = useState<"view" | "edit" | "create">("create")
 
   useEffect(() => {
@@ -95,6 +96,7 @@ export default function AgentsPage() {
     setAgentName("")
     setAgentEmail("")
     setAgentPhone("")
+    setAgentPassword("")
     setDialogMode("create")
     setIsDialogOpen(true)
   }
@@ -104,6 +106,7 @@ export default function AgentsPage() {
     setAgentName(agent.name)
     setAgentEmail(agent.email)
     setAgentPhone(agent.phone || "")
+    setAgentPassword("")
     setDialogMode("edit")
     setIsDialogOpen(true)
   }
@@ -113,6 +116,7 @@ export default function AgentsPage() {
     setAgentName(agent.name)
     setAgentEmail(agent.email)
     setAgentPhone(agent.phone || "")
+    setAgentPassword("")
     setDialogMode("view")
     setIsDialogOpen(true)
   }
@@ -122,7 +126,8 @@ export default function AgentsPage() {
       const agentData = {
         name: agentName,
         email: agentEmail,
-        phone: agentPhone || null
+        phone: agentPhone || null,
+        ...(agentPassword && { password: agentPassword })
       }
 
       if (currentAgent) {
@@ -138,9 +143,13 @@ export default function AgentsPage() {
           throw new Error(errorData.error)
         }
 
+        const result = await response.json()
+        
         toast({
           title: "نجاح",
-          description: "تم تحديث الوكيل بنجاح",
+          description: result.plainPassword 
+            ? `تم تحديث الوكيل بنجاح. كلمة المرور الجديدة: ${result.plainPassword}`
+            : "تم تحديث الوكيل بنجاح",
         })
       } else {
         // Create new agent
@@ -155,19 +164,52 @@ export default function AgentsPage() {
           throw new Error(errorData.error)
         }
 
+        const result = await response.json()
+
         toast({
           title: "نجاح",
-          description: "تم إنشاء الوكيل بنجاح",
+          description: result.plainPassword 
+            ? `تم إنشاء الوكيل بنجاح. كلمة المرور: ${result.plainPassword}`
+            : "تم إنشاء الوكيل بنجاح",
         })
       }
 
       setIsDialogOpen(false)
+      setAgentPassword("") // Clear password field
       fetchAgents() // Refresh the agents list
     } catch (error: any) {
       console.error('Error saving agent:', error)
       toast({
         title: "خطأ",
         description: error.message || "حدث خطأ أثناء حفظ الوكيل",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleResetPassword = async (agentId: number) => {
+    try {
+      const response = await fetch(`/api/admin/agents/${agentId}/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error)
+      }
+
+      const result = await response.json()
+
+      toast({
+        title: "نجاح",
+        description: `${result.message}. كلمة المرور الجديدة: ${result.newPassword}`,
+      })
+    } catch (error: any) {
+      console.error('Error resetting password:', error)
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء إعادة تعيين كلمة المرور",
         variant: "destructive",
       })
     }
@@ -465,15 +507,40 @@ export default function AgentsPage() {
                 disabled={dialogMode === "view"}
               />
             </div>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                إغلاق
-              </Button>
-              {dialogMode !== "view" && (
-                <Button onClick={handleSaveAgent}>
-                  حفظ
+            {(dialogMode === "create" || dialogMode === "edit") && (
+              <div>
+                <Label htmlFor="agentPassword">كلمة المرور</Label>
+                <Input
+                  id="agentPassword"
+                  type="password"
+                  value={agentPassword}
+                  onChange={(e) => setAgentPassword(e.target.value)}
+                  placeholder={dialogMode === "edit" ? "اتركها فارغة للاحتفاظ بكلمة المرور الحالية" : "كلمة المرور"}
+                />
+              </div>
+            )}
+            <div className="flex justify-between">
+              <div>
+                {dialogMode === "view" && currentAgent && (
+                  <Button 
+                    variant="outline" 
+                    className="text-orange-600 hover:text-orange-700"
+                    onClick={() => handleResetPassword(currentAgent.id)}
+                  >
+                    إعادة تعيين كلمة المرور
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  إغلاق
                 </Button>
-              )}
+                {dialogMode !== "view" && (
+                  <Button onClick={handleSaveAgent}>
+                    حفظ
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </DialogContent>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/db'
+import bcrypt from 'bcrypt'
 
 // GET /api/admin/agents - Fetch all agents
 export async function GET(request: NextRequest) {
@@ -83,6 +84,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'الاسم والبريد الإلكتروني مطلوبان' }, { status: 400 })
     }
 
+    // Validate password if provided
+    if (data.password && data.password.length < 6) {
+      return NextResponse.json({ error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' }, { status: 400 })
+    }
+
     // Check if agent with this email already exists
     const existingAgent = await prisma.agent.findUnique({
       where: { email: data.email }
@@ -92,16 +98,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'وكيل مع هذا البريد الإلكتروني موجود بالفعل' }, { status: 400 })
     }
 
+    // Hash password if provided
+    let hashedPassword = null
+    let plainPassword = null
+    if (data.password) {
+      hashedPassword = await bcrypt.hash(data.password, 10)
+      plainPassword = data.password // Store for response
+    }
+
     // Create the agent
     const agent = await prisma.agent.create({
       data: {
         name: data.name,
         email: data.email,
-        phone: data.phone || null
+        phone: data.phone || null,
+        password: hashedPassword
       }
     })
 
-    return NextResponse.json(agent, { status: 201 })
+    // Return agent data with plain password for admin to see
+    const response = {
+      ...agent,
+      password: undefined, // Don't return hashed password
+      plainPassword: plainPassword // Return plain password for admin
+    }
+
+    return NextResponse.json(response, { status: 201 })
   } catch (error) {
     console.error('Error creating agent:', error)
     return NextResponse.json(

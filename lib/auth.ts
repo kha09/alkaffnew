@@ -46,6 +46,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Real database authentication
+          // First, try to find user in User table
           const user = await (prisma.user as any).findFirst({
             where: {
               OR: [
@@ -55,25 +56,46 @@ export const authOptions: NextAuthOptions = {
             }
           })
 
-          if (!user) {
-            return null
+          if (user) {
+            // Verify password
+            const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+
+            if (isPasswordValid) {
+              // Return user object
+              return {
+                id: user.id.toString(),
+                name: user.fullName,
+                email: user.email,
+                role: user.role,
+                username: user.username
+              }
+            }
           }
 
-          // Verify password
-          const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+          // If not found in User table, try Agent table
+          const agent = await (prisma.agent as any).findFirst({
+            where: {
+              email: credentials.username
+            }
+          })
 
-          if (!isPasswordValid) {
-            return null
+          if (agent && agent.password) {
+            // Verify password
+            const isPasswordValid = await bcrypt.compare(credentials.password, agent.password)
+
+            if (isPasswordValid) {
+              // Return agent as user object
+              return {
+                id: agent.id.toString(),
+                name: agent.name,
+                email: agent.email,
+                role: "agent",
+                username: agent.email // Use email as username for agents
+              }
+            }
           }
 
-          // Return user object
-          return {
-            id: user.id.toString(),
-            name: user.fullName,
-            email: user.email,
-            role: user.role,
-            username: user.username
-          }
+          return null
         } catch (error) {
           console.error("Authentication error:", error)
           return null
