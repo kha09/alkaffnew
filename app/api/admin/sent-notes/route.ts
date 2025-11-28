@@ -166,13 +166,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate recipient IDs exist
-    const validRecipients = await db.user.findMany({
-      where: {
-        id: { in: recipientIds },
-        role: recipientType === 'agents' ? 'agent' : recipientType === 'students' ? 'student' : undefined
-      },
-      select: { id: true }
-    })
+    let validRecipients: { id: number }[] = []
+    
+    if (recipientType === 'agents') {
+      // For agents, check the Agent table
+      validRecipients = await db.agent.findMany({
+        where: {
+          id: { in: recipientIds }
+        },
+        select: { id: true }
+      })
+    } else {
+      // For students and other roles, check the User table
+      validRecipients = await db.user.findMany({
+        where: {
+          id: { in: recipientIds },
+          role: recipientType === 'students' ? 'student' : undefined
+        },
+        select: { id: true }
+      })
+    }
 
     if (validRecipients.length !== recipientIds.length) {
       return NextResponse.json(

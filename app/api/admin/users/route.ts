@@ -14,6 +14,32 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const role = searchParams.get('role')
 
+    // Special handling for agents - fetch from Agent table
+    if (role === 'agent') {
+      const agents = await prisma.agent.findMany({
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true
+        },
+        orderBy: {
+          name: 'asc'
+        }
+      })
+
+      // Transform agents to match the expected user format
+      const users = agents.map((agent: { id: number; name: string; email: string; phone: string | null }) => ({
+        id: agent.id,
+        fullName: agent.name,
+        email: agent.email,
+        role: 'agent'
+      }))
+
+      return NextResponse.json({ users })
+    }
+
+    // For other roles, fetch from User table
     let whereClause: any = {}
 
     if (role) {
