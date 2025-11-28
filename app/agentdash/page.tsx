@@ -209,37 +209,6 @@ export default function AgentDashboard() {
           </CardContent>
         </Card>
 
-        {/* New Student Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              تقديم طالب جديد / رفع طلبات
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <Input placeholder="اسم الطالب" />
-              <Input placeholder="رقم الهوية" />
-              <Input placeholder="البريد الإلكتروني" />
-              <Input placeholder="رقم الجوال" />
-            </div>
-            <div className="mb-4">
-              <span className="text-sm text-gray-600">رفع طلبات الشهادات (اختياري)</span>
-            </div>
-            <div className="flex gap-4">
-              <Button variant="outline" className="flex-1 bg-transparent">
-                منطقة رفع طلبات
-              </Button>
-              <Button className="bg-[#1f2937] hover:bg-[#374151]">رفع طلب</Button>
-            </div>
-            <div className="mt-4">
-              <Button variant="outline" className="w-full bg-transparent">
-                إرسال طلب
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Student Progress Modal */}
         <Dialog open={isProgressModalOpen} onOpenChange={setIsProgressModalOpen}>
