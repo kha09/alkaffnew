@@ -153,6 +153,7 @@ model User {
   formSubmission FormSubmission?
   orders        Order[]
   role          String         @default("student") // "student", "agent", or "admin"
+  sentNotes     SentNote[]     // Notes sent by this user (for admins)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -259,6 +260,34 @@ model SmtpSettings {
   lastTested      DateTime?  // Last time settings were tested
   testStatus      String?    // "success", "failed", "pending"
   testError       String?    // Last test error message
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model NoteTemplate {
+  id              Int        @id @default(autoincrement())
+  title           String
+  content         String     // Note content with placeholders like {{fullName}}, {{email}}, etc.
+  category        String     @default("general") // "general", "application", "payment", "urgent"
+  isActive        Boolean    @default(true)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  sentNotes       SentNote[]
+}
+
+model SentNote {
+  id              Int        @id @default(autoincrement())
+  templateId      Int?       // Reference to template used (nullable for manual notes)
+  template        NoteTemplate? @relation(fields: [templateId], references: [id])
+  content         String     // Final rendered note content
+  senderId        Int        // Admin who sent the note
+  sender          User       @relation(fields: [senderId], references: [id])
+  recipientType   String     // "individual", "agents", "students", "all"
+  recipientIds    String     // JSON array of user IDs who should receive this note
+  readStatus      String     @default("{}") // JSON object tracking read status {userId: timestamp}
+  priority        String     @default("normal") // "low", "normal", "high", "urgent"
+  expiresAt       DateTime?  // Optional expiration date
+  sentAt          DateTime   @default(now())
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
