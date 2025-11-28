@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   FileText,
   Clock,
@@ -12,7 +13,11 @@ import {
   Bell,
   TrendingUp,
   User,
+  AlertCircle,
+  MessageSquare,
+  ExternalLink,
 } from "lucide-react"
+import Link from "next/link"
 
 import { useEffect, useState } from "react";
 
@@ -34,9 +39,31 @@ type StudentSubmission = {
   uploadedFiles?: any[];
 };
 
+type StudentNote = {
+  id: number;
+  content: string;
+  priority: string;
+  sentAt: string;
+  expiresAt?: string;
+  isRead: boolean;
+  readAt?: string;
+  template?: {
+    id: number;
+    title: string;
+    category: string;
+  };
+  sender: {
+    id: number;
+    fullName: string;
+    email: string;
+  };
+};
+
 export default function StudentDashboard() {
   const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
+  const [notes, setNotes] = useState<StudentNote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notesLoading, setNotesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -54,7 +81,24 @@ export default function StudentDashboard() {
         setLoading(false);
       }
     }
+
+    async function fetchNotes() {
+      setNotesLoading(true);
+      try {
+        const res = await fetch("/api/student/notes");
+        if (res.ok) {
+          const data = await res.json();
+          setNotes(data.notes || []);
+        }
+      } catch (err) {
+        console.error("Error fetching notes:", err);
+      } finally {
+        setNotesLoading(false);
+      }
+    }
+
     fetchSubmissions();
+    fetchNotes();
   }, []);
 
   // Get the current submission (assuming one submission per student)
@@ -297,43 +341,113 @@ export default function StudentDashboard() {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
+      {/* Important Notifications */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5" />
-            إشعارات مهمة
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              إشعارات مهمة
+            </div>
+            <Link href="/student/notifications">
+              <Button variant="outline" size="sm" className="flex items-center gap-2">
+                <ExternalLink className="w-4 h-4" />
+                عرض الكل
+              </Button>
+            </Link>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {inProgressSubmissions > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-              <CreditCard className="w-5 h-5 text-blue-600" />
-              <span className="text-sm">لديك {inProgressSubmissions} طلب قيد المعالجة</span>
-            </div>
-          )}
-          {pendingSubmissions > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-              <Clock className="w-5 h-5 text-yellow-600" />
-              <span className="text-sm">لديك {pendingSubmissions} طلب قيد المراجعة</span>
-            </div>
-          )}
-          {acceptedSubmissions > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              <span className="text-sm">تهانينا! لديك {acceptedSubmissions} طلب مقبول</span>
-            </div>
-          )}
-          {rejectedSubmissions > 0 && (
-            <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg">
-              <XCircle className="w-5 h-5 text-red-600" />
-              <span className="text-sm">لديك {rejectedSubmissions} طلب مرفوض - يرجى مراجعة الدعم الفني</span>
-            </div>
-          )}
-          {submissions.length === 0 && (
-            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-              <User className="w-5 h-5 text-blue-600" />
-              <span className="text-sm">مرحباً بك! يمكنك البدء بتقديم طلب جديد من الموقع الرئيسي</span>
+          {notesLoading ? (
+            <div className="p-4 text-center text-gray-500">جاري تحميل الإشعارات...</div>
+          ) : (
+            <div className="space-y-3">
+              {/* Show admin notes first (max 3) */}
+              {notes.slice(0, 3).map((note) => {
+                const getPriorityIcon = (priority: string) => {
+                  switch (priority) {
+                    case 'urgent':
+                      return <AlertCircle className="w-5 h-5 text-red-600" />
+                    case 'high':
+                      return <AlertCircle className="w-5 h-5 text-orange-600" />
+                    case 'normal':
+                      return <MessageSquare className="w-5 h-5 text-blue-600" />
+                    case 'low':
+                      return <MessageSquare className="w-5 h-5 text-gray-600" />
+                    default:
+                      return <MessageSquare className="w-5 h-5 text-blue-600" />
+                  }
+                }
+
+                const getPriorityBg = (priority: string) => {
+                  switch (priority) {
+                    case 'urgent':
+                      return 'bg-red-50 border-red-200'
+                    case 'high':
+                      return 'bg-orange-50 border-orange-200'
+                    case 'normal':
+                      return 'bg-blue-50 border-blue-200'
+                    case 'low':
+                      return 'bg-gray-50 border-gray-200'
+                    default:
+                      return 'bg-blue-50 border-blue-200'
+                  }
+                }
+
+                return (
+                  <div
+                    key={note.id}
+                    className={`flex items-start gap-3 p-3 rounded-lg border ${getPriorityBg(note.priority)} ${
+                      !note.isRead ? 'ring-2 ring-blue-200' : ''
+                    }`}
+                  >
+                    <div className="flex-shrink-0 mt-0.5">
+                      {getPriorityIcon(note.priority)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-medium text-gray-600">
+                          من: {note.sender.fullName}
+                        </span>
+                        {!note.isRead && (
+                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-800 line-clamp-2">
+                        {note.content}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-gray-500">
+                          {new Date(note.sentAt).toLocaleDateString('ar-SA')}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${
+                            note.priority === 'urgent'
+                              ? 'border-red-300 text-red-700'
+                              : note.priority === 'high'
+                              ? 'border-orange-300 text-orange-700'
+                              : 'border-blue-300 text-blue-700'
+                          }`}
+                        >
+                          {note.priority === 'urgent' && 'عاجل'}
+                          {note.priority === 'high' && 'مهم'}
+                          {note.priority === 'normal' && 'عادي'}
+                          {note.priority === 'low' && 'منخفض'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+              
+              {/* Show welcome message only if no admin notes */}
+              {notes.length === 0 && (
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                  <User className="w-5 h-5 text-blue-600" />
+                  <span className="text-sm">مرحباً بك! لا توجد إشعارات جديدة</span>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
