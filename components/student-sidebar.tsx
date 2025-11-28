@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 
 const navigation = [
   { name: "لوحة التحكم", href: "/student", icon: Home },
+  { name: "الإشعارات", href: "/student/notifications", icon: Bell },
   { name: "المدفوعات", href: "/student/payments", icon: CreditCard },
   { name: "الدعم الفني", href: "/student/support", icon: HelpCircle },
   { name: "الملف الشخصي", href: "/student/profile", icon: User },
@@ -61,10 +62,6 @@ export function StudentSidebar() {
           </div>
         )}
         
-        <div className="flex items-center gap-2 text-sm">
-          <Bell className="w-4 h-4" />
-          <span>الإشعارات</span>
-        </div>
         
         <Button
           onClick={handleLogout}
