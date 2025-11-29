@@ -6,26 +6,23 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  HelpCircle,
-  MessageCircle,
-  Phone,
-  Mail,
-  Clock,
-  CheckCircle,
-  Send,
-  Search,
-  Plus,
   Ticket,
-  AlertCircle,
+  MessageSquare,
   User,
   Calendar,
+  Search,
   Filter,
   Eye,
-  MessageSquare
+  UserCheck,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Send,
+  Settings
 } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
@@ -70,11 +67,17 @@ type TicketMessage = {
   }
 }
 
+type Agent = {
+  id: number
+  name: string
+  email: string
+}
+
 const statusOptions = [
-  { value: 'open', label: 'مفتوح', color: 'bg-blue-100 text-blue-800' },
-  { value: 'in_progress', label: 'قيد المعالجة', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 'resolved', label: 'تم الحل', color: 'bg-green-100 text-green-800' },
-  { value: 'closed', label: 'مغلق', color: 'bg-gray-100 text-gray-800' }
+  { value: 'open', label: 'مفتوح', color: 'bg-blue-100 text-blue-800', icon: Clock },
+  { value: 'in_progress', label: 'قيد المعالجة', color: 'bg-yellow-100 text-yellow-800', icon: Settings },
+  { value: 'resolved', label: 'تم الحل', color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  { value: 'closed', label: 'مغلق', color: 'bg-gray-100 text-gray-800', icon: XCircle }
 ]
 
 const priorityOptions = [
@@ -91,57 +94,25 @@ const categoryOptions = [
   { value: 'general', label: 'عام' }
 ]
 
-const faqs = [
-  {
-    id: 1,
-    question: "كم يستغرق وقت معالجة الطلب؟",
-    answer: "عادة ما تستغرق معالجة الطلب من 2-4 أسابيع حسب الجامعة والبرنامج المختار. سنقوم بإبلاغك بأي تحديثات على حالة طلبك.",
-    category: "application"
-  },
-  {
-    id: 2,
-    question: "هل أحتاج إلى اختبار إجادة اللغة الإنجليزية؟",
-    answer: "معظم البرامج تتطلب درجات IELTS أو TOEFL، لكن بعض الجامعات تقدم قبولاً مشروطاً مع دورات اللغة الإنجليزية.",
-    category: "requirements"
-  },
-  {
-    id: 3,
-    question: "كيف يمكنني تتبع حالة طلبي؟",
-    answer: "يمكنك تتبع حالة طلبك من خلال صفحة 'إدارة الطلبات' في لوحة التحكم الخاصة بك. ستتلقى أيضاً إشعارات عبر البريد الإلكتروني عند تحديث الحالة.",
-    category: "tracking"
-  },
-  {
-    id: 4,
-    question: "ما هي طرق الدفع المتاحة؟",
-    answer: "نقبل التحويلات البنكية والدفع الإلكتروني. ستتلقى تفاصيل الدفع بعد قبول طلبك الأولي.",
-    category: "payment"
-  }
-]
-
-export default function StudentSupport() {
+export default function AdminSupportPage() {
   const [tickets, setTickets] = useState<SupportTicket[]>([])
+  const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [priorityFilter, setPriorityFilter] = useState("all")
+  const [categoryFilter, setCategoryFilter] = useState("all")
   
-  // New ticket form
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [newTicket, setNewTicket] = useState({
-    title: '',
-    description: '',
-    priority: 'medium',
-    category: 'general'
-  })
-
   // Ticket detail dialog
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
   const [ticketMessages, setTicketMessages] = useState<TicketMessage[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [isInternalMessage, setIsInternalMessage] = useState(false)
 
   useEffect(() => {
     fetchTickets()
+    fetchAgents()
   }, [])
 
   const fetchTickets = async () => {
@@ -167,44 +138,18 @@ export default function StudentSupport() {
     }
   }
 
-  const createTicket = async () => {
-    if (!newTicket.title.trim() || !newTicket.description.trim()) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
-        variant: "destructive",
-      })
-      return
-    }
-
+  const fetchAgents = async () => {
     try {
-      const response = await fetch('/api/support/tickets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newTicket),
-      })
-
-      if (!response.ok) {
-        throw new Error('فشل في إنشاء التذكرة')
-      }
-
-      const createdTicket = await response.json()
-      setTickets(prev => [createdTicket, ...prev])
-      setNewTicket({ title: '', description: '', priority: 'medium', category: 'general' })
-      setIsCreateDialogOpen(false)
+      const response = await fetch('/api/admin/agents')
       
-      toast({
-        title: "تم",
-        description: "تم إنشاء التذكرة بنجاح",
-      })
+      if (!response.ok) {
+        throw new Error('فشل في جلب الوكلاء')
+      }
+      
+      const data = await response.json()
+      setAgents(data.agents || [])
     } catch (error: any) {
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء إنشاء التذكرة",
-        variant: "destructive",
-      })
+      console.error('Error fetching agents:', error)
     }
   }
 
@@ -229,6 +174,45 @@ export default function StudentSupport() {
     }
   }
 
+  const updateTicket = async (ticketId: number, updates: any) => {
+    try {
+      const response = await fetch(`/api/support/tickets/${ticketId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      })
+
+      if (!response.ok) {
+        throw new Error('فشل في تحديث التذكرة')
+      }
+
+      const updatedTicket = await response.json()
+      
+      // Update tickets list
+      setTickets(prev => prev.map(ticket => 
+        ticket.id === ticketId ? { ...ticket, ...updatedTicket } : ticket
+      ))
+      
+      // Update selected ticket if it's the same one
+      if (selectedTicket && selectedTicket.id === ticketId) {
+        setSelectedTicket(prev => prev ? { ...prev, ...updatedTicket } : null)
+      }
+      
+      toast({
+        title: "تم",
+        description: "تم تحديث التذكرة بنجاح",
+      })
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء تحديث التذكرة",
+        variant: "destructive",
+      })
+    }
+  }
+
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedTicket) return
 
@@ -240,7 +224,7 @@ export default function StudentSupport() {
         },
         body: JSON.stringify({
           message: newMessage.trim(),
-          isInternal: false
+          isInternal: isInternalMessage
         }),
       })
 
@@ -251,6 +235,7 @@ export default function StudentSupport() {
       const message = await response.json()
       setTicketMessages(prev => [...prev, message])
       setNewMessage('')
+      setIsInternalMessage(false)
       
       toast({
         title: "تم",
@@ -275,102 +260,73 @@ export default function StudentSupport() {
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         ticket.description.toLowerCase().includes(searchQuery.toLowerCase())
+                         ticket.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         ticket.createdBy.fullName.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter
     const matchesPriority = priorityFilter === 'all' || ticket.priority === priorityFilter
+    const matchesCategory = categoryFilter === 'all' || ticket.category === categoryFilter
     
-    return matchesSearch && matchesStatus && matchesPriority
+    return matchesSearch && matchesStatus && matchesPriority && matchesCategory
   })
 
-  const filteredFaqs = faqs.filter(faq => 
-    faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Statistics
+  const stats = {
+    total: tickets.length,
+    open: tickets.filter(t => t.status === 'open').length,
+    inProgress: tickets.filter(t => t.status === 'in_progress').length,
+    resolved: tickets.filter(t => t.status === 'resolved').length,
+    urgent: tickets.filter(t => t.priority === 'urgent').length
+  }
 
   return (
     <div className="p-6 space-y-6" dir="rtl">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-[#111827]">مركز الدعم</h1>
-          <p className="text-[#4b5563] mt-1">إدارة تذاكر الدعم والحصول على المساعدة</p>
-        </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#374151] hover:bg-[#4b5563]">
-              <Plus className="w-4 h-4 ml-1" />
-              تذكرة جديدة
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md" dir="rtl">
-            <DialogHeader>
-              <DialogTitle>إنشاء تذكرة دعم جديدة</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">العنوان *</label>
-                <Input
-                  placeholder="عنوان التذكرة..."
-                  value={newTicket.title}
-                  onChange={(e) => setNewTicket(prev => ({ ...prev, title: e.target.value }))}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">الأولوية</label>
-                  <Select value={newTicket.priority} onValueChange={(value) => setNewTicket(prev => ({ ...prev, priority: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {priorityOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">الفئة</label>
-                  <Select value={newTicket.category} onValueChange={(value) => setNewTicket(prev => ({ ...prev, category: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categoryOptions.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">الوصف *</label>
-                <Textarea
-                  placeholder="اشرح مشكلتك أو استفسارك بالتفصيل..."
-                  value={newTicket.description}
-                  onChange={(e) => setNewTicket(prev => ({ ...prev, description: e.target.value }))}
-                  rows={4}
-                />
-              </div>
-              
-              <div className="flex gap-2">
-                <Button onClick={createTicket} className="flex-1">
-                  إنشاء التذكرة
-                </Button>
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  إلغاء
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+      <div>
+        <h1 className="text-3xl font-bold text-[#111827]">إدارة تذاكر الدعم</h1>
+        <p className="text-[#4b5563] mt-1">إدارة ومتابعة جميع تذاكر الدعم الفني</p>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Ticket className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-[#111827]">{stats.total}</div>
+            <div className="text-sm text-[#4b5563]">إجمالي التذاكر</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Clock className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-blue-600">{stats.open}</div>
+            <div className="text-sm text-[#4b5563]">مفتوحة</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <Settings className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-yellow-600">{stats.inProgress}</div>
+            <div className="text-sm text-[#4b5563]">قيد المعالجة</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-green-600">{stats.resolved}</div>
+            <div className="text-sm text-[#4b5563]">تم الحل</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6 text-center">
+            <AlertCircle className="w-8 h-8 text-red-600 mx-auto mb-2" />
+            <div className="text-2xl font-bold text-red-600">{stats.urgent}</div>
+            <div className="text-sm text-[#4b5563]">عاجلة</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tickets Section */}
@@ -378,12 +334,12 @@ export default function StudentSupport() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Ticket className="w-5 h-5" />
-            تذاكر الدعم ({tickets.length})
+            تذاكر الدعم ({filteredTickets.length})
           </CardTitle>
           
           {/* Filters */}
-          <div className="flex gap-4 items-center">
-            <div className="relative flex-1">
+          <div className="flex gap-4 items-center flex-wrap">
+            <div className="relative flex-1 min-w-64">
               <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 placeholder="البحث في التذاكر..."
@@ -420,6 +376,20 @@ export default function StudentSupport() {
                 ))}
               </SelectContent>
             </Select>
+            
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="الفئة" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع الفئات</SelectItem>
+                {categoryOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         
@@ -431,14 +401,14 @@ export default function StudentSupport() {
           ) : filteredTickets.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               <Ticket className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>لا توجد تذاكر دعم بعد</p>
-              <p className="text-sm">انقر على "تذكرة جديدة" لإنشاء أول تذكرة دعم</p>
+              <p>لا توجد تذاكر تطابق المعايير المحددة</p>
             </div>
           ) : (
             <div className="space-y-4">
               {filteredTickets.map((ticket) => {
                 const statusInfo = getStatusInfo(ticket.status)
                 const priorityInfo = getPriorityInfo(ticket.priority)
+                const StatusIcon = statusInfo.icon
                 
                 return (
                   <div key={ticket.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
@@ -447,10 +417,14 @@ export default function StudentSupport() {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="font-medium text-[#111827]">#{ticket.id} - {ticket.title}</h3>
                           <Badge className={statusInfo.color}>
+                            <StatusIcon className="w-3 h-3 ml-1" />
                             {statusInfo.label}
                           </Badge>
                           <Badge className={priorityInfo.color}>
                             {priorityInfo.label}
+                          </Badge>
+                          <Badge variant="outline">
+                            {categoryOptions.find(c => c.value === ticket.category)?.label}
                           </Badge>
                         </div>
                         
@@ -459,6 +433,11 @@ export default function StudentSupport() {
                         </p>
                         
                         <div className="flex items-center gap-4 text-xs text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <User className="w-3 h-3" />
+                            <span>بواسطة: {ticket.createdBy.fullName}</span>
+                          </div>
+                          
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             <span>{new Date(ticket.createdAt).toLocaleDateString('ar-SA')}</span>
@@ -471,21 +450,58 @@ export default function StudentSupport() {
                           
                           {ticket.assignedTo && (
                             <div className="flex items-center gap-1">
-                              <User className="w-3 h-3" />
+                              <UserCheck className="w-3 h-3" />
                               <span>مُعيّن إلى: {ticket.assignedTo.fullName}</span>
                             </div>
                           )}
                         </div>
                       </div>
                       
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fetchTicketDetails(ticket.id)}
-                      >
-                        <Eye className="w-4 h-4 ml-1" />
-                        عرض
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        {/* Quick Status Update */}
+                        <Select 
+                          value={ticket.status} 
+                          onValueChange={(value) => updateTicket(ticket.id, { status: value })}
+                        >
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {statusOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        {/* Assign Agent */}
+                        <Select 
+                          value={ticket.assignedTo?.id?.toString() || "unassigned"} 
+                          onValueChange={(value) => updateTicket(ticket.id, { assignedToId: value === "unassigned" ? null : parseInt(value) })}
+                        >
+                          <SelectTrigger className="w-40">
+                            <SelectValue placeholder="تعيين وكيل" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="unassigned">بدون تعيين</SelectItem>
+                            {agents.map(agent => (
+                              <SelectItem key={agent.id} value={agent.id.toString()}>
+                                {agent.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fetchTicketDetails(ticket.id)}
+                        >
+                          <Eye className="w-4 h-4 ml-1" />
+                          عرض
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )
@@ -494,66 +510,6 @@ export default function StudentSupport() {
           )}
         </CardContent>
       </Card>
-
-      {/* FAQ Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <HelpCircle className="w-5 h-5" />
-            الأسئلة الشائعة
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Accordion type="single" collapsible className="w-full">
-            {filteredFaqs.map((faq) => (
-              <AccordionItem key={faq.id} value={`item-${faq.id}`}>
-                <AccordionTrigger className="text-right">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-gray-600">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </CardContent>
-      </Card>
-
-      {/* Contact Information */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <MessageCircle className="w-12 h-12 text-[#374151] mx-auto mb-4" />
-            <h3 className="font-semibold mb-2">محادثة مباشرة</h3>
-            <p className="text-sm text-gray-600 mb-4">تواصل معنا مباشرة للحصول على مساعدة فورية</p>
-            <Button className="bg-[#374151] hover:bg-[#4b5563]">
-              بدء المحادثة
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Mail className="w-12 h-12 text-[#374151] mx-auto mb-4" />
-            <h3 className="font-semibold mb-2">البريد الإلكتروني</h3>
-            <p className="text-sm text-gray-600 mb-4">أرسل لنا رسالة وسنرد عليك خلال 24 ساعة</p>
-            <Button variant="outline">
-              support@smalkaff.com
-            </Button>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6 text-center">
-            <Phone className="w-12 h-12 text-[#374151] mx-auto mb-4" />
-            <h3 className="font-semibold mb-2">الهاتف</h3>
-            <p className="text-sm text-gray-600 mb-4">اتصل بنا مباشرة خلال ساعات العمل</p>
-            <Button variant="outline">
-              +966 50 123 4567
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Ticket Detail Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
@@ -579,10 +535,24 @@ export default function StudentSupport() {
               </DialogHeader>
               
               <div className="space-y-4">
-                {/* Ticket Description */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">وصف المشكلة:</h4>
-                  <p className="text-gray-700">{selectedTicket.description}</p>
+                {/* Ticket Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2">معلومات التذكرة:</h4>
+                    <div className="space-y-2 text-sm">
+                      <div><strong>المُنشئ:</strong> {selectedTicket.createdBy.fullName}</div>
+                      <div><strong>البريد الإلكتروني:</strong> {selectedTicket.createdBy.email}</div>
+                      <div><strong>الفئة:</strong> {categoryOptions.find(c => c.value === selectedTicket.category)?.label}</div>
+                      {selectedTicket.assignedTo && (
+                        <div><strong>مُعيّن إلى:</strong> {selectedTicket.assignedTo.fullName}</div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2">وصف المشكلة:</h4>
+                    <p className="text-gray-700 text-sm">{selectedTicket.description}</p>
+                  </div>
                 </div>
                 
                 {/* Messages */}
@@ -590,13 +560,18 @@ export default function StudentSupport() {
                   <h4 className="font-medium">المحادثة:</h4>
                   <div className="max-h-60 overflow-y-auto space-y-3">
                     {ticketMessages.map((message) => (
-                      <div key={message.id} className="border rounded-lg p-3">
+                      <div key={message.id} className={`border rounded-lg p-3 ${message.isInternal ? 'bg-yellow-50 border-yellow-200' : ''}`}>
                         <div className="flex items-center gap-2 mb-2">
                           <span className="font-medium text-sm">{message.sender.fullName}</span>
                           <Badge variant="outline" className="text-xs">
                             {message.sender.role === 'admin' ? 'إدارة' : 
                              message.sender.role === 'agent' ? 'وكيل' : 'طالب'}
                           </Badge>
+                          {message.isInternal && (
+                            <Badge className="bg-yellow-100 text-yellow-800 text-xs">
+                              ملاحظة داخلية
+                            </Badge>
+                          )}
                           <span className="text-xs text-gray-500">
                             {new Date(message.createdAt).toLocaleString('ar-SA')}
                           </span>
@@ -608,21 +583,29 @@ export default function StudentSupport() {
                 </div>
                 
                 {/* Send Message */}
-                {selectedTicket.status !== 'closed' && (
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium">إضافة رسالة:</label>
-                    <Textarea
-                      placeholder="اكتب رسالتك هنا..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      rows={3}
-                    />
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium">إضافة رسالة:</label>
+                  <Textarea
+                    placeholder="اكتب رسالتك هنا..."
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    rows={3}
+                  />
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={isInternalMessage}
+                        onChange={(e) => setIsInternalMessage(e.target.checked)}
+                      />
+                      ملاحظة داخلية (مرئية للإدارة والوكلاء فقط)
+                    </label>
                     <Button onClick={sendMessage} disabled={!newMessage.trim()}>
                       <Send className="w-4 h-4 ml-1" />
                       إرسال الرسالة
                     </Button>
                   </div>
-                )}
+                </div>
               </div>
             </>
           )}

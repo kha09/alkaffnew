@@ -155,6 +155,9 @@ model User {
   orders        Order[]
   role          String         @default("student") // "student", "agent", or "admin"
   sentNotes     SentNote[]     // Notes sent by this user (for admins)
+  createdTickets SupportTicket[] @relation("TicketCreator") // Tickets created by this user
+  assignedTickets SupportTicket[] @relation("TicketAssignee") // Tickets assigned to this user (for agents/admins)
+  sentMessages  SupportTicketMessage[] @relation("MessageSender") // Messages sent by this user
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -289,6 +292,35 @@ model SentNote {
   priority        String     @default("normal") // "low", "normal", "high", "urgent"
   expiresAt       DateTime?  // Optional expiration date
   sentAt          DateTime   @default(now())
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+}
+
+model SupportTicket {
+  id              Int        @id @default(autoincrement())
+  title           String
+  description     String
+  status          String     @default("open") // "open", "in_progress", "resolved", "closed"
+  priority        String     @default("medium") // "low", "medium", "high", "urgent"
+  category        String     @default("general") // "technical", "billing", "account", "general"
+  createdById     Int        // User who created the ticket
+  createdBy       User       @relation("TicketCreator", fields: [createdById], references: [id])
+  assignedToId    Int?       // Agent assigned to the ticket (nullable)
+  assignedTo      User?      @relation("TicketAssignee", fields: [assignedToId], references: [id])
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  messages        SupportTicketMessage[]
+}
+
+model SupportTicketMessage {
+  id              Int        @id @default(autoincrement())
+  ticketId        Int
+  ticket          SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  senderId        Int        // User who sent the message
+  sender          User       @relation("MessageSender", fields: [senderId], references: [id])
+  message         String
+  isInternal      Boolean    @default(false) // Internal notes only visible to admin/agents
+  attachments     String?    // JSON array of file paths (optional)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }

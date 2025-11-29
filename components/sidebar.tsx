@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
-import { Home, FileText, BarChart3, Users, Bell, FileEdit, University, Building, BookOpen, DollarSign, Mail, Send, Settings, LogOut, User, MessageSquare } from "lucide-react"
+import { Home, FileText, BarChart3, Users, Bell, FileEdit, University, Building, BookOpen, DollarSign, Mail, Send, Settings, LogOut, User, MessageSquare, Ticket } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navigation = [
@@ -17,6 +17,7 @@ const navigation = [
   { name: "الأقسام", href: "/dashboard/departments", icon: Building },
   { name: "البرامج", href: "/dashboard/programs", icon: BookOpen },
   { name: "عمولات ومدفوعات", href: "/dashboard/commissions", icon: DollarSign },
+  { name: "تذاكر الدعم", href: "/dashboard/support", icon: Ticket },
   { name: "الملاحظات", href: "/dashboard/notes", icon: MessageSquare },
   { name: "قوالب البريد الإلكتروني", href: "/dashboard/email-templates", icon: Mail },
   { name: "البريد المرسل", href: "/dashboard/sent-emails", icon: Send },
