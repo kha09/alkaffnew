@@ -3,13 +3,15 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { Home, FileText, CreditCard, HelpCircle, User, Bell, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
 const navigation = [
   { name: "لوحة التحكم", href: "/student", icon: Home },
-  { name: "الإشعارات", href: "/student/notifications", icon: Bell },
+  { name: "الإشعارات", href: "/student/notifications", icon: Bell, showBadge: true },
   { name: "المدفوعات", href: "/student/payments", icon: CreditCard },
   { name: "الدعم الفني", href: "/student/support", icon: HelpCircle },
   { name: "الملف الشخصي", href: "/student/profile", icon: User },
@@ -18,6 +20,26 @@ const navigation = [
 export function StudentSidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (session?.user?.role === 'student') {
+      fetchUnreadCount()
+    }
+  }, [session])
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await fetch('/api/student/notes')
+      if (response.ok) {
+        const data = await response.json()
+        const unread = (data.notes || []).filter((note: any) => !note.isRead).length
+        setUnreadCount(unread)
+      }
+    } catch (error) {
+      console.error('Error fetching unread count:', error)
+    }
+  }
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" })
@@ -40,12 +62,17 @@ export function StudentSidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 p-3 rounded-lg transition-colors",
+                "flex items-center gap-3 p-3 rounded-lg transition-colors relative",
                 isActive ? "bg-[#4b5563] text-white" : "hover:bg-[#4b5563] cursor-pointer",
               )}
             >
               <item.icon className="w-4 h-4" />
-              <span>{item.name}</span>
+              <span className="flex-1">{item.name}</span>
+              {item.showBadge && unreadCount > 0 && (
+                <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center">
+                  {unreadCount}
+                </Badge>
+              )}
             </Link>
           )
         })}
