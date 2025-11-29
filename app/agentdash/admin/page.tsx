@@ -1,10 +1,137 @@
 "use client"
 
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Settings, Mail, Phone, User, Send } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Settings, Mail, Phone, User, Send, Bell, AlertCircle, Calendar, CheckCircle } from "lucide-react"
+import Link from "next/link"
+
+type AgentNote = {
+  id: number
+  content: string
+  priority: string
+  sentAt: string
+  isRead: boolean
+  template?: {
+    title: string
+  }
+  sender: {
+    fullName: string
+  }
+}
+
+// Admin Notifications Section Component
+function AdminNotificationsSection() {
+  const [notes, setNotes] = useState<AgentNote[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchNotes()
+  }, [])
+
+  const fetchNotes = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/agent/notes')
+      if (response.ok) {
+        const data = await response.json()
+        // Get the latest 5 notes for admin page display
+        setNotes((data.notes || []).slice(0, 5))
+      }
+    } catch (error) {
+      console.error('Error fetching notes:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-100 text-red-800'
+      case 'high': return 'bg-orange-100 text-orange-800'
+      case 'normal': return 'bg-blue-100 text-blue-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'عاجل'
+      case 'high': return 'عالي'
+      case 'normal': return 'عادي'
+      default: return 'منخفض'
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <Bell className="w-5 h-5" />
+          إشعارات الإدارة
+        </CardTitle>
+        <Link href="/agentdash/notifications">
+          <Button variant="outline" size="sm">
+            عرض جميع الإشعارات
+          </Button>
+        </Link>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="p-4 text-center text-gray-500">جاري التحميل...</div>
+        ) : notes.length === 0 ? (
+          <div className="p-4 text-center text-gray-500">لا توجد إشعارات</div>
+        ) : (
+          <div className="space-y-4">
+            {notes.map((note) => (
+              <div key={note.id} className="p-4 border border-gray-200 rounded-lg">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="font-medium">
+                        {note.template ? note.template.title : 'ملاحظة من الإدارة'}
+                      </h4>
+                      <Badge className={getPriorityColor(note.priority)}>
+                        {getPriorityLabel(note.priority)}
+                      </Badge>
+                      {!note.isRead && (
+                        <Badge className="bg-blue-500 text-white">
+                          جديد
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                      {note.content}
+                    </p>
+                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <span>من: {note.sender.fullName}</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(note.sentAt).toLocaleDateString('ar-SA')}
+                      </span>
+                      {note.isRead && (
+                        <span className="flex items-center gap-1 text-green-600">
+                          <CheckCircle className="w-3 h-3" />
+                          مقروء
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {note.priority === 'urgent' && (
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function AgentAdminPage() {
   return (
@@ -71,48 +198,7 @@ export default function AgentAdminPage() {
       </Card>
 
       {/* Admin Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle>إشعارات الإدارة</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium">تحديث نظام الطلبات</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    تم تحديث نظام الطلبات وإضافة ميزات جديدة لتحسين تجربة الوكيل
-                  </p>
-                </div>
-                <span className="text-xs text-gray-500">منذ 2 يوم</span>
-              </div>
-            </div>
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium">إشعار دفع العمولة</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    سيتم صرف العمولة الشهرية في تاريخ 5 من كل شهر
-                  </p>
-                </div>
-                <span className="text-xs text-gray-500">منذ أسبوع</span>
-              </div>
-            </div>
-            <div className="p-4 border border-gray-200 rounded-lg">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="font-medium">ورشة تدريبية جديدة</h4>
-                  <p className="text-sm text-gray-600 mt-1">
-                    دعوة لورشة تدريبية حول استخدام النظام بكفاءة يوم الأحد المقبل
-                  </p>
-                </div>
-                <span className="text-xs text-gray-500">منذ أسبوعين</span>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <AdminNotificationsSection />
     </div>
   )
 }

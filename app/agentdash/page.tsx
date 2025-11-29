@@ -23,6 +23,7 @@ import {
 import { useEffect, useState } from "react";
 import { ProgressTracker } from "@/components/progress-tracker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import Link from "next/link";
 
 type Submission = {
   id: number;
@@ -38,6 +39,105 @@ type Submission = {
     email: string;
   };
 };
+
+type AgentNote = {
+  id: number
+  content: string
+  priority: string
+  sentAt: string
+  isRead: boolean
+  template?: {
+    title: string
+  }
+  sender: {
+    fullName: string
+  }
+}
+
+// Admin Notes Section Component
+function AdminNotesSection() {
+  const [notes, setNotes] = useState<AgentNote[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchNotes()
+  }, [])
+
+  const fetchNotes = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/agent/notes')
+      if (response.ok) {
+        const data = await response.json()
+        // Get only the first 3 unread notes for dashboard display
+        const unreadNotes = (data.notes || []).filter((note: AgentNote) => !note.isRead).slice(0, 3)
+        setNotes(unreadNotes)
+      }
+    } catch (error) {
+      console.error('Error fetching notes:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return <AlertCircle className="w-5 h-5 text-red-600" />
+      case 'high': return <AlertCircle className="w-5 h-5 text-orange-600" />
+      default: return <AlertCircle className="w-5 h-5 text-blue-600" />
+    }
+  }
+
+  const getPriorityBg = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return 'bg-red-50'
+      case 'high': return 'bg-orange-50'
+      default: return 'bg-blue-50'
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">
+          <AlertCircle className="w-5 h-5" />
+          ملاحظات من الأدمن
+        </CardTitle>
+        {notes.length > 0 && (
+          <Link href="/agentdash/notifications">
+            <Button variant="outline" size="sm">
+              عرض الكل
+            </Button>
+          </Link>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {loading ? (
+          <div className="p-4 text-center text-gray-500">جاري التحميل...</div>
+        ) : notes.length === 0 ? (
+          <div className="p-4 text-center text-gray-500">لا توجد ملاحظات جديدة</div>
+        ) : (
+          notes.map((note) => (
+            <div key={note.id} className={`flex items-center gap-3 p-3 rounded-lg ${getPriorityBg(note.priority)}`}>
+              {getPriorityIcon(note.priority)}
+              <div className="flex-1">
+                <div className="text-sm font-medium">
+                  {note.template ? note.template.title : 'ملاحظة من الإدارة'}
+                </div>
+                <div className="text-sm text-gray-600 line-clamp-2">
+                  {note.content}
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  من: {note.sender.fullName} • {new Date(note.sentAt).toLocaleDateString('ar-SA')}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function AgentDashboard() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -189,25 +289,8 @@ export default function AgentDashboard() {
           </CardContent>
         </Card>
 
-        {/* University Requests */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
-              ملاحظات من الأدمن
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-blue-600" />
-              <span className="text-sm">يجب الانتباه إلى وضع الشهادات الأصلية في الملف الخاص بالطالب</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
-              <Clock className="w-5 h-5 text-yellow-600" />
-              <span className="text-sm">تم تحديث نظام الشهادات الخاصة - في مراجعة سجلة المدفوعات</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Admin Notes */}
+        <AdminNotesSection />
 
 
         {/* Student Progress Modal */}
