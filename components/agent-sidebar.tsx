@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge"
 
 const navigation = [
   { name: "لوحة التحكم", href: "/agentdash", icon: Home },
-  { name: "الطلبات", href: "/agentdash/orders", icon: FileText },
   { name: "الطلاب", href: "/agentdash/students", icon: Users },
   { name: "المدفوعات", href: "/agentdash/payments", icon: DollarSign },
   { name: "تذاكر الدعم", href: "/agentdash/tickets", icon: Ticket },
