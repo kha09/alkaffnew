@@ -14,7 +14,6 @@ const navigation = [
   { name: "الطلاب", href: "/agentdash/students", icon: Users },
   { name: "المدفوعات", href: "/agentdash/payments", icon: DollarSign },
   { name: "تذاكر الدعم", href: "/agentdash/tickets", icon: Ticket },
-  { name: "التواصل مع الإدارة", href: "/agentdash/admin", icon: MessageSquare },
   { name: "الإشعارات", href: "/agentdash/notifications", icon: Bell, showBadge: true },
 ]
 
