@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
-import { Home, FileText, Users, Bell, DollarSign, MessageSquare, LogOut, User } from "lucide-react"
+import { Home, FileText, Users, Bell, DollarSign, MessageSquare, LogOut, User, Ticket } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
@@ -14,6 +14,7 @@ const navigation = [
   { name: "الطلبات", href: "/agentdash/orders", icon: FileText },
   { name: "الطلاب", href: "/agentdash/students", icon: Users },
   { name: "المدفوعات", href: "/agentdash/payments", icon: DollarSign },
+  { name: "تذاكر الدعم", href: "/agentdash/tickets", icon: Ticket },
   { name: "التواصل مع الإدارة", href: "/agentdash/admin", icon: MessageSquare },
   { name: "الإشعارات", href: "/agentdash/notifications", icon: Bell, showBadge: true },
 ]
