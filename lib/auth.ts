@@ -17,34 +17,6 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Check if we're using mock data
-          const useMockData = process.env.USE_MOCK_DATA === 'true' || process.env.NODE_ENV === 'production'
-          
-          if (useMockData) {
-            // Mock authentication using the mock database
-            const mockDb = await import('@/lib/mockDb')
-            const user = mockDb.default.users.find(u => u.username === credentials.username || u.email === credentials.username)
-            
-            if (!user) {
-              return null
-            }
-
-            // Verify password using bcrypt
-            const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
-
-            if (!isPasswordValid) {
-              return null
-            }
-
-            return {
-              id: user.id.toString(),
-              name: user.fullName,
-              email: user.email,
-              role: user.role,
-              username: user.username
-            }
-          }
-
           // Real database authentication
           // First, try to find user in User table
           const user = await (prisma.user as any).findFirst({
@@ -84,9 +56,30 @@ export const authOptions: NextAuthOptions = {
             const isPasswordValid = await bcrypt.compare(credentials.password, agent.password)
 
             if (isPasswordValid) {
-              // Return agent as user object
+              // Find or create corresponding User entry for this agent
+              let agentUser = await (prisma.user as any).findFirst({
+                where: {
+                  email: agent.email,
+                  role: "agent"
+                }
+              })
+
+              if (!agentUser) {
+                // Create a User entry for this agent
+                agentUser = await (prisma.user as any).create({
+                  data: {
+                    username: agent.email,
+                    password: agent.password, // Use the same hashed password
+                    email: agent.email,
+                    fullName: agent.name,
+                    role: "agent"
+                  }
+                })
+              }
+
+              // Return the User ID instead of Agent ID
               return {
-                id: agent.id.toString(),
+                id: agentUser.id.toString(),
                 name: agent.name,
                 email: agent.email,
                 role: "agent",
@@ -109,6 +102,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.sub = user.id // Explicitly set the user ID in the token
         token.role = user.role
         token.username = user.username
       }

@@ -436,6 +436,10 @@ export default function AdminSupportPage() {
                           <div className="flex items-center gap-1">
                             <User className="w-3 h-3" />
                             <span>بواسطة: {ticket.createdBy.fullName}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {ticket.createdBy.role === 'admin' ? 'إدارة' : 
+                               ticket.createdBy.role === 'agent' ? 'وكيل' : 'طالب'}
+                            </Badge>
                           </div>
                           
                           <div className="flex items-center gap-1">
