@@ -134,6 +134,11 @@ model FormSubmission {
   canUploadReceipt  Boolean       @default(false) // Whether student can upload receipt
   receiptUploadedAt DateTime?     // When receipt was uploaded
   receiptViewedByAdmin Boolean    @default(false) // Whether admin has viewed the receipt
+  // Visa document fields
+  visaDocumentsPath String?       // Path to uploaded visa documents
+  canUploadVisaDocuments Boolean  @default(false) // Whether student can upload visa documents
+  visaDocumentsUploadedAt DateTime? // When visa documents were uploaded
+  visaDocumentsViewedByAdmin Boolean @default(false) // Whether admin has viewed the visa documents
 }
 
 model Agent {

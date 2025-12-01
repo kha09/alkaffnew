@@ -18,15 +18,31 @@ type PaymentReceiptStatus = {
   viewedByAdmin: boolean;
 };
 
+type VisaDocumentsStatus = {
+  submissionId: number;
+  submissionStatus: string;
+  canUploadVisaDocuments: boolean;
+  hasUploadedVisaDocuments: boolean;
+  visaDocumentsPath: string | null;
+  uploadedAt: string | null;
+  viewedByAdmin: boolean;
+};
+
 export default function StudentPayments() {
   const [receiptStatus, setReceiptStatus] = useState<PaymentReceiptStatus | null>(null);
+  const [visaStatus, setVisaStatus] = useState<VisaDocumentsStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [visaLoading, setVisaLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [visaError, setVisaError] = useState<string | null>(null);
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [uploadingVisa, setUploadingVisa] = useState(false);
   const [noSubmission, setNoSubmission] = useState(false);
+  const [noVisaSubmission, setNoVisaSubmission] = useState(false);
 
   useEffect(() => {
     fetchReceiptStatus();
+    fetchVisaStatus();
   }, []);
 
   const fetchReceiptStatus = async () => {
@@ -53,6 +69,33 @@ export default function StudentPayments() {
       setError("حدث خطأ أثناء الاتصال بالخادم");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVisaStatus = async () => {
+    setVisaLoading(true);
+    setVisaError(null);
+    setNoVisaSubmission(false);
+    
+    try {
+      const visaRes = await fetch("/api/student/visa-documents");
+      const visaData = await visaRes.json();
+      
+      if (visaRes.ok) {
+        setVisaStatus(visaData);
+        console.log('Visa status:', visaData);
+      } else {
+        console.log('Visa API error:', visaRes.status, visaRes.statusText);
+        if (visaData.noSubmission) {
+          setNoVisaSubmission(true);
+        }
+        setVisaError(visaData.error || "حدث خطأ أثناء جلب معلومات مستندات التأشيرة");
+      }
+    } catch (err: any) {
+      console.error('Visa fetch error:', err);
+      setVisaError("حدث خطأ أثناء الاتصال بالخادم");
+    } finally {
+      setVisaLoading(false);
     }
   };
 
@@ -90,6 +133,43 @@ export default function StudentPayments() {
       });
     } finally {
       setUploadingReceipt(false);
+    }
+  };
+
+  const handleVisaDocumentsUpload = async (file: File) => {
+    try {
+      setUploadingVisa(true);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await fetch("/api/student/visa-documents", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "فشل في رفع مستندات التأشيرة");
+      }
+
+      // Refresh visa status
+      await fetchVisaStatus();
+      
+      toast({
+        title: "نجح",
+        description: "تم رفع مستندات التأشيرة بنجاح",
+      });
+      
+    } catch (err: any) {
+      toast({
+        title: "خطأ",
+        description: err.message || "حدث خطأ أثناء رفع مستندات التأشيرة",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingVisa(false);
     }
   };
 
@@ -324,6 +404,190 @@ export default function StudentPayments() {
                       </p>
                       <p className="text-sm text-yellow-600 mt-1">
                         سيتم تفعيل خاصية رفع إيصال الدفع عند قبول طلبك من الجامعة.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Visa Documents Upload Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="w-5 h-5" />
+            مستندات التأشيرة
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={fetchVisaStatus}
+              disabled={visaLoading}
+            >
+              <RefreshCw className={`w-4 h-4 ml-1 ${visaLoading ? 'animate-spin' : ''}`} />
+              تحديث
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {visaLoading ? (
+            <div className="flex items-center gap-2 text-gray-600">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+              <span>جاري تحميل معلومات مستندات التأشيرة...</span>
+            </div>
+          ) : noVisaSubmission ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-yellow-600" />
+                <div>
+                  <h3 className="font-semibold text-yellow-800">لم يتم العثور على طلب تقديم</h3>
+                  <p className="text-sm text-yellow-600">
+                    لم يتم العثور على طلب تقديم مرتبط بحسابك. يرجى التأكد من تقديم طلب أولاً.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : visaError ? (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+                <div>
+                  <h3 className="font-semibold text-red-800">حدث خطأ</h3>
+                  <p className="text-sm text-red-600">{visaError}</p>
+                  <div className="mt-3">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={fetchVisaStatus}
+                    >
+                      <RefreshCw className="w-4 h-4 ml-1" />
+                      إعادة المحاولة
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : !visaStatus ? (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6 text-gray-500" />
+                <div>
+                  <h3 className="font-semibold text-gray-700">لا توجد معلومات</h3>
+                  <p className="text-sm text-gray-600">لا توجد معلومات عن مستندات التأشيرة</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Current Status Display */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-800">حالة طلبك الحالية:</span>
+                  <Badge className={getStatusColor(visaStatus.submissionStatus)}>
+                    {getOrderStatusText(visaStatus.submissionStatus)}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Upload Section */}
+              {visaStatus.submissionStatus === 'accepted_by_university' ? (
+                <div className="space-y-4">
+                  {visaStatus.hasUploadedVisaDocuments ? (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <CheckCircle className="w-6 h-6 text-green-600" />
+                        <div>
+                          <h3 className="font-semibold text-green-800">تم رفع مستندات التأشيرة بنجاح</h3>
+                          <p className="text-sm text-green-600">
+                            تم رفع المستندات في: {visaStatus.uploadedAt ? new Date(visaStatus.uploadedAt).toLocaleDateString('ar-SA') : 'غير محدد'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        {visaStatus.visaDocumentsPath && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.open(visaStatus.visaDocumentsPath!, '_blank')}
+                          >
+                            <Eye className="w-4 h-4 ml-1" />
+                            عرض المستندات
+                          </Button>
+                        )}
+                        
+                        <Badge className={visaStatus.viewedByAdmin ? "bg-blue-100 text-blue-800" : "bg-yellow-100 text-yellow-800"}>
+                          {visaStatus.viewedByAdmin ? "تمت المراجعة من الإدارة" : "في انتظار المراجعة"}
+                        </Badge>
+                      </div>
+                    </div>
+                  ) : visaStatus.canUploadVisaDocuments ? (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Upload className="w-6 h-6 text-purple-600" />
+                        <div>
+                          <h3 className="font-semibold text-purple-800">مطلوب رفع مستندات التأشيرة</h3>
+                          <p className="text-sm text-purple-600">
+                            تم قبول طلبك من الجامعة. يرجى رفع مستندات التأشيرة المطلوبة.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium mb-2 text-purple-800">اختر ملف مستندات التأشيرة</label>
+                          <Input 
+                            type="file" 
+                            accept=".pdf,.jpg,.jpeg,.png"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                handleVisaDocumentsUpload(file);
+                              }
+                            }}
+                            disabled={uploadingVisa}
+                            className="border-purple-300"
+                          />
+                          <p className="text-xs text-purple-600 mt-1">
+                            الملفات المقبولة: PDF, JPG, PNG (حد أقصى 5 ميجابايت)
+                          </p>
+                        </div>
+                        
+                        {uploadingVisa && (
+                          <div className="flex items-center gap-2 text-purple-600">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div>
+                            <span className="text-sm">جاري رفع مستندات التأشيرة...</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                      <div className="flex items-center gap-3">
+                        <Clock className="w-6 h-6 text-gray-500" />
+                        <div>
+                          <h3 className="font-semibold text-gray-700">غير متاح حالياً</h3>
+                          <p className="text-sm text-gray-600">
+                            رفع مستندات التأشيرة غير متاح في الوقت الحالي.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-6 h-6 text-yellow-600" />
+                    <div>
+                      <h3 className="font-semibold text-yellow-800">في انتظار قبول الجامعة</h3>
+                      <p className="text-sm text-yellow-600">
+                        حالة طلبك الحالية: {getOrderStatusText(visaStatus.submissionStatus)}
+                      </p>
+                      <p className="text-sm text-yellow-600 mt-1">
+                        سيتم تفعيل خاصية رفع مستندات التأشيرة عند قبول طلبك من الجامعة.
                       </p>
                     </div>
                   </div>
