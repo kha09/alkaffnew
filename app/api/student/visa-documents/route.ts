@@ -37,23 +37,27 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const files = formData.getAll('files') as File[]
+    const file = formData.get('file') as File
 
-    if (!files || files.length === 0) {
-      return NextResponse.json({ error: 'لم يتم اختيار ملفات' }, { status: 400 })
+    if (!file) {
+      return NextResponse.json({ error: 'لم يتم اختيار ملف' }, { status: 400 })
     }
 
-    // Validate maximum number of files (e.g., 5 files max)
-    const maxFiles = 5
-    if (files.length > maxFiles) {
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
+    if (!allowedTypes.includes(file.type)) {
       return NextResponse.json({ 
-        error: `يمكن رفع ${maxFiles} ملفات كحد أقصى` 
+        error: 'نوع الملف غير مدعوم. يرجى رفع ملف PDF أو صورة (JPG, PNG)' 
       }, { status: 400 })
     }
 
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
-    const maxSize = 5 * 1024 * 1024 // 5MB per file
-    const uploadedPaths: string[] = []
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      return NextResponse.json({ 
+        error: 'حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت' 
+      }, { status: 400 })
+    }
 
     // Create uploads directory if it doesn't exist
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'visa-documents')
@@ -63,38 +67,17 @@ export async function POST(request: NextRequest) {
       // Directory might already exist
     }
 
-    // Process each file
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
+    // Generate unique filename
+    const timestamp = Date.now()
+    const fileExtension = path.extname(file.name)
+    const fileName = `visa_${formSubmission.id}_${timestamp}${fileExtension}`
+    const filePath = path.join(uploadsDir, fileName)
+    const relativePath = `/uploads/visa-documents/${fileName}`
 
-      // Validate file type
-      if (!allowedTypes.includes(file.type)) {
-        return NextResponse.json({ 
-          error: `نوع الملف غير مدعوم للملف ${i + 1}. يرجى رفع ملف PDF أو صورة (JPG, PNG)` 
-        }, { status: 400 })
-      }
-
-      // Validate file size
-      if (file.size > maxSize) {
-        return NextResponse.json({ 
-          error: `حجم الملف ${i + 1} كبير جداً. الحد الأقصى 5 ميجابايت لكل ملف` 
-        }, { status: 400 })
-      }
-
-      // Generate unique filename
-      const timestamp = Date.now()
-      const fileExtension = path.extname(file.name)
-      const fileName = `visa_${formSubmission.id}_${timestamp}_${i + 1}${fileExtension}`
-      const filePath = path.join(uploadsDir, fileName)
-      const relativePath = `/uploads/visa-documents/${fileName}`
-
-      // Save file
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      await writeFile(filePath, buffer)
-
-      uploadedPaths.push(relativePath)
-    }
+    // Save file
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    await writeFile(filePath, buffer)
 
     // Get existing visa documents paths if any
     let existingPaths: string[] = []
@@ -107,8 +90,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Combine existing and new paths
-    const allPaths = [...existingPaths, ...uploadedPaths]
+    // Add new path to existing paths
+    const allPaths = [...existingPaths, relativePath]
 
     // Update form submission with visa documents information
     const updatedSubmission = await prisma.formSubmission.update({
@@ -121,7 +104,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({
-      message: `تم رفع ${uploadedPaths.length} ملف بنجاح`,
+      message: 'تم رفع مستندات التأشيرة بنجاح',
       visaDocumentsPaths: allPaths,
       uploadedAt: updatedSubmission.visaDocumentsUploadedAt
     })

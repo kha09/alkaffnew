@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 const navigation = [
   { name: "لوحة التحكم", href: "/student", icon: Home },
   { name: "الإشعارات", href: "/student/notifications", icon: Bell, showBadge: true },
-  { name: "المدفوعات", href: "/student/payments", icon: CreditCard },
+  { name: "الملفات", href: "/student/payments", icon: CreditCard },
   { name: "الدعم الفني", href: "/student/support", icon: HelpCircle },
   { name: "الملف الشخصي", href: "/student/profile", icon: User },
 ]
