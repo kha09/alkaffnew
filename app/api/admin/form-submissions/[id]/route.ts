@@ -50,6 +50,22 @@ export async function PUT(request: NextRequest) {
       // Also update orderStage to match submissionStatus for consistency
       updateData.orderStage = data.submissionStatus
       
+      // Enable payment receipt upload when status is "accepted_by_university"
+      if (data.submissionStatus === 'accepted_by_university') {
+        updateData.canUploadReceipt = true
+      } else {
+        // Disable upload for other statuses (except if already uploaded)
+        const currentSubmission = await prisma.formSubmission.findUnique({
+          where: { id },
+          select: { paymentReceiptPath: true }
+        })
+        
+        // Only disable if no receipt has been uploaded yet
+        if (!currentSubmission?.paymentReceiptPath) {
+          updateData.canUploadReceipt = false
+        }
+      }
+      
       // Also update the related Order's submissionStatus to keep them in sync
       // Find orders related to this form submission
       const relatedOrders = await prisma.order.findMany({

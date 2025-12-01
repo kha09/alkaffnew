@@ -129,6 +129,11 @@ model FormSubmission {
   user              User?         @relation(fields: [userId], references: [id])
   orders            Order[]
   sentEmails        SentEmail[]   // Track emails sent for this submission
+  // Payment receipt fields
+  paymentReceiptPath String?      // Path to uploaded payment receipt
+  canUploadReceipt  Boolean       @default(false) // Whether student can upload receipt
+  receiptUploadedAt DateTime?     // When receipt was uploaded
+  receiptViewedByAdmin Boolean    @default(false) // Whether admin has viewed the receipt
 }
 
 model Agent {

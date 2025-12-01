@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
 import { ApplicationForm } from "@/components/application-form"
+import { PaymentReceiptSection } from "@/components/payment-receipt-section"
 
 // Types
 type Agent = {
@@ -762,6 +763,11 @@ export default function StudentsPage() {
                                     ) : (
                                       <p className="text-sm text-gray-500 mt-2">لا توجد ملفات مرفقة</p>
                                     )}
+                                  </div>
+                                  
+                                  <div>
+                                    <Label>إيصال الدفع للجامعة</Label>
+                                    <PaymentReceiptSection submissionId={submission.id} />
                                   </div>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
