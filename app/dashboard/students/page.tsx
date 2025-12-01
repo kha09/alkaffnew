@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/hooks/use-toast"
 import { ApplicationForm } from "@/components/application-form"
 import { PaymentReceiptSection } from "@/components/payment-receipt-section"
+import { VisaDocumentsSection } from "@/components/visa-documents-section"
 
 // Types
 type Agent = {
@@ -469,19 +470,23 @@ export default function StudentsPage() {
                 إنشاء طالب
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
-              <DialogHeader>
-                <DialogTitle>إنشاء طالب</DialogTitle>
-              </DialogHeader>
-              <ApplicationForm 
-                inline={true}
-                onClose={() => {}} 
-                onSubmissionSuccess={() => {
-                  // Refresh the submissions list
-                  fetchSubmissions();
-                }}
-                hideSuccessModal={true}
-              />
+            <DialogContent className="max-w-6xl w-[95vw] max-h-[95vh] overflow-hidden p-0">
+              <div className="max-h-[95vh] overflow-y-auto">
+                <DialogHeader className="p-6 pb-4 border-b">
+                  <DialogTitle className="text-xl font-bold">إنشاء طالب</DialogTitle>
+                </DialogHeader>
+                <div className="p-6">
+                  <ApplicationForm 
+                    inline={true}
+                    onClose={() => {}} 
+                    onSubmissionSuccess={() => {
+                      // Refresh the submissions list
+                      fetchSubmissions();
+                    }}
+                    hideSuccessModal={true}
+                  />
+                </div>
+              </div>
             </DialogContent>
           </Dialog>
           <Button variant="outline">
@@ -704,11 +709,12 @@ export default function StudentsPage() {
                                 <Edit className="w-4 h-4" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>تعديل الطلب</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
+                            <DialogContent className="max-w-4xl w-[95vw] max-h-[95vh] overflow-hidden p-0">
+                              <div className="max-h-[95vh] overflow-y-auto">
+                                <DialogHeader className="p-6 pb-4 border-b sticky top-0 bg-white z-10">
+                                  <DialogTitle className="text-xl font-bold">تعديل الطلب</DialogTitle>
+                                </DialogHeader>
+                                <div className="p-6 space-y-6">
                                 <div>
                                   <Label>تعيين وكيل</Label>
                                   <Select 
@@ -768,6 +774,11 @@ export default function StudentsPage() {
                                   <div>
                                     <Label>إيصال الدفع للجامعة</Label>
                                     <PaymentReceiptSection submissionId={submission.id} />
+                                  </div>
+                                  
+                                  <div>
+                                    <Label>مستندات التأشيرة</Label>
+                                    <VisaDocumentsSection submissionId={submission.id} />
                                   </div>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -898,6 +909,7 @@ export default function StudentsPage() {
                                       />
                                     </div>
                                   </div>
+                                </div>
                                 </div>
                               </div>
                             </DialogContent>

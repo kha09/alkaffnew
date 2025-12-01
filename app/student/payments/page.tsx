@@ -23,7 +23,7 @@ type VisaDocumentsStatus = {
   submissionStatus: string;
   canUploadVisaDocuments: boolean;
   hasUploadedVisaDocuments: boolean;
-  visaDocumentsPath: string | null;
+  visaDocumentsPaths: string[];
   uploadedAt: string | null;
   viewedByAdmin: boolean;
 };
@@ -507,11 +507,11 @@ export default function StudentPayments() {
                       </div>
                       
                       <div className="flex items-center gap-3">
-                        {visaStatus.visaDocumentsPath && (
+                        {visaStatus.visaDocumentsPaths && visaStatus.visaDocumentsPaths.length > 0 && (
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => window.open(visaStatus.visaDocumentsPath!, '_blank')}
+                            onClick={() => window.open(visaStatus.visaDocumentsPaths[0], '_blank')}
                           >
                             <Eye className="w-4 h-4 ml-1" />
                             عرض المستندات

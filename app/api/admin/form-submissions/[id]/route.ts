@@ -53,16 +53,22 @@ export async function PUT(request: NextRequest) {
       // Enable payment receipt upload when status is "accepted_by_university"
       if (data.submissionStatus === 'accepted_by_university') {
         updateData.canUploadReceipt = true
+        updateData.canUploadVisaDocuments = true
       } else {
         // Disable upload for other statuses (except if already uploaded)
         const currentSubmission = await prisma.formSubmission.findUnique({
           where: { id },
-          select: { paymentReceiptPath: true }
+          select: { paymentReceiptPath: true, visaDocumentsPath: true }
         })
         
         // Only disable if no receipt has been uploaded yet
         if (!currentSubmission?.paymentReceiptPath) {
           updateData.canUploadReceipt = false
+        }
+        
+        // Only disable visa documents if none have been uploaded yet
+        if (!currentSubmission?.visaDocumentsPath) {
+          updateData.canUploadVisaDocuments = false
         }
       }
       
