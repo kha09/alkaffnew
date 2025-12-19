@@ -17,8 +17,8 @@ type Payment = {
   formSubmission: {
     fullName: string;
   } | null;
-  price: number;
-  status: string;
+  agentStatus: string;
+  adminStatus: string;
   paymentStatus: string;
   dateCreated: string;
 };
@@ -57,81 +57,38 @@ export default function AgentPaymentsPage() {
   const [agentStudents, setAgentStudents] = useState<any[]>([]);
 
   useEffect(() => {
-    async function fetchPayments() {
+    async function fetchData() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch("/api/agent/payments");
-        if (!res.ok) throw new Error("فشل في جلب بيانات المدفوعات");
-        const data = await res.json();
-        setPayments(data.payments || []);
+        // Fetch payments
+        const paymentsRes = await fetch("/api/agent/payments");
+        if (!paymentsRes.ok) throw new Error("فشل في جلب بيانات المدفوعات");
+        const paymentsData = await paymentsRes.json();
+        setPayments(paymentsData.payments || []);
+
+        // Fetch commissions
+        const commissionsRes = await fetch("/api/agent/commissions");
+        if (!commissionsRes.ok) throw new Error("فشل في جلب بيانات العمولات");
+        const commissionsData = await commissionsRes.json();
+        setCommissions(commissionsData.commissions || []);
       } catch (err: any) {
         setError(err.message || "حدث خطأ");
       } finally {
         setLoading(false);
       }
     }
-    fetchPayments();
-    
-    // Fetch commissions (mock data for now)
-    const mockCommissions: Commission[] = [
-      {
-        id: 1,
-        orderId: 101,
-        amount: 150,
-        status: "pending",
-        requestedAt: "2025-09-16T14:20:00Z",
-        approvedAt: null,
-        paidAt: null,
-        notes: "طلب العمولة بعد إكمال الطلب",
-        receiptPath: null,
-        receiptUploadedAt: null,
-        receiptViewedByAgent: false,
-        deliveredToAgent: false,
-        deliveredAt: null
-      },
-      {
-        id: 2,
-        orderId: 102,
-        amount: 200,
-        status: "approved",
-        requestedAt: "2025-09-11T16:45:00Z",
-        approvedAt: "2025-09-12T10:30:00Z",
-        paidAt: null,
-        notes: "تمت المراجعة والموافقة",
-        receiptPath: null,
-        receiptUploadedAt: null,
-        receiptViewedByAgent: false,
-        deliveredToAgent: false,
-        deliveredAt: null
-      },
-      {
-        id: 3,
-        orderId: 103,
-        amount: 180,
-        status: "paid",
-        requestedAt: "2025-09-06T13:10:00Z",
-        approvedAt: "2025-09-07T09:15:00Z",
-        paidAt: "2025-09-15T15:30:00Z",
-        notes: "تم الدفع بنجاح",
-        receiptPath: "/uploads/commission-receipts/receipt-3.pdf",
-        receiptUploadedAt: "2025-09-15T15:35:00Z",
-        receiptViewedByAgent: true,
-        deliveredToAgent: true,
-        deliveredAt: "2025-09-15T15:30:00Z"
-      }
-    ];
-    setCommissions(mockCommissions);
+    fetchData();
   }, []);
 
-  // Calculate totals
-  const totalEarnings = payments
-    .filter(p => p.paymentStatus === "paid")
-    .reduce((sum, p) => sum + (p.price || 0), 0);
+  // Calculate totals - Note: Payment type doesn't have price field, using commission amounts instead
+  const totalEarnings = commissions
+    .filter(c => c.status === "paid")
+    .reduce((sum, c) => sum + c.amount, 0);
     
-  const pendingPayments = payments
-    .filter(p => p.paymentStatus !== "paid")
-    .reduce((sum, p) => sum + (p.price || 0), 0);
+  const pendingPayments = commissions
+    .filter(c => c.status !== "paid")
+    .reduce((sum, c) => sum + c.amount, 0);
     
   const totalCommissions = commissions
     .filter(c => c.status === "paid")
@@ -404,7 +361,7 @@ export default function AgentPaymentsPage() {
                           {payment.paymentStatus === "unpaid" ? "مطلوب" : "قيد المتابعة"}
                         </Badge>
                       </td>
-                      <td className="p-3 text-sm font-medium text-[#111827]">${payment.price}</td>
+                      <td className="p-3 text-sm font-medium text-[#111827]">—</td>
                       <td className="p-3 text-sm text-[#111827]">
                         {payment.formSubmission?.fullName || "—"}
                       </td>
@@ -454,7 +411,7 @@ export default function AgentPaymentsPage() {
                       <td className="p-3">
                         <Badge className="bg-green-100 text-green-800">مدفوع</Badge>
                       </td>
-                      <td className="p-3 text-sm font-medium text-[#111827]">${payment.price}</td>
+                      <td className="p-3 text-sm font-medium text-[#111827]">—</td>
                       <td className="p-3 text-sm text-[#111827]">
                         {payment.formSubmission?.fullName || "—"}
                       </td>

@@ -1,13 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/lib/auth'
 import prisma from "@/lib/db";
-
-// TODO: Add authentication middleware to get agent's user ID from session/token
 
 // GET /api/agent/commissions - Get all commissions for the agent
 export async function GET(request: NextRequest) {
   try {
-    // For now, mock agentId. In production, extract from session/token.
-    const agentId = 1;
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+    }
+
+    if (session.user.role !== 'agent') {
+      return NextResponse.json({ error: 'غير مصرح للوصول' }, { status: 403 })
+    }
+
+    // Get the agent record using the user's email
+    const agent = await prisma.agent.findUnique({
+      where: { email: session.user.email! }
+    })
+
+    if (!agent) {
+      return NextResponse.json({ error: 'الوكيل غير موجود' }, { status: 404 })
+    }
 
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
@@ -15,7 +31,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
 
-    const where: any = { agentId }
+    const where: any = { agentId: agent.id }
     
     if (status && status !== 'all') {
       where.status = status
@@ -37,7 +53,6 @@ export async function GET(request: NextRequest) {
                 fullName: true
               }
             },
-            price: true,
             adminStatus: true,
             paymentStatus: true,
             dateCreated: true
@@ -69,8 +84,24 @@ export async function GET(request: NextRequest) {
 // POST /api/agent/commissions - Create a new commission request
 export async function POST(request: NextRequest) {
   try {
-    // For now, mock agentId. In production, extract from session/token.
-    const agentId = 1;
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 })
+    }
+
+    if (session.user.role !== 'agent') {
+      return NextResponse.json({ error: 'غير مصرح للوصول' }, { status: 403 })
+    }
+
+    // Get the agent record using the user's email
+    const agent = await prisma.agent.findUnique({
+      where: { email: session.user.email! }
+    })
+
+    if (!agent) {
+      return NextResponse.json({ error: 'الوكيل غير موجود' }, { status: 404 })
+    }
 
     const body = await request.json();
     
@@ -90,7 +121,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });
     }
 
-    if (order.agentId !== agentId) {
+    if (order.agentId !== agent.id) {
       return NextResponse.json({ error: 'ليس لديك صلاحية لإنشاء عمولة لهذا الطلب' }, { status: 403 });
     }
 
@@ -109,7 +140,7 @@ export async function POST(request: NextRequest) {
 
     const commission = await prisma.commission.create({
       data: {
-        agentId,
+        agentId: agent.id,
         orderId,
         amount,
         status: 'pending',
@@ -125,8 +156,7 @@ export async function POST(request: NextRequest) {
                 fullName: true
               }
             },
-            price: true,
-            status: true,
+            adminStatus: true,
             paymentStatus: true,
             dateCreated: true
           }

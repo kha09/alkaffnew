@@ -24,8 +24,7 @@ type Order = {
   formSubmission: {
     fullName: string
   } | null
-  price: number
-  status: string
+  adminStatus: string
   paymentStatus: string
   dateCreated: string
 }
@@ -72,97 +71,18 @@ export default function CommissionsPage() {
   useEffect(() => {
     fetchCommissions()
     fetchAgents()
+    fetchStudents()
   }, [])
 
   const fetchCommissions = async () => {
     try {
       setLoading(true)
-      // In a real implementation, this would call an API endpoint
-      // For now, we'll use mock data
-      const mockCommissions: Commission[] = [
-        {
-          id: 1,
-          agentId: 1,
-          agent: { id: 1, name: "محمد أحمد", email: "mohamed@example.com" },
-          orderId: 101,
-          order: { 
-            id: 101, 
-            formSubmission: { fullName: "أحمد علي" }, 
-            price: 1500, 
-            status: "completed", 
-            paymentStatus: "paid", 
-            dateCreated: "2025-09-15T10:30:00Z" 
-          },
-          amount: 150,
-          status: "pending",
-          requestedAt: "2025-09-16T14:20:00Z",
-          approvedAt: null,
-          paidAt: null,
-          notes: "طلب العمولة بعد إكمال الطلب",
-          receiptPath: null,
-          receiptUploadedAt: null,
-          receiptViewedByAgent: false,
-          deliveredToAgent: false,
-          deliveredAt: null,
-          createdAt: "2025-09-16T14:20:00Z",
-          updatedAt: "2025-09-16T14:20:00Z"
-        },
-        {
-          id: 2,
-          agentId: 2,
-          agent: { id: 2, name: "فاطمة خالد", email: "fatima@example.com" },
-          orderId: 102,
-          order: { 
-            id: 102, 
-            formSubmission: { fullName: "سارة محمد" }, 
-            price: 2000, 
-            status: "completed", 
-            paymentStatus: "paid", 
-            dateCreated: "2025-09-10T09:15:00Z" 
-          },
-          amount: 200,
-          status: "approved",
-          requestedAt: "2025-09-11T16:45:00Z",
-          approvedAt: "2025-09-12T10:30:00Z",
-          paidAt: null,
-          notes: "تمت المراجعة والموافقة",
-          receiptPath: null,
-          receiptUploadedAt: null,
-          receiptViewedByAgent: false,
-          deliveredToAgent: false,
-          deliveredAt: null,
-          createdAt: "2025-09-11T16:45:00Z",
-          updatedAt: "2025-09-12T10:30:00Z"
-        },
-        {
-          id: 3,
-          agentId: 1,
-          agent: { id: 1, name: "محمد أحمد", email: "mohamed@example.com" },
-          orderId: 103,
-          order: { 
-            id: 103, 
-            formSubmission: { fullName: "خالد سعيد" }, 
-            price: 1800, 
-            status: "completed", 
-            paymentStatus: "paid", 
-            dateCreated: "2025-09-05T11:20:00Z" 
-          },
-          amount: 180,
-          status: "paid",
-          requestedAt: "2025-09-06T13:10:00Z",
-          approvedAt: "2025-09-07T09:15:00Z",
-          paidAt: "2025-09-15T15:30:00Z",
-          notes: "تم الدفع بنجاح",
-          receiptPath: null,
-          receiptUploadedAt: null,
-          receiptViewedByAgent: false,
-          deliveredToAgent: false,
-          deliveredAt: null,
-          createdAt: "2025-09-06T13:10:00Z",
-          updatedAt: "2025-09-15T15:30:00Z"
-        }
-      ]
-      setCommissions(mockCommissions)
+      const response = await fetch('/api/admin/commissions')
+      if (!response.ok) {
+        throw new Error('Failed to fetch commissions')
+      }
+      const data = await response.json()
+      setCommissions(data.commissions || [])
     } catch (error) {
       console.error('Error fetching commissions:', error)
       toast({
@@ -177,19 +97,35 @@ export default function CommissionsPage() {
 
   const fetchAgents = async () => {
     try {
-      // In a real implementation, this would call an API endpoint
-      // For now, we'll use mock data
-      const mockAgents: Agent[] = [
-        { id: 1, name: "محمد أحمد", email: "mohamed@example.com" },
-        { id: 2, name: "فاطمة خالد", email: "fatima@example.com" },
-        { id: 3, name: "علي حسن", email: "ali@example.com" }
-      ]
-      setAgents(mockAgents)
+      const response = await fetch('/api/admin/agents')
+      if (!response.ok) {
+        throw new Error('Failed to fetch agents')
+      }
+      const data = await response.json()
+      setAgents(data.agents || [])
     } catch (error) {
       console.error('Error fetching agents:', error)
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء جلب بيانات الوكلاء",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const fetchStudents = async () => {
+    try {
+      const response = await fetch('/api/admin/form-submissions')
+      if (!response.ok) {
+        throw new Error('Failed to fetch students')
+      }
+      const data = await response.json()
+      setAgentStudents(data.submissions || [])
+    } catch (error) {
+      console.error('Error fetching students:', error)
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء جلب بيانات الطلاب",
         variant: "destructive",
       })
     }
@@ -293,8 +229,7 @@ export default function CommissionsPage() {
         order: {
           id: autoGeneratedOrderId,
           formSubmission: { fullName: "طالب جديد" },
-          price: newCommission.amount * 10,
-          status: "completed",
+          adminStatus: "completed",
           paymentStatus: "paid",
           dateCreated: new Date().toISOString()
         },
@@ -746,12 +681,8 @@ export default function CommissionsPage() {
                       <span>{selectedCommission.order.formSubmission?.fullName || "—"}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">مبلغ الطلب:</span>
-                      <span className="font-medium">${selectedCommission.order.price.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
                       <span className="text-gray-600">حالة الطلب:</span>
-                      <span>{selectedCommission.order.status === "completed" ? "مكتمل" : selectedCommission.order.status}</span>
+                      <span>{selectedCommission.order.adminStatus === "completed" ? "مكتمل" : selectedCommission.order.adminStatus}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">تاريخ الطلب:</span>

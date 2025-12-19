@@ -50,7 +50,6 @@ export async function GET(request: NextRequest) {
                 fullName: true
               }
             },
-            price: true,
             adminStatus: true,
             paymentStatus: true,
             dateCreated: true
@@ -153,8 +152,7 @@ export async function POST(request: NextRequest) {
                 fullName: true
               }
             },
-            price: true,
-            status: true,
+            adminStatus: true,
             paymentStatus: true,
             dateCreated: true
           }

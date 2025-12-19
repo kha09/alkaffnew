@@ -25,9 +25,14 @@ export async function POST(
       return NextResponse.json({ error: 'معرف العمولة غير صحيح' }, { status: 400 })
     }
 
-    // Get agent ID from session (in a real implementation, this would be extracted from the session)
-    // For now, we'll use a mock agent ID - this should be replaced with actual session-based agent ID
-    const agentId = 1; // TODO: Extract from session
+    // Get the agent record using the user's email
+    const agent = await prisma.agent.findUnique({
+      where: { email: session.user.email! }
+    })
+
+    if (!agent) {
+      return NextResponse.json({ error: 'الوكيل غير موجود' }, { status: 404 })
+    }
 
     // Check if commission exists and belongs to this agent
     const commission = await prisma.commission.findUnique({
@@ -41,7 +46,7 @@ export async function POST(
       return NextResponse.json({ error: 'العمولة غير موجودة' }, { status: 404 })
     }
 
-    if (commission.agentId !== agentId) {
+    if (commission.agentId !== agent.id) {
       return NextResponse.json({ error: 'ليس لديك صلاحية لعرض هذه العمولة' }, { status: 403 })
     }
 
