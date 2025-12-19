@@ -219,6 +219,12 @@ model Commission {
   approvedAt      DateTime?  // When admin approves
   paidAt          DateTime?  // When commission is paid
   notes           String?    // Admin notes
+  // Receipt and delivery tracking fields
+  receiptPath     String?    // Path to uploaded receipt file
+  receiptUploadedAt DateTime? // When receipt was uploaded
+  receiptViewedByAgent Boolean @default(false) // Whether agent has viewed the receipt
+  deliveredToAgent Boolean   @default(false) // Whether physical commission was delivered
+  deliveredAt     DateTime?  // When commission was physically delivered
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
