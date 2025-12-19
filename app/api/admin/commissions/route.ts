@@ -96,19 +96,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'الوكيل، الطلب، والمبلغ مطلوبان' }, { status: 400 })
     }
 
-    // Check if order exists and is completed
-    const order = await prisma.order.findUnique({
-      where: { id: orderId }
-    })
-
-    if (!order) {
-      return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 })
-    }
-
-    if (order.adminStatus !== 'Accepted by University') {
-      return NextResponse.json({ error: 'يمكن إنشاء عمولة فقط للطلبات المكتملة' }, { status: 400 })
-    }
-
     // Check if agent exists
     const agent = await prisma.agent.findUnique({
       where: { id: agentId }
@@ -118,9 +105,51 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'الوكيل غير موجود' }, { status: 404 })
     }
 
+    // First, try to find an existing order
+    let order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        formSubmission: {
+          select: {
+            fullName: true
+          }
+        }
+      }
+    })
+
+    // If order doesn't exist, try to find a form submission and create an order
+    if (!order) {
+      const formSubmission = await prisma.formSubmission.findUnique({
+        where: { id: orderId }
+      })
+
+      if (!formSubmission) {
+        return NextResponse.json({ error: 'الطلب أو التقديم غير موجود' }, { status: 404 })
+      }
+
+      // Create an order from the form submission
+      order = await prisma.order.create({
+        data: {
+          userId: formSubmission.userId || 1, // Default user ID if not linked
+          formSubmissionId: formSubmission.id,
+          agentId: agentId,
+          adminStatus: 'Accepted by University', // Set as completed for commission
+          paymentStatus: 'paid',
+          submissionStatus: 'completed'
+        },
+        include: {
+          formSubmission: {
+            select: {
+              fullName: true
+            }
+          }
+        }
+      })
+    }
+
     // Check if commission already exists for this order
-    const existingCommission = await prisma.commission.findUnique({
-      where: { orderId: orderId }
+    const existingCommission = await prisma.commission.findFirst({
+      where: { orderId: order.id }
     })
 
     if (existingCommission) {
@@ -130,7 +159,7 @@ export async function POST(request: NextRequest) {
     const commission = await prisma.commission.create({
       data: {
         agentId,
-        orderId,
+        orderId: order.id,
         amount,
         status: 'pending',
         notes: notes || null,
