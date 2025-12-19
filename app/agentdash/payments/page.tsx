@@ -72,6 +72,12 @@ export default function AgentPaymentsPage() {
         if (!commissionsRes.ok) throw new Error("فشل في جلب بيانات العمولات");
         const commissionsData = await commissionsRes.json();
         setCommissions(commissionsData.commissions || []);
+
+        // Fetch agent students
+        const studentsRes = await fetch("/api/agent/submissions");
+        if (!studentsRes.ok) throw new Error("فشل في جلب بيانات الطلاب");
+        const studentsData = await studentsRes.json();
+        setAgentStudents(studentsData.submissions || []);
       } catch (err: any) {
         setError(err.message || "حدث خطأ");
       } finally {
@@ -235,9 +241,9 @@ export default function AgentPaymentsPage() {
                       <SelectValue placeholder="اختر طالب" />
                     </SelectTrigger>
                     <SelectContent>
-                      {paidPayments.map((payment) => (
-                        <SelectItem key={payment.id} value={payment.id.toString()}>
-                          {payment.formSubmission?.fullName || "—"}
+                      {agentStudents.map((student) => (
+                        <SelectItem key={student.id} value={student.id.toString()}>
+                          {student.fullName}
                         </SelectItem>
                       ))}
                     </SelectContent>
