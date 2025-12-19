@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import prisma from '@/lib/db'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
+import { saveFile, validateFile } from '@/lib/fileStorage'
 
 export async function POST(
   request: NextRequest,
@@ -46,47 +45,20 @@ export async function POST(
       return NextResponse.json({ error: 'لم يتم اختيار ملف' }, { status: 400 })
     }
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf']
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ 
-        error: 'نوع الملف غير مدعوم. يرجى رفع ملف PDF أو صورة (JPG, PNG)' 
-      }, { status: 400 })
+    // Validate file using utility function
+    const validation = validateFile(file, 5)
+    if (!validation.isValid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 })
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    if (file.size > maxSize) {
-      return NextResponse.json({ 
-        error: 'حجم الملف كبير جداً. الحد الأقصى 5 ميجابايت' 
-      }, { status: 400 })
-    }
-
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'commission-receipts')
-    try {
-      await mkdir(uploadsDir, { recursive: true })
-    } catch (error) {
-      // Directory might already exist
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now()
-    const fileExtension = path.extname(file.name)
-    const fileName = `commission_receipt_${commissionId}_${timestamp}${fileExtension}`
-    const filePath = path.join(uploadsDir, fileName)
-    const relativePath = `/uploads/commission-receipts/${fileName}`
-
-    // Save file
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
+    // Save file using utility function
+    const saveResult = await saveFile(file, 'commission-receipts', commissionId)
 
     // Update commission with receipt information
     const updatedCommission = await prisma.commission.update({
       where: { id: commissionId },
       data: {
-        receiptPath: relativePath,
+        receiptPath: saveResult.relativePath,
         receiptUploadedAt: new Date(),
         receiptViewedByAgent: false // Reset viewed status when new receipt is uploaded
       },
@@ -108,7 +80,7 @@ export async function POST(
     return NextResponse.json({
       message: 'تم رفع إيصال العمولة بنجاح',
       commission: updatedCommission,
-      receiptPath: relativePath
+      receiptPath: saveResult.relativePath
     })
 
   } catch (error) {
