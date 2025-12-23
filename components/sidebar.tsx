@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { Home, FileText, BarChart3, Users, Bell, FileEdit, University, Building, BookOpen, DollarSign, Mail, Send, Settings, LogOut, User, MessageSquare, Ticket } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
 
 const navigation = [
   { name: "لوحة التحكم", href: "/dashboard", icon: Home },
@@ -21,12 +22,32 @@ const navigation = [
   { name: "الملاحظات", href: "/dashboard/notes", icon: MessageSquare },
   { name: "قوالب البريد الإلكتروني", href: "/dashboard/email-templates", icon: Mail },
   { name: "البريد المرسل", href: "/dashboard/sent-emails", icon: Send },
+  { name: "الإشعارات", href: "/dashboard/notifications", icon: Bell },
   { name: "الإعدادات", href: "/dashboard/settings", icon: Settings },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    if (session?.user?.role === 'admin') {
+      fetchUnreadCount()
+    }
+  }, [session])
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await fetch('/api/admin/notifications?unreadOnly=true')
+      if (response.ok) {
+        const notifications = await response.json()
+        setUnreadCount(notifications.length)
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error)
+    }
+  }
 
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" })
@@ -54,7 +75,14 @@ export function Sidebar() {
               )}
             >
               <item.icon className="w-4 h-4" />
-              <span>{item.name}</span>
+              <span className="flex items-center justify-between flex-1">
+                <span>{item.name}</span>
+                {item.name === "الإشعارات" && unreadCount > 0 && (
+                  <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </span>
             </Link>
           )
         })}
@@ -70,11 +98,6 @@ export function Sidebar() {
             </div>
           </div>
         )}
-        
-        <div className="flex items-center gap-2 text-sm">
-          <Bell className="w-4 h-4" />
-          <span>الإشعارات</span>
-        </div>
         
         <Button
           onClick={handleLogout}

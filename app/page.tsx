@@ -577,7 +577,7 @@ export default function LandingPage() {
                   <div className="relative">
                     {/* Background Gradient */}
                     <div
-                      className={`absolute inset-0 bg-gradient-to-r ${content.universities[currentUniversity].color} opacity-10 group-hover:opacity-20 transition-opacity duration-500`}
+                      className={`absolute inset-0 bg-gradient-to-r ${content.universities?.[currentUniversity]?.color || 'from-blue-500 to-purple-500'} opacity-10 group-hover:opacity-20 transition-opacity duration-500`}
                     ></div>
 
                     <div className="relative z-10 p-12">

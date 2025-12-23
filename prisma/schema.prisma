@@ -168,6 +168,7 @@ model User {
   createdTickets SupportTicket[] @relation("TicketCreator") // Tickets created by this user
   assignedTickets SupportTicket[] @relation("TicketAssignee") // Tickets assigned to this user (for agents/admins)
   sentMessages  SupportTicketMessage[] @relation("MessageSender") // Messages sent by this user
+  notifications Notification[]  // Notifications for this user
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -339,4 +340,21 @@ model SupportTicketMessage {
   attachments     String?    // JSON array of file paths (optional)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+}
+
+model Notification {
+  id              Int        @id @default(autoincrement())
+  title           String
+  message         String
+  type            String     @default("info") // info, warning, success, error
+  priority        String     @default("normal") // low, normal, high, urgent
+  isRead          Boolean    @default(false)
+  entityId        Int?       // ID of related entity (form submission, order, etc.)
+  entityType      String?    // Type of related entity (FormSubmission, Order, etc.)
+  userId          Int?       // User this notification is for (null for admin notifications)
+  user            User?      @relation(fields: [userId], references: [id])
+  createdAt       DateTime   @default(now())
+  readAt          DateTime?
+  actionUrl       String?    // URL to navigate to when clicking notification
+  metadata        String?    // JSON string for additional data
 }

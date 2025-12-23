@@ -3,6 +3,7 @@ import prisma from '@/lib/db'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { v4 as uuidv4 } from 'uuid'
+import { createNotification } from '@/lib/notificationService'
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,6 +98,22 @@ export async function POST(request: NextRequest) {
       where: { id: formSubmission.id },
       include: { uploadedFiles: true }
     })
+    
+    // Create notification for admin
+    try {
+      await createNotification({
+        title: 'طلب جديد مقدم',
+        message: `تم تقديم طلب جديد من ${fullName} (${email})`,
+        type: 'info',
+        priority: 'normal',
+        entityId: formSubmission.id,
+        entityType: 'FormSubmission',
+        actionUrl: `/dashboard/students?submissionId=${formSubmission.id}`
+      })
+    } catch (notificationError) {
+      console.error('Failed to create notification:', notificationError)
+      // Don't fail the whole request if notification creation fails
+    }
     
     return NextResponse.json(completeFormSubmission, { status: 201 })
   } catch (error) {
