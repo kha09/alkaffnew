@@ -16,12 +16,13 @@ export interface SaveFileResult {
  * Get file storage configuration based on environment
  */
 export function getFileStorageConfig(): FileStorageConfig {
-  const fileStoragePath = process.env.FILE_STORAGE_PATH;
+  // Prioritize Railway's built-in volume mount path, then custom file storage path
+  const volumePath = process.env.RAILWAY_VOLUME_MOUNT_PATH || process.env.FILE_STORAGE_PATH;
   
-  if (fileStoragePath && fileStoragePath !== '') {
-    // Using mounted storage (e.g., /mpath in railway)
+  if (volumePath && volumePath !== '') {
+    // Using mounted storage (Railway volume or custom path)
     return {
-      basePath: fileStoragePath,
+      basePath: volumePath,
       urlBasePath: '/api/files' // Files will be served via API endpoint
     };
   } else {
